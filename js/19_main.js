@@ -129,6 +129,16 @@ M.tutorial = function (force) {
 };
 
 /* ---------------- boot ---------------- */
+/* every script stamps its version; a missing or mismatched stamp means an old or failed file on the server */
+M.EXPECTED = ["00_util", "01_strings", "02_content", "03_assets", "04_state", "05_cases", "06_dialogue", "07_tasks", "08_traffic", "09_actors", "10_actions", "11_events", "12_inspection", "13_screening", "14_render", "15_audio", "16_ui", "17_panels", "18_screens", "19_main", "20_progress"];
+M.checkFiles = function () {
+  const F = window.CP_FILES || {}; const bad = M.EXPECTED.filter(n => F[n] !== CP.VERSION);
+  if (!bad.length) return true;
+  const el = document.getElementById('ldErr') || document.body;
+  const box = document.createElement('div'); box.className = 'errs'; box.style.cssText = 'max-width:640px;margin:12px auto;text-align:start;line-height:1.6';
+  box.innerHTML = '<b>' + (CP.lang === 'ar' ? 'في ملفات قديمة أو ناقصة على السيرفر — ارفع مجلد js كله من جديد:' : 'Some game files on the server are old or missing — re-upload the whole js folder:') + '</b><br>' + bad.map(n => 'js/' + n + '.js — ' + (F[n] ? 'v' + F[n] : (CP.lang === 'ar' ? 'مش بيحمّل' : 'not loading'))).join('<br>') + '<br><small>v' + CP.VERSION + '</small>';
+  el.appendChild(box); console.error('CP file check failed', bad); return false;
+};
 M.boot = function () {
   CP.loadSettings(); CP.UI.applyLang();
   CP.Input.bindKeys();
@@ -136,6 +146,7 @@ M.boot = function () {
   window.addEventListener('resize', () => { if (CP.R.cv && !document.getElementById('game').classList.contains('hidden')) CP.R.resize(); if (CP.Screens._mr) CP.Screens._mr(); });
   document.addEventListener('visibilitychange', () => { if (document.hidden && CP.G && CP.G.shift && !CP.G.shift.ended) { CP.save('auto'); if (M.running && !CP.Screens.cur) CP.Screens.pause(); } });
   window.addEventListener('pointerdown', () => CP.Audio.unlock(), { once: true });
+  if (!M.checkFiles()) return;
   CP.A.load((p, f) => CP.Screens.loadProgress(p, f)).then(errs => {
     if (errs.length) { CP.Screens.loadErrors(errs); if (errs.length > 3) return; }
     setTimeout(() => CP.Screens.menu(), errs.length ? 1500 : 150);
@@ -144,3 +155,4 @@ M.boot = function () {
 window.addEventListener('DOMContentLoaded', M.boot);
 
 CP.bus.on('caseClosed', () => { const s = CP.G && CP.G.shift; if (s) s.officer.returnAt = s.t + 1.6; });
+;(window.CP_FILES = window.CP_FILES || {})['19_main'] = '1.3.2';

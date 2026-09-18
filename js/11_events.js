@@ -321,3 +321,4 @@ CP.Career.buy = function (k) {
   const cost = U.cost[u[k]]; if (G.career.credits < cost) return 'up_noCredit';
   G.career.credits -= cost; u[k]++; CP.save('auto'); return null;
 };
+;(window.CP_FILES = window.CP_FILES || {})['11_events'] = '1.3.2';

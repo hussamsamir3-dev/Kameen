@@ -202,3 +202,4 @@ CP.Audio = {
   },
   stopAll() { if (this.sirenNode) { try { this.sirenNode.o.stop(); this.sirenNode.lfo.stop(); } catch (e) { } this.sirenNode = null; } }
 };
+;(window.CP_FILES = window.CP_FILES || {})['15_audio'] = '1.3.2';

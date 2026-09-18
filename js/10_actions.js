@@ -271,3 +271,4 @@ CP.Tasks.on('o_repair', () => CP.Events.gateRepaired('officer'), officerAt);
 CP.Tasks.on('o_generator', () => CP.Events.generatorFixed('officer'), officerAt);
 CP.Tasks.on('o_vehicle', t => { const v = CP.T.get(t.data.vid); if (v) CP.Events.fixVehicle(v); }, officerAt);
 CP.Act.officerTask = () => CP.Tasks.find(t => t.owner === 'officer');
+;(window.CP_FILES = window.CP_FILES || {})['10_actions'] = '1.3.2';

@@ -227,6 +227,7 @@ CP.Dlg.ask = function (c, intent, tone) {
    a woman driver speaks about herself in the feminine (رايحة، تعبانة، واخدة…). English is already neutral. */
 CP.Gender = {};
 const GF = CP.Gender;
+CP.Gender.full = true;
 GF.isF = c => !!(c && c.driver && c.driver.g === 'f');
 GF.OFF = {
   greet_docs: { calm: 'مساء الخير، رخصة القيادة ورخصة العربية لو سمحتي.', direct: 'الرخص والبطاقة لو سمحتي.' },

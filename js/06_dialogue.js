@@ -61,7 +61,7 @@ CP.Dlg.applyTone = function (c, tone) {
   if (tone === 'firm') { c.coop -= (p === 'anxious' || p === 'defensive' || p === 'patient') ? 7 : 3; c.patience -= 2; if (p === 'impatient') c.coop += 1; }
   c.coop = CP.clamp(c.coop, 0, 100); c.patience = CP.clamp(c.patience, 0, 100);
 };
-const open = c => DC.persOpen[c.driver.pers][Math.floor(CP.makeRng(c.seed + c.dlg.log.length)() * 3)];
+const persOpenLine = c => DC.persOpen[c.driver.pers][Math.floor(CP.makeRng(c.seed + c.dlg.log.length)() * 3)];
 const pickL = (c, arr, salt) => arr[Math.floor(CP.makeRng(c.seed + (salt || 0))() * arr.length)];
 const fillL = (pair, vars) => CP.fill(pair, vars);
 
@@ -84,7 +84,7 @@ CP.Dlg.ask = function (c, intent, tone) {
   switch (intent) {
     case 'greet_docs': {
       k.greeted = true;
-      let t = open(c);
+      let t = persOpenLine(c);
       if (c.fam === 'medical') t = ['… مساء النور… اتفضل… الرخص… آه.', '…Evening… here… the licences… yes.'];
       if (c.fam === 'overheat') t = ['الموتور سخن مني يا باشا، معلش. اتفضل الرخص.', 'The engine overheated on me, sorry officer. Here are the licences.'];
       D(pr(t[0] + (c.fam === 'medical' || c.fam === 'overheat' ? '' : ' اتفضل الرخص والبطاقة.'), t[1] + (c.fam === 'medical' || c.fam === 'overheat' ? '' : ' Here are my licences and ID.')));

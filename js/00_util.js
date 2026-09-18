@@ -1,7 +1,7 @@
 /* CHECKPOINT: NIGHT SHIFT — core utilities (namespace, seeded RNG, i18n, math) */
 'use strict';
 const CP = window.CP = {};
-CP.VERSION = '1.3.0';
+CP.VERSION = '1.3.1';
 CP.SAVE_VERSION = 1;
 
 /* ---------- Seeded RNG (mulberry32) — state is a single serializable uint32 ---------- */
@@ -88,4 +88,15 @@ CP.fmtDate = iso => {
   const [y, m, d] = iso.split('-');
   const ms = CP.lang === 'ar' ? ['يناير','فبراير','مارس','أبريل','مايو','يونيو','يوليو','أغسطس','سبتمبر','أكتوبر','نوفمبر','ديسمبر'] : ['JAN','FEB','MAR','APR','MAY','JUN','JUL','AUG','SEP','OCT','NOV','DEC'];
   return CP.lang === 'ar' ? CP.arDigits(+d) + ' ' + ms[+m - 1] + ' ' + CP.arDigits(y) : (+d) + ' ' + ms[+m - 1] + ' ' + y;
+};
+
+/* Minimal gender helpers — the full Egyptian-Arabic version in 06_dialogue.js replaces this.
+   Kept here so the game never breaks if an older/cached 06_dialogue.js is served. */
+CP.Gender = CP.Gender || {
+  isF: c => !!(c && c.driver && c.driver.g === 'f'),
+  officer: (c, intent, tone) => CP.C.officer[intent][tone],
+  label: (c, intent) => CP.C.intentLabel[intent],
+  driverText: (c, t) => t,
+  driverWord: c => (c && c.driver && c.driver.g === 'f') ? { ar: 'السواقة', en: 'Driver' } : { ar: 'السواق', en: 'Driver' },
+  pers: (c, p) => CP.C.persLabel[p]
 };

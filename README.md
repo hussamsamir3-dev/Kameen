@@ -37,6 +37,21 @@ A dimmed button always tells you what is missing.
 
 The game runs at 0.35× speed while you read. During emergencies it runs at full speed. You can change this in Settings.
 
+## What's new in v1.4
+
+| Area | Change |
+|---|---|
+| Career map | Pick your checkpoint on a map of Egypt. Locations unlock with rank (Cairo → desert road → Alexandria → Hurghada → Dahab → Luxor → Aswan); free patrol and the daily challenge have all of them open. |
+| Daily challenge | One seeded shift per day for everyone (same place, time and traffic), 12 minutes, with a "case of the day". Today's best score and a daily streak are kept. |
+| Recurring characters | Uncle Salah (taxi), Madam Nadia, Karim the student and Hajj Fathy (box truck) come back across shifts with their own story; they remember how you treated them. |
+| Big moments | Cinematic letterbox, slow motion and a title for big catches and saved lives; "Detective eye ×N" streaks for consecutive sound checks. |
+| Mistake feedback | After a wrong call the game pauses and shows "What you missed" — the exact clues (e.g. the expiry date) — and highlights the car. |
+| Documents | Pressing Documents before the driver has handed them over shows a hint and highlights the question to ask. |
+| Simpler play | New main menu (Play, Map, Daily, Record, Settings; the rest under More). The action bar shows only what you can do now; "All" reveals the rest. |
+| Environment | Depth-of-field on far scenery, volumetric floodlight beams with dust, low-sun light shafts, directional shadows from sun and floodlights, filmic grading, vignette and film grain. |
+| Weather | Rain (streaks, splashes, lightning, rain sound, less grip), fog and heat haze banks, dust storms — chosen per location and time. |
+| Physics | Two-axle spring-damper suspension with weight transfer, rumble-strip and road-texture bumps, collision kicks and weather-dependent braking grip. |
+
 ## What's new in v1.3
 
 | Area | Change |

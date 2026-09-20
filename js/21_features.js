@@ -189,22 +189,27 @@ CP.Weather = {
 /* ======================= physics: suspension, road excitation, weather grip ======================= */
 CP.Phys = {
   kick(v, f, r) { const P = v.ph || (v.ph = { zf: 0, vf: 0, zr: 0, vr: 0 }); P.vf += f; P.vr += r; },
-  /* two-point (front/rear) spring-damper suspension; pitch and heave follow from axle travel */
+  /* two-axle spring-damper suspension: nose-dives under braking, squats under acceleration,
+     bounces over the rumble strip and road texture, and rocks after a knock */
   step(v, dt, dx, row) {
     const P = v.ph || (v.ph = { zf: 0, vf: 0, zr: 0, vr: 0 });
-    const k = v.len > 7 ? 55 : 80, c = v.len > 7 ? 7 : 9;         // stiffness / damping (heavier vehicles softer, slower)
+    const heavy = v.len > 7;
+    const k = heavy ? 42 : 62, c = heavy ? 4.6 : 4.0;            // softer springs, light damping → visible bounce
     const a = v.a || 0;
-    // weight transfer: braking loads the front, accelerating the rear
-    const wt = CP.clamp(-a * 0.012, -0.05, 0.05);
-    let ff = -k * (P.zf - wt) - c * P.vf, fr = -k * (P.zr + wt) - c * P.vr;
-    // road excitation: rumble strip, stop line and fine texture scaled by speed
+    const wt = CP.clamp(-a * 0.035, -0.11, 0.11);                 // weight transfer front/rear
+    const ff = -k * (P.zf - wt) - c * P.vf, fr = -k * (P.zr + wt) - c * P.vr;
     const front = v.x, rear = v.x - v.len * 0.8;
-    const bump = x0 => (row === 0 && v.v > 0.5 && ((front - dx < x0 && front >= x0) ? 1 : 0)), bumpR = x0 => (row === 0 && v.v > 0.5 && ((rear - dx < x0 && rear >= x0) ? 1 : 0));
-    for (const x0 of [10.3, 10.45, 10.6, 10.75]) { if (bump(x0)) P.vf += 0.35 + v.v * 0.05; if (bumpR(x0)) P.vr += 0.35 + v.v * 0.05; }
-    if (v.v > 2 && Math.random() < 0.15) { const n = (Math.random() - 0.5) * v.v * 0.02; P.vf += n; P.vr -= n * 0.6; }
+    const hit = (p, x0) => row === 0 && v.v > 0.4 && p - dx < x0 && p >= x0;
+    for (const x0 of [10.3, 10.45, 10.6, 10.75]) {
+      if (hit(front, x0)) P.vf += 0.5 + v.v * 0.07;
+      if (hit(rear, x0)) P.vr += 0.5 + v.v * 0.07;
+    }
+    if (v.v > 1.5 && Math.random() < 0.3) { const n = (Math.random() - 0.5) * v.v * 0.035; P.vf += n; P.vr -= n * 0.7; }
+    if (v.stall && v.stallKind === 'overheat' && Math.random() < 0.2) { P.vf += 0.12; P.vr -= 0.1; }
     P.vf += ff * dt; P.vr += fr * dt; P.zf += P.vf * dt; P.zr += P.vr * dt;
-    P.zf = CP.clamp(P.zf, -0.12, 0.12); P.zr = CP.clamp(P.zr, -0.12, 0.12);
-    v.heave = (P.zf + P.zr) * 4; v.pitch = CP.clamp((P.zf - P.zr) * 0.9, -0.05, 0.05);
+    P.zf = CP.clamp(P.zf, -0.14, 0.14); P.zr = CP.clamp(P.zr, -0.14, 0.14);
+    v.heave = (P.zf + P.zr) * 0.5;                                // metres of body travel
+    v.pitch = CP.clamp((P.zf - P.zr) / Math.max(2.4, v.len * 0.75), -0.075, 0.075);
   }
 };
 
@@ -373,7 +378,7 @@ CP.bus.on('stepEnd', () => {
     const done = saved && saved.career.tutorialDone; const db = CP.Daily.best(); const today = db.date === CP.Daily.today();
     const tile = (icon, label, sub, fn, dis) => sh('button', { class: 'tile', 'aria-disabled': dis ? 'true' : 'false', onclick: () => { if (dis) { CP.UI.toast(dis, 'warn'); return; } fn(); } }, sh('span', { class: 'ti' }, icon), sh('b', null, label), sub ? sh('small', null, sub) : null);
     const mc = sh('div', { class: 'mc glass' },
-      sh('div', { class: 't3d' }, sh('div', { class: 'title-ar' }, 'كمين', sh('span', { class: 'colon' }, ':'), sh('br'), 'وردية ليل'), sh('div', { class: 'title-en' }, 'CHECKPOINT: NIGHT SHIFT')),
+      CP.Brand.logo({ size: 1, tag: false }),
       saved ? this.rankCard(saved.career) : sh('div', { class: 'muted' }, CP.t('subtitle')),
       sh('button', { class: 'btn pri mb play', onclick: () => saved ? CP.Main.continueCareer(saved) : CP.Main.newCareer() }, saved ? CP.t('m_play') + ' — ' + CP.t('m_careerOf', { n: CP.num(saved.career.shiftNo) }) : CP.t('m_play')),
       sh('div', { class: 'tiles' },
@@ -413,4 +418,4 @@ CP.bus.on('stepEnd', () => {
           sh('button', { class: 'btn pri mb play', 'aria-disabled': open ? 'false' : 'true', onclick: () => open && CP.Main.startShift(this.loc) }, CP.t('br_go')), opts))));
   };
 }
-;(window.CP_FILES = window.CP_FILES || {})['21_features'] = '1.4.0';
+;(window.CP_FILES = window.CP_FILES || {})['21_features'] = '1.4.1';

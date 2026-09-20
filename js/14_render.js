@@ -251,10 +251,11 @@ CP.R.drawVeh = function (v, row, alpha, s) {
   { const sh = CP.Env.shadowShift(x - L / 2) * ppm; this.shadow(left + L * ppm / 2 + sh * 0.6, ground + 0.02 * ppm, L * ppm * 0.5 + Math.abs(sh) * 0.5, 0.2 * ppm, .45); this.shadow(left + L * ppm / 2, ground + 0.01 * ppm, L * ppm * 0.42, 0.08 * ppm, .35); }
   const idle = 0; // no idle engine shake
   const shake = v.stallKind === 'overheat' ? Math.sin(this.t * 25) * 0.01 * ppm : 0;
-  A.drawVehicle(ctx, v.type, left, ground, ppm, CP.lerp(v.pwheel, v.wheel, alpha), v.pitch, v.heave * ppm * 0.06 + idle + shake);
+  A.drawVehicle(ctx, v.type, left, ground, ppm, CP.lerp(v.pwheel, v.wheel, alpha), v.pitch, v.heave * ppm + idle + shake);
   const top = ground - g.bodyBottom;
   v._scr = { left, top, w: g.width, h: g.bodyBottom, ground };
   this.hits.push({ id: v.id, x0: left, x1: left + g.width, y0: top, y1: ground });
+  (this.occluders = this.occluders || []).push({ x0: left, x1: left + g.width, y0: top, y1: ground, h: g.bodyBottom });
   // brake lights (rear = left side)
   if (v.brake && this.nightLvl > 0.25) this.glows.push({ x: left + g.width * 0.015, y: top + g.height * 0.5, r: 0.45 * ppm, c: '255,40,30', a: 0.55 });
   if (this.nightLvl > 0.3) { this.glows.push({ x: left + g.width * 0.985, y: top + g.height * 0.6, r: 0.35 * ppm, c: '255,240,200', a: 0.7 }); this.cones.push({ x: left + g.width * 0.985, y: top + g.height * 0.6, len: 7 * ppm, dir: 1, gy: ground }); }
@@ -276,6 +277,7 @@ CP.R.drawActor = function (a, who, alpha) {
   let fr = CP.Actors.frameOf(a); if (!A.M.sprites[fr]) { if (!this._warned) { this._warned = 1; console.warn('missing frame', fr); } fr = 'ofi_00'; } const r = A.rect(fr);
   const hM = who === 'partner' ? 1.76 : 1.8; const k = hM * ppm / (A.M.sprites[fr].hRef || r[3]);
   this.shadow(cx, gy, 0.32 * ppm, 0.07 * ppm, .45);
+  (this.occluders = this.occluders || []).push({ x0: cx - 0.28 * ppm, x1: cx + 0.28 * ppm, y0: gy - hM * ppm, y1: gy, h: hM * ppm });
   A.drawGroundedScale(ctx, fr, cx, gy, k, a.dir < 0);
   if (who === 'officer') { this.hitsOfficer = { x: cx, y: gy }; if (a.pose === 'flashlight' || (a.torchT > 0)) { this.torch = { x: cx + a.dir * 0.45 * ppm, y: gy - 1.15 * ppm, dir: a.dir }; } }
   if (who === 'partner') this.partnerScr = { x: cx, y: gy - hM * ppm };
@@ -283,28 +285,86 @@ CP.R.drawActor = function (a, who, alpha) {
 };
 
 /* lightmap: ambient colour multiplied, with light pools cut in */
+/* Lighting: ambient grade + area/spot lights rendered into a lightmap, with hard-edged
+   shadow volumes cast by vehicles and people (area lights are sampled 3× for soft edges). */
+CP.R.glows = []; CP.R.cones = []; CP.R.occluders = [];
 CP.R.lighting = function (s, night, alpha) {
   const ctx = this.ctx, L = this.L, l = this.lctx, W = this.W, H = this.H, ppm = this.ppm, Y = this.Y;
   const sc = L.width / W;
+  if (!this.L2 || this.L2.width !== L.width || this.L2.height !== L.height) { this.L2 = document.createElement('canvas'); this.L2.width = L.width; this.L2.height = L.height; this.l2 = this.L2.getContext('2d'); }
+  const L2 = this.L2, l2 = this.l2;
   const dust = s.events.dustUntil > s.t;
   const dayC = [255, 250, 242], warm = [255, 188, 150], cool = CP.locBase(s.loc) === 'desert' ? [58, 70, 112] : [72, 82, 126];
   const amb = night < 0.5 ? dayC.map((w, i) => Math.round(CP.lerp(w, warm[i], night * 2))) : warm.map((w, i) => Math.round(CP.lerp(w, cool[i], (night - 0.5) * 2)));
   l.setTransform(1, 0, 0, 1, 0, 0); l.globalCompositeOperation = 'source-over';
   l.fillStyle = `rgb(${amb[0]},${amb[1]},${amb[2]})`; l.fillRect(0, 0, L.width, L.height);
-  // photographic day/night backdrops already carry their own lighting: keep them from being darkened twice
   if ((CP.LOCS[s.loc] || {}).bg.day) { const bl = amb.map(c => Math.round(CP.lerp(c, 255, 0.82))); l.fillStyle = `rgb(${bl[0]},${bl[1]},${bl[2]})`; l.fillRect(0, 0, L.width, Math.max(0, this.sy(Y.mainFar + 0.5)) * sc); }
   l.globalCompositeOperation = 'lighter';
-  const pool = (x, y, rx, ry, c, a) => { l.save(); l.translate(x * sc, y * sc); l.scale(1, ry / rx); const g = l.createRadialGradient(0, 0, 0, 0, 0, rx * sc); g.addColorStop(0, `rgba(${c},${a})`); g.addColorStop(1, `rgba(${c},0)`); l.fillStyle = g; l.fillRect(-rx * sc, -rx * sc, rx * 2 * sc, rx * 2 * sc); l.restore(); };
+
   const genOk = s.equipment.generator === 'ok'; const up = CP.G.career.upgrades.lighting;
   const fl = genOk ? (0.55 + up * 0.18) * night : 0;
-  if (fl > 0) {
-    for (const fx of [8.4, 35.2]) pool(this.sx(fx + 1.2), this.sy(Y.mainGround - 0.5), 9 * ppm, 5 * ppm, '255,236,190', fl);
-    pool(this.sx(13.9), this.sy(Y.mainGround + 0.4), 5 * ppm, 3.2 * ppm, '255,240,210', fl * 0.8);
+  const lights = [];
+  // area lights: each floodlight head is sampled three times so its shadows have soft edges
+  if (fl > 0.02) for (const fx of [8.4, 35.2]) for (let i = -1; i <= 1; i++)
+    lights.push({ x: this.sx(fx + 0.1 + i * 0.85), y: this.sy(Y.mainFar + 4.1), r: 9.5 * ppm, ry: 5.2 * ppm, c: '255,236,190', a: fl / 3, shadow: 0.8 });
+  if (fl > 0.02) for (let i = -1; i <= 1; i++) lights.push({ x: this.sx(13.9 + i * 1.6), y: this.sy(Y.mainFar + 2.6), r: 5.4 * ppm, ry: 3.4 * ppm, c: '255,240,210', a: fl * 0.28, shadow: 0.55 });
+  // booth window (small area light) and the gate lamp
+  lights.push({ x: this.sx(RW.boothX - 0.6), y: this.sy(Y.mainFar + 1.5), r: 1.9 * ppm, ry: 1.4 * ppm, c: '255,220,150', a: 0.6 * night, shadow: 0.35 });
+  const gcol = s.gate.jam ? '255,170,40' : s.gate.state === 'open' ? '90,255,140' : s.gate.state === 'closed' ? '255,70,60' : '255,190,50';
+  lights.push({ x: this.sx(RW.gateX + 0.12), y: this.sy(Y.mainFar + 1.3), r: 1.5 * ppm, ry: 1.1 * ppm, c: gcol, a: 0.5 * night, shadow: 0 });
+  for (const g0 of this.glows) lights.push({ x: g0.x, y: g0.y, r: g0.r * (g0.big ? 3 : 1.6), ry: g0.r * (g0.big ? 2.2 : 1.2), c: g0.c, a: g0.a * night, shadow: 0 });
+
+  const occ = this.occluders || [];
+  const shadowQuad = (c2, o, lx, ly, strength) => {
+    // project the occluder silhouette away from the light onto its own ground line
+    const yb = o.y1; if (!isFinite(yb) || !isFinite(lx) || !isFinite(ly) || !isFinite(o.x0) || !isFinite(o.x1) || ly >= yb - 2) return;
+    const t = (yb - ly) / Math.max(6, (o.y0 - ly));
+    const p0 = lx + (o.x0 - lx) * t, p1 = lx + (o.x1 - lx) * t;
+    const far = Math.max(Math.abs(p0 - o.x0), Math.abs(p1 - o.x1));
+    if (!isFinite(p0) || !isFinite(p1) || !isFinite(far)) return;
+    const dir = (p0 + p1) / 2 > (o.x0 + o.x1) / 2 ? 1 : -1;
+    const g = c2.createLinearGradient((o.x0 + o.x1) / 2 * sc, 0, ((o.x0 + o.x1) / 2 + dir * Math.max(30, far * 1.4)) * sc, 0);
+    g.addColorStop(0, `rgba(0,0,0,${strength})`); g.addColorStop(0.65, `rgba(0,0,0,${strength * 0.5})`); g.addColorStop(1, 'rgba(0,0,0,0)');
+    c2.fillStyle = g; c2.beginPath();
+    c2.moveTo(o.x0 * sc, (yb - 1) * sc); c2.lineTo(o.x1 * sc, (yb - 1) * sc);
+    c2.lineTo(p1 * sc, (yb + o.h * 0.28) * sc); c2.lineTo(p0 * sc, (yb + o.h * 0.28) * sc); c2.closePath(); c2.fill();
+  };
+  const shadowsOn = CP.S.quality !== 'low' && !CP.S.reducedFx;
+  for (const li of lights) {
+    if (!(li.a > 0.01) || !isFinite(li.x) || !isFinite(li.y) || !isFinite(li.r) || li.r <= 0) continue;
+    const cast = shadowsOn && li.shadow > 0 && occ.length;
+    const c2 = cast ? l2 : l;
+    if (cast) { l2.setTransform(1, 0, 0, 1, 0, 0); l2.globalCompositeOperation = 'source-over'; l2.clearRect(0, 0, L2.width, L2.height); }
+    c2.save(); c2.translate(li.x * sc, li.y * sc); c2.scale(1, (li.ry || li.r) / li.r);
+    const g = c2.createRadialGradient(0, 0, 0, 0, 0, li.r * sc);
+    g.addColorStop(0, `rgba(${li.c},${li.a})`); g.addColorStop(0.55, `rgba(${li.c},${li.a * 0.45})`); g.addColorStop(1, `rgba(${li.c},0)`);
+    c2.fillStyle = g; c2.fillRect(-li.r * sc, -li.r * sc, li.r * 2 * sc, li.r * 2 * sc); c2.restore();
+    if (cast) {
+      l2.globalCompositeOperation = 'destination-out';
+      for (const o of occ) shadowQuad(l2, o, li.x, li.y, li.shadow);
+      l2.globalCompositeOperation = 'source-over';
+      l.drawImage(L2, 0, 0);
+    }
   }
-  pool(this.sx(RW.boothX - 0.6), this.sy(Y.mainFar + 1.5), 1.6 * ppm, 1.2 * ppm, '255,220,150', 0.6 * night);
-  for (const c of this.cones) { l.save(); l.translate(c.x * sc, c.y * sc); const g = l.createLinearGradient(0, 0, c.len * sc, 0); g.addColorStop(0, `rgba(255,240,200,${0.55 * night})`); g.addColorStop(1, 'rgba(255,240,200,0)'); l.fillStyle = g; l.beginPath(); l.moveTo(0, -2); l.lineTo(c.len * sc, -0.9 * ppm * sc); l.lineTo(c.len * sc, 1.3 * ppm * sc); l.lineTo(0, 2); l.fill(); l.restore(); }
-  for (const g0 of this.glows) pool(g0.x, g0.y, g0.r * (g0.big ? 3 : 1.6), g0.r * (g0.big ? 2.2 : 1.2), g0.c, g0.a * night);
-  if (this.torch) { const t = this.torch; l.save(); l.translate(t.x * sc, t.y * sc); l.scale(t.dir, 1); const g = l.createLinearGradient(0, 0, 4 * ppm * sc, 0); g.addColorStop(0, 'rgba(255,250,225,.95)'); g.addColorStop(1, 'rgba(255,250,225,0)'); l.fillStyle = g; l.beginPath(); l.moveTo(0, 0); l.lineTo(4 * ppm * sc, -1.1 * ppm * sc); l.lineTo(4 * ppm * sc, 1.3 * ppm * sc); l.fill(); l.restore(); }
+  // spot lights: headlight cones and the officer's torch, occluded by whatever is in front
+  const spot = (c2, sp) => {
+    if (!isFinite(sp.x) || !isFinite(sp.y) || !isFinite(sp.len) || sp.len <= 0) return;
+    c2.save(); c2.translate(sp.x * sc, sp.y * sc); c2.scale(sp.dir, 1);
+    const g = c2.createLinearGradient(0, 0, sp.len * sc, 0);
+    g.addColorStop(0, `rgba(${sp.c},${sp.a})`); g.addColorStop(0.5, `rgba(${sp.c},${sp.a * 0.5})`); g.addColorStop(1, `rgba(${sp.c},0)`);
+    c2.fillStyle = g; c2.beginPath(); c2.moveTo(0, -2 * sc); c2.lineTo(sp.len * sc, -sp.spread * sc); c2.lineTo(sp.len * sc, sp.spread * 1.25 * sc); c2.lineTo(0, 2 * sc); c2.fill(); c2.restore();
+  };
+  for (const c of this.cones) {
+    const sp = { x: c.x, y: c.y, dir: c.dir || 1, len: c.len, spread: 0.9 * ppm, c: '255,240,200', a: 0.55 * night };
+    if (shadowsOn && occ.length) {
+      l2.setTransform(1, 0, 0, 1, 0, 0); l2.globalCompositeOperation = 'source-over'; l2.clearRect(0, 0, L2.width, L2.height);
+      spot(l2, sp); l2.globalCompositeOperation = 'destination-out';
+      for (const o of occ) { if (Math.abs((o.x0 + o.x1) / 2 - c.x) < 6) continue; shadowQuad(l2, o, c.x, c.y, 0.75); }
+      l2.globalCompositeOperation = 'source-over'; l.drawImage(L2, 0, 0);
+    } else spot(l, sp);
+  }
+  if (this.torch) { const t = this.torch; spot(l, { x: t.x, y: t.y, dir: t.dir, len: 4 * ppm, spread: 1.1 * ppm, c: '255,250,225', a: 0.95 }); }
+
   ctx.save(); ctx.globalCompositeOperation = 'multiply'; ctx.imageSmoothingEnabled = true; ctx.drawImage(L, 0, 0, W, H); ctx.restore();
   // bloom-ish additive glows on top
   ctx.save(); ctx.globalCompositeOperation = 'lighter';
@@ -313,9 +373,8 @@ CP.R.lighting = function (s, night, alpha) {
   if (fl > 0) for (const fx of [8.4, 35.2]) { const x = this.sx(fx - 0.1), y = this.sy(Y.mainFar + 0.12 + 4.0); const g = ctx.createRadialGradient(x, y, 0, x, y, 0.9 * ppm); g.addColorStop(0, `rgba(255,245,215,${0.6 * night})`); g.addColorStop(1, 'rgba(255,245,215,0)'); ctx.fillStyle = g; ctx.fillRect(x - ppm, y - ppm, 2 * ppm, 2 * ppm); }
   ctx.restore();
   if (dust) { ctx.fillStyle = `rgba(170,140,100,${0.28 + 0.06 * Math.sin(this.t * 0.7)})`; ctx.fillRect(0, 0, W, H); }
-  this.glows = []; this.cones = []; this.torch = null;
+  this.glows = []; this.cones = []; this.torch = null; this.occluders = [];
 };
-CP.R.glows = []; CP.R.cones = [];
 
 CP.R.emit = function (kind, x, y) {
   if (CP.S.reducedFx && Math.random() < 0.7) return;
@@ -430,4 +489,4 @@ CP.R.pick = function (px, py) {
 CP.R.popup = function (text, x, yup, color) { this.fx.push({ kind: 'xp', text, x, yup, color, t0: this.t, dur: 1.6 }); };
 CP.R.stamp = function (text, color, x, yup) { this.fx.push({ kind: 'stamp', text, color, x, yup, t0: this.t, dur: 1.8 }); };
 CP.R.confetti = function (n, x, y) { for (let i = 0; i < (n || 60); i++) { this.emit('confetti', x ?? this.W / 2, y ?? this.H * 0.35); } };
-;(window.CP_FILES = window.CP_FILES || {})['14_render'] = '1.4.0';
+;(window.CP_FILES = window.CP_FILES || {})['14_render'] = '1.4.1';

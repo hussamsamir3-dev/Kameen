@@ -55,6 +55,15 @@ CP.A = {
     const top = ground - g.bodyBottom;
     const im = this.img[this.M.sprites[v.wheel].sheet];
     if (alpha != null) ctx.globalAlpha = alpha;
+    // dark wheel wells so the road never shows through the arches behind the tyres
+    ctx.save(); ctx.beginPath(); ctx.rect(left - 2, top - 2, g.width + 4, g.bodyBottom + 2); ctx.clip();
+    for (const [ax, ay] of v.axles) {
+      const wx = left + ax * g.k, wy = top + ay * g.k, wr = g.wheelR * 1.14;
+      const wg = ctx.createRadialGradient(wx, wy - wr * 0.25, wr * 0.2, wx, wy, wr);
+      wg.addColorStop(0, '#000'); wg.addColorStop(0.75, '#0a0a0c'); wg.addColorStop(1, '#141417');
+      ctx.fillStyle = wg; ctx.beginPath(); ctx.arc(wx, wy, wr, 0, Math.PI * 2); ctx.fill();
+    }
+    ctx.restore();
     for (const [ax, ay] of v.axles) {
       ctx.save(); ctx.translate(left + ax * g.k, top + ay * g.k); ctx.rotate(wheelAngle);
       const [sx, sy, sw, sh] = this.M.sprites[v.wheel].rect;
@@ -89,4 +98,4 @@ CP.A = {
   /* portrait into a canvas element */
   portrait(n, size) { return this.thumb('portrait_' + String(n).padStart(2, '0'), size, size, 0); }
 };
-;(window.CP_FILES = window.CP_FILES || {})['03_assets'] = '1.4.0';
+;(window.CP_FILES = window.CP_FILES || {})['03_assets'] = '1.4.1';

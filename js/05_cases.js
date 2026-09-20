@@ -82,7 +82,8 @@ CP.Cases.generate = function (opts) {
   let fam = opts.fam || CP.Cases.pickFamily(r, loc);
   // returning citizen?
   let ret = null;
-  if (!opts.fam && G.career.returning.length && r.chance(0.12)) { ret = r.pick(G.career.returning); if (ret.lastShift === s.no) ret = null; else fam = r.chance(.6) ? 'routine' : 'borrowed'; }
+  if (opts.ret) ret = opts.ret;
+  else if (!opts.fam && G.career.returning.length && r.chance(0.12)) { ret = r.pick(G.career.returning); if (ret.lastShift === s.no) ret = null; else fam = r.chance(.6) ? 'routine' : 'borrowed'; }
   let type = opts.type || (ret && ret.type && r.chance(.7) ? ret.type : CP.Cases.pickType(r, fam, loc));
   // a returning woman never re-appears in a vehicle whose artwork shows a male driver
   if (ret && CC.portraits[ret.portrait].g === 'f' && CC.veh[type].driver === 'm') type = (ret.type && CC.veh[ret.type].driver !== 'm') ? ret.type : r.pick(CARS.filter(t => CC.veh[t].driver !== 'm'));
@@ -521,4 +522,4 @@ CP.Cases.laterUpdate = function (c, d) {
   if (c.fam === 'screening') return P('تحديث: نتيجة التأكيد اتسجلت في ملف القضية.', 'Update: the confirmation result was added to the case file.');
   return P('تحديث: الإحالة الإدارية اتقفلت.', 'Update: the administrative referral was closed.');
 };
-;(window.CP_FILES = window.CP_FILES || {})['05_cases'] = '1.3.2';
+;(window.CP_FILES = window.CP_FILES || {})['05_cases'] = '1.4.0';

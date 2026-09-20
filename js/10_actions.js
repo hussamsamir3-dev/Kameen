@@ -273,7 +273,6 @@ CP.Tasks.on('o_repair', () => CP.Events.gateRepaired('officer'), officerAt);
 CP.Tasks.on('o_generator', () => CP.Events.generatorFixed('officer'), officerAt);
 CP.Tasks.on('o_vehicle', t => { const v = CP.T.get(t.data.vid); if (v) CP.Events.fixVehicle(v); }, officerAt);
 CP.Act.officerTask = () => CP.Tasks.find(t => t.owner === 'officer');
-;(window.CP_FILES = window.CP_FILES || {})['10_actions'] = '1.3.2';
 
 /* documents handover: the driver passes the papers through the window */
 CP.Tasks.on('handover', t => {
@@ -282,3 +281,4 @@ CP.Tasks.on('handover', t => {
   CP.UI.toast(CP.t(CP.Gender.isF(c) ? 'docs_handed_f' : 'docs_handed'), 'ok');
   CP.bus.emit('dialogue'); CP.UI.refreshDock(true); CP.autosave();
 });
+;(window.CP_FILES = window.CP_FILES || {})['10_actions'] = '1.4.0';

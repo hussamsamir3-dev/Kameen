@@ -5,6 +5,8 @@ const M = CP.Main;
 M.timeScale = function () {
   const s = CP.G && CP.G.shift; if (!s || s.ended) return 0;
   if (CP.Screens.cur) return 0;
+  if (CP.FX && CP.FX.hold) return 0;
+  if (CP.R.cine) return 0.3;
   if (CP.UI.holding) return 1;
   if (CP.UI.panel && CP.UI.READING.indexOf(CP.UI.panel.kind) >= 0 && !CP.Events.emergency()) {
     return CP.S.readMode === 'pause' ? 0 : CP.S.readMode === 'off' ? 1 : 0.35;
@@ -63,7 +65,7 @@ M.frame = function (now) {
   if (ts < 1 && !CP.Screens.cur && !G.shift.ended) { const extra = real * (1 - ts); for (const t of CP.Tasks.all(x => x.owner === 'radio' || x.owner === 'driver')) t.t = Math.min(t.dur - 1e-3, t.t + extra); }
   if (!G.shift.ended && CP.Career.checkEnd()) { M.endShift(); return; }
   CP.R.frame(M.acc / M.DT, real);
-  CP.Audio.update(real);
+  CP.Audio.update(real); CP.Audio.rainUpdate && CP.Audio.rainUpdate(G.shift);
   M.uiT += real;
   if (M.uiT > 0.2) { M.uiT = 0; CP.UI.refreshHud(); CP.UI.refreshDock(); CP.UI.tickPanel(); }
 };
@@ -71,7 +73,7 @@ M.start = function () { if (M.running) return; M.running = true; M.last = perfor
 M.stop = function () { M.running = false; };
 
 /* ---------------- flows ---------------- */
-M.useKey = function (mode) { CP.SAVE_KEY = mode === 'free' ? 'cpns_free_v1' : 'cpns_save_v1'; };
+M.useKey = function (mode) { CP.SAVE_KEY = mode === 'free' ? 'cpns_free_v1' : mode === 'daily' ? 'cpns_daily_v1' : 'cpns_save_v1'; };
 M.newCareer = function () { M.useKey('career'); CP.G = CP.newCareer('career'); CP.save(); CP.Screens.briefing(); };
 M.continueCareer = function (o) { M.useKey('career'); M.adopt(o); };
 M.free = function (cont) {
@@ -82,7 +84,7 @@ M.free = function (cont) {
 };
 /* adopt a loaded / imported save */
 M.adopt = function (o) {
-  CP.G = o; M.useKey(o.mode === 'free' ? 'free' : 'career'); CP.save();
+  CP.G = o; M.useKey(o.mode === 'free' || o.mode === 'daily' ? o.mode : 'career'); CP.save();
   if (o.shift && !o.shift.ended) M.enterGame();
   else if (o.shift && o.shift.ended) CP.Screens.report(o.shift.report || CP.Career.report());
   else CP.Screens.briefing();
@@ -102,6 +104,7 @@ M.enterGame = function () {
 };
 M.endShift = function () {
   const rep = CP.Career.finishShift(); if (!rep) return;
+  if (CP.G.mode === 'daily') rep.daily = CP.Daily.record(rep.score);
   M.stop(); CP.Screens.report(rep);
 };
 
@@ -130,7 +133,7 @@ M.tutorial = function (force) {
 
 /* ---------------- boot ---------------- */
 /* every script stamps its version; a missing or mismatched stamp means an old or failed file on the server */
-M.EXPECTED = ["00_util", "01_strings", "02_content", "03_assets", "04_state", "05_cases", "06_dialogue", "07_tasks", "08_traffic", "09_actors", "10_actions", "11_events", "12_inspection", "13_screening", "14_render", "15_audio", "16_ui", "17_panels", "18_screens", "19_main", "20_progress"];
+M.EXPECTED = ["00_util", "01_strings", "02_content", "03_assets", "04_state", "05_cases", "06_dialogue", "07_tasks", "08_traffic", "09_actors", "10_actions", "11_events", "12_inspection", "13_screening", "14_render", "15_audio", "16_ui", "17_panels", "18_screens", "19_main", "20_progress", "21_features"];
 M.checkFiles = function (silent) {
   const F = window.CP_FILES || {}; const bad = M.EXPECTED.filter(n => F[n] !== CP.VERSION);
   if (!bad.length) return true;
@@ -165,4 +168,4 @@ M.bootLoad = function () {
 window.addEventListener('DOMContentLoaded', M.boot);
 
 CP.bus.on('caseClosed', () => { const s = CP.G && CP.G.shift; if (s) s.officer.returnAt = s.t + 1.6; });
-;(window.CP_FILES = window.CP_FILES || {})['19_main'] = '1.3.2';
+;(window.CP_FILES = window.CP_FILES || {})['19_main'] = '1.4.0';

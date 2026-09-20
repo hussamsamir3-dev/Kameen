@@ -163,7 +163,7 @@ CP.T.step = function (dt) {
     if (v.limp) maxV = Math.min(maxV, 2.2);
     const dist = target - v.x;
     // stopping-distance governed desired speed: d = v^2/(2b) + v*t + margin
-    const b = v.dec * 0.62;
+    const b = v.dec * 0.62 * (CP.Weather ? CP.Weather.grip(s) : 1);
     let vDes = dist <= 0.02 ? 0 : Math.min(maxV, Math.sqrt(2 * b * Math.max(0, dist - 0.02)));
     // anticipate a moving leader
     if (L && isFinite(gapStop) && gapStop - v.x < 12) {
@@ -201,10 +201,11 @@ CP.T.step = function (dt) {
     } else routeTransitions(v);
     // suspension: braking pitch (nose down) + heave spring
     const tp = CP.clamp(-v.a * 0.0045, -0.022, 0.03);
-    v.pitchV += ((tp - v.pitch) * 60 - v.pitchV * 9) * dt; v.pitch += v.pitchV * dt;
-    v.heaveV += (-v.heave * 70 - v.heaveV * 7) * dt; v.heave += v.heaveV * dt;
+    // (suspension handled by CP.Phys)
+    ;
     // rumble strip before marker
-    if (rowNow === 0 && ((v.x - dx < 10.5 && v.x >= 10.5) || (v.x - v.len - dx < 10.5 && v.x - v.len >= 10.5)) && v.v > 1) v.heaveV += 0.6 + v.v * 0.12;
+    ;
+    if (CP.Phys) CP.Phys.step(v, dt, dx, rowNow);
     if (v.v < 0.05) v.idleT += dt;
     statusUpdate(v, s, dt);
   }
@@ -321,4 +322,4 @@ CP.T.far = function (dt) {
   for (const f of s.far) { f.px = f.x; f.pw = f.w; f.x += f.v * dt * 2.1; f.w += (f.v * dt) / CP.A.M.vehicles[f.type].wheelRadiusMetres; }
   s.far = s.far.filter(f => f.x < 95);
 };
-;(window.CP_FILES = window.CP_FILES || {})['08_traffic'] = '1.3.2';
+;(window.CP_FILES = window.CP_FILES || {})['08_traffic'] = '1.4.0';

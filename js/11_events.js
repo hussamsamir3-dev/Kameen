@@ -178,7 +178,7 @@ Ev.familyTriggers = function () {
 };
 CP.bus.on('bump', ({ a, b, sp }) => {
   const s = CP.G.shift; a.stall = 1; a.stallKind = 'collision'; b.stall = 1; b.stallKind = 'collision'; a.pair = b.id; b.pair = a.id; a.late = false;
-  b.heaveV += 1.2; a.heaveV += 0.8; CP.Audio.bump(); CP.R.shake(9, 0.6);
+  CP.Phys.kick(b, 0, 1.4); CP.Phys.kick(a, 1.0, 0); CP.Audio.bump(); CP.R.shake(9, 0.6);
   Ev.safety(70, 'collision'); Ev.log('collision', 'ev_collision', 'warn');
   const e = Ev.active('collision'); if (e) e.armed = false;
 });
@@ -321,4 +321,4 @@ CP.Career.buy = function (k) {
   const cost = U.cost[u[k]]; if (G.career.credits < cost) return 'up_noCredit';
   G.career.credits -= cost; u[k]++; CP.save('auto'); return null;
 };
-;(window.CP_FILES = window.CP_FILES || {})['11_events'] = '1.3.2';
+;(window.CP_FILES = window.CP_FILES || {})['11_events'] = '1.4.0';

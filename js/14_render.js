@@ -41,7 +41,7 @@ CP.R.focus = function () {
 };
 CP.R.updateCamera = function (dt) {
   const s = CP.G.shift; const mode = CP.S.camZoom || 'auto';
-  const v = this.focus();
+  const v = (this.cine && this.cine.vid && CP.T.get(this.cine.vid)) || (this.missVid && CP.T.get(this.missVid)) || this.focus();
   // zoom target: tight on the inspected vehicle's lane, wide when idle
   let zt = 1, fy = null, fx = s.officer.x;
   const fa = CP.UI && CP.UI.freeArea ? CP.UI.freeArea() : null; this.free = fa;
@@ -53,6 +53,7 @@ CP.R.updateCamera = function (dt) {
     fx = (CP.T.windowX(v) + s.officer.x) / 2;
     if (Math.abs(s.officer.x - CP.T.windowX(v)) > want * 0.7) fx = CP.T.windowX(v);
   }
+  if (this.cine || this.missVid) zt *= 1.22;
   if (this.punchT > 0) { this.punchT -= dt; zt *= 1 + 0.06 * Math.sin(Math.min(1, this.punchT) * Math.PI); }
   this.zoom += (zt - this.zoom) * Math.min(1, dt * 2.4);
   this.ppm = this.basePpm * this.zoom; this.span = this.W / this.ppm;
@@ -91,7 +92,7 @@ CP.R.background = function (s, W, H, ppm, Y, night) {
     return { left, top, bw, bh };
   };
   if (B.day) {
-    const d = A.img[B.day], nImg = A.img[B.night]; if (!d) { ctx.fillStyle = '#1b1c22'; ctx.fillRect(0, 0, W, H); return; }
+    const d = CP.Env.gradedImg(B.day, B.frac), nImg = CP.Env.gradedImg(B.night, B.frac); if (!d) { ctx.fillStyle = '#1b1c22'; ctx.fillRect(0, 0, W, H); return; }
     const g = place(d, B.frac, this.sy(Y.mainFar));
     if (night < 0.999) ctx.drawImage(d, g.left, g.top, g.bw, g.bh);
     if (nImg && night > 0.001) { ctx.globalAlpha = night; ctx.drawImage(nImg, g.left, g.top, g.bw, g.bh); ctx.globalAlpha = 1; }
@@ -100,7 +101,7 @@ CP.R.background = function (s, W, H, ppm, Y, night) {
     if (g.top + g.bh < H) { ctx.fillStyle = '#222'; ctx.fillRect(0, g.top + g.bh, W, H - g.top - g.bh); }
     return;
   }
-  const bim = A.img[B.single];
+  const bim = CP.Env.gradedImg(B.single, B.frac);
   if (!bim) { ctx.fillStyle = '#1b1c22'; ctx.fillRect(0, 0, W, H); return; }
   const g = place(bim, B.frac, this.sy(Y.bgRoad));
   ctx.drawImage(bim, g.left, g.top, g.bw, g.bh);
@@ -119,6 +120,7 @@ CP.R.frame = function (alpha, dt) {
   const night = this.night(); this.nightLvl = night;
   // 1. background (parallax)
   this.background(s, W, H, ppm, Y, night);
+  CP.Env.back(s, ctx, W, H, ppm, Y, night);
   // 2. distant traffic on the far carriageway (smaller scale, hazed)
   if (s.far && (CP.LOCS[s.loc] || {}).far) {
     const k = 0.5, gy = this.sy(Y.bgRoad - 0.55);
@@ -162,6 +164,7 @@ CP.R.frame = function (alpha, dt) {
   this.lighting(s, night, alpha);
   // 8. particles
   this.particles(s, dt, alpha);
+  CP.Env.front(s, ctx, W, H, ppm, Y, night, dt);
   // 9. world UI
   this.worldUI(s, alpha);
 };
@@ -245,7 +248,7 @@ CP.R.drawVeh = function (v, row, alpha, s) {
   const left = this.sx(x - L), ground = this.sy(CP.R.rowY(row));
   if (left > this.W + 20 || left + L * ppm < -20) return;
   const g = A.vgeom(v.type, ppm);
-  this.shadow(left + L * ppm / 2, ground + 0.02 * ppm, L * ppm * 0.5, 0.2 * ppm, .45);
+  { const sh = CP.Env.shadowShift(x - L / 2) * ppm; this.shadow(left + L * ppm / 2 + sh * 0.6, ground + 0.02 * ppm, L * ppm * 0.5 + Math.abs(sh) * 0.5, 0.2 * ppm, .45); this.shadow(left + L * ppm / 2, ground + 0.01 * ppm, L * ppm * 0.42, 0.08 * ppm, .35); }
   const idle = 0; // no idle engine shake
   const shake = v.stallKind === 'overheat' ? Math.sin(this.t * 25) * 0.01 * ppm : 0;
   A.drawVehicle(ctx, v.type, left, ground, ppm, CP.lerp(v.pwheel, v.wheel, alpha), v.pitch, v.heave * ppm * 0.06 + idle + shake);
@@ -427,4 +430,4 @@ CP.R.pick = function (px, py) {
 CP.R.popup = function (text, x, yup, color) { this.fx.push({ kind: 'xp', text, x, yup, color, t0: this.t, dur: 1.6 }); };
 CP.R.stamp = function (text, color, x, yup) { this.fx.push({ kind: 'stamp', text, color, x, yup, t0: this.t, dur: 1.8 }); };
 CP.R.confetti = function (n, x, y) { for (let i = 0; i < (n || 60); i++) { this.emit('confetti', x ?? this.W / 2, y ?? this.H * 0.35); } };
-;(window.CP_FILES = window.CP_FILES || {})['14_render'] = '1.3.2';
+;(window.CP_FILES = window.CP_FILES || {})['14_render'] = '1.4.0';

@@ -223,9 +223,11 @@ CP.Screens.report = function (rep) {
     sh('div', { class: 'sub' }, barRow('rp_decision', rep.D), barRow('rp_proportion', rep.P), barRow('rp_safety', rep.S), barRow('rp_comm', rep.C)),
     sh('div', { class: 'lbl' }, CP.t('rp_cases')), cases,
     ups.length ? sh('div', { class: 'col' }, sh('div', { class: 'lbl' }, CP.t('rp_updates')), ...ups.map(u => sh('div', { class: 'note' }, CP.L(u.text)))) : null,
-    G.mode !== 'free' ? sh('div', { class: 'col' }, sh('div', { class: 'row' }, sh('div', { class: 'lbl' }, CP.t('rp_upgrades')), sh('span', { class: 'tag am', id: 'credN' }, CP.t('rp_credits', { n: CP.num(G.career.credits) })), sh('span', { class: 'small muted' }, CP.t('rp_credit', { n: CP.num(rep.credits) }))), upg) : null,
-    sh('div', { class: 'row' }, G.mode !== 'free' ? sh('button', { class: 'btn pri', onclick: () => { CP.Career.nextShift(); this.briefing(); } }, CP.t('rp_next') + ' ▶') : sh('button', { class: 'btn pri', onclick: () => { CP.G.shift = null; CP.save(); this.briefing(); } }, CP.t('rp_next') + ' ▶'), sh('button', { class: 'btn', onclick: () => { if (G.mode !== 'free') CP.Career.nextShift(); else { CP.G.shift = null; CP.save(); } this.menu(); } }, CP.t('rp_menu')))));
+    G.mode === 'career' ? sh('div', { class: 'col' }, sh('div', { class: 'row' }, sh('div', { class: 'lbl' }, CP.t('rp_upgrades')), sh('span', { class: 'tag am', id: 'credN' }, CP.t('rp_credits', { n: CP.num(G.career.credits) })), sh('span', { class: 'small muted' }, CP.t('rp_credit', { n: CP.num(rep.credits) }))), upg) : null,
+    sh('div', { class: 'row' }, G.mode === 'career' ? sh('button', { class: 'btn pri', onclick: () => { CP.Career.nextShift(); this.briefing(); } }, CP.t('rp_next') + ' ▶') : sh('button', { class: 'btn pri', onclick: () => { CP.G.shift = null; CP.save(); this.briefing(); } }, CP.t('rp_next') + ' ▶'), sh('button', { class: 'btn', onclick: () => { if (G.mode !== 'free') CP.Career.nextShift(); else { CP.G.shift = null; CP.save(); } this.menu(); } }, CP.t('rp_menu')))));
   const inner = e.querySelector('.inner'); if (rep.prog && inner) inner.prepend(this.progBlock(rep.prog));
+  if (inner && rep.daily) inner.prepend(sh('div', { class: 'card row dailycard' }, sh('b', null, '📅 ' + CP.t('daily_title')), sh('span', { class: 'tag am' }, CP.t('daily_best', { n: CP.num(rep.daily.best) })), rep.daily.streak > 1 ? sh('span', { class: 'tag warn' }, CP.t('daily_streak', { n: CP.num(rep.daily.streak) })) : null));
+  if (inner && rep.prog && rep.prog.rankUp) { const nl = CP.LOC_ORDER.filter(k => CP.LOC_RANK[k] > rep.prog.r0 && CP.LOC_RANK[k] <= rep.prog.r1); if (nl.length) inner.prepend(sh('div', { class: 'card newloc' }, ...nl.map(k => sh('div', null, CP.t('map_new', { l: CP.t('loc_' + k) }))))); }
 };
 
 /* animated progression summary: stars, XP count-up, rank bar, promotion, medals, ranking movement */
@@ -319,4 +321,4 @@ CP.Screens.pause = function () {
     sh('button', { class: 'btn bad', onclick: () => CP.UI.confirm(CP.t('end_confirm'), () => { this.hideAll(); CP.Main.endShift(); }) }, CP.t('pause_end'))));
 };
 CP.Screens.resume = function () { this.hideAll(); document.getElementById('game').classList.remove('hidden'); CP.R.resize(); CP.Main.last = performance.now(); };
-;(window.CP_FILES = window.CP_FILES || {})['18_screens'] = '1.3.2';
+;(window.CP_FILES = window.CP_FILES || {})['18_screens'] = '1.4.0';

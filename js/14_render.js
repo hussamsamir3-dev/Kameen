@@ -55,6 +55,7 @@ CP.R.updateCamera = function (dt) {
   }
   if (this.cine || this.missVid) zt *= 1.22;
   if (this.punchT > 0) { this.punchT -= dt; zt *= 1 + 0.06 * Math.sin(Math.min(1, this.punchT) * Math.PI); }
+  zt = CP.clamp(zt * (this.userZoom || 1), 0.85, 3.4);
   this.zoom += (zt - this.zoom) * Math.min(1, dt * 2.4);
   this.ppm = this.basePpm * this.zoom; this.span = this.W / this.ppm;
   // vertical: keep the focus lane around 60% down the view; never show below the scene bottom
@@ -70,7 +71,14 @@ CP.R.updateCamera = function (dt) {
     if (this.camFree != null) { this.camFree = CP.clamp(this.camFree, -0.8, 38.6 - span); this.camX += (this.camFree - this.camX) * Math.min(1, dt * 8); }
     else this.camX += (tgt - this.camX) * Math.min(1, dt * 3);
   }
+  this.edgePan(dt);
   if (this.shakeT > 0) { this.shakeT -= dt; const a = this.shakeA * Math.max(0, this.shakeT) / 0.5; this.camX += (Math.random() - .5) * a / this.ppm; this.camY += (Math.random() - .5) * a / this.ppm; }
+};
+CP.R.edgePan = function (dt) {
+  const e = this.edge; if (!e || this.span >= 38.4) return;
+  const sp = (8 + this.span * 0.6) * dt * e;
+  this.camFree = CP.clamp((this.camFree == null ? this.camX : this.camFree) + sp, -0.8, 38.6 - this.span);
+  clearTimeout(CP.R._camT2); CP.R._camT2 = setTimeout(() => { CP.R.camFree = null; }, 4000);
 };
 CP.R.shake = function (px, t) { if (CP.S.reducedFx) return; this.shakeA = px; this.shakeT = t || 0.5; };
 CP.R.punch = function () { if (!CP.S.reducedFx) this.punchT = 1; };
@@ -136,6 +144,7 @@ CP.R.frame = function (alpha, dt) {
   this.tile('road_plain', Y.lowerFar, Y.bayNear, 1);
   this.tile('pavement', Y.bayNear + 0.02, 0, 1);
   this.markings(s);
+  this.drawDecals();
   // 4. far-side structures & props
   this.structures(s);
   // 6. depth-sorted entities
@@ -266,8 +275,17 @@ CP.R.drawVeh = function (v, row, alpha, s) {
     this.glows.push({ x: bx + 0.3 * ppm, y: by, r: 1.2 * ppm, c: '255,50,50', a: ph > 0 ? 0.15 : 0.8, big: true });
   }
   // particles emitters
-  if (v.stallKind === 'overheat' && Math.random() < 0.5) this.emit('steam', left + g.width * 0.86, top + g.height * 0.2);
-  if (v.a > 0.4 && v.v < 5 && Math.random() < 0.25) this.emit('exhaust', left - 2, ground - 0.35 * ppm);
+  if (v.stallKind === 'overheat') {
+    if (Math.random() < 0.6) this.emit('steam', left + g.width * 0.86, top + g.height * 0.2);
+    if (Math.random() < 0.2) this.emit('smoke', left + g.width * 0.86, top + g.height * 0.25);
+    if (Math.random() < 0.01) this.decal('fx_oil', x - v.len * 0.5, CP.R.rowY(row) - 0.05, 1.6, 0.6);
+  }
+  // soft exhaust from the tailpipe: a gentle puff when idling, more under acceleration
+  const idling = v.v < 0.4 && !v.stall && v.caseId;
+  if ((v.a > 0.25 && Math.random() < 0.35) || (idling && Math.random() < 0.06)) this.emit('exhaust', left + 2, ground - 0.28 * ppm, idling ? { vy: -6, size: 0.22 * ppm, a: 0.18 } : null);
+  if (v.a > 1.2 && v.v > 1 && (CP.locBase(s.loc) === 'desert' || (s.weather && s.weather.kind === 'dust')) && Math.random() < 0.3) this.emit('dustkick', left + 4, ground - 0.1 * ppm);
+  if (v.a < -3.2 && v.v > 3 && Math.random() < 0.25) { this.decal('fx_skid', x - v.len * 0.5, CP.R.rowY(row) - 0.02, v.len * 0.9, 0.5); if (Math.random() < 0.3) this.emit('spark', left + g.width * 0.2, ground - 2); }
+  if (s.weather && s.weather.kind === 'rain' && v.v > 4 && Math.random() < 0.25) this.emit('splash', left + g.width * (Math.random() < 0.5 ? 0.15 : 0.85), ground - 2);
 };
 
 CP.R.drawActor = function (a, who, alpha) {
@@ -376,28 +394,63 @@ CP.R.lighting = function (s, night, alpha) {
   this.glows = []; this.cones = []; this.torch = null; this.occluders = [];
 };
 
-CP.R.emit = function (kind, x, y) {
-  if (CP.S.reducedFx && Math.random() < 0.7) return;
-  if (this.parts.length > (CP.S.quality === 'low' ? 80 : 260)) return;
-  const p = { kind, x, y, vx: 0, vy: 0, life: 0, max: 1.5, r: 3 };
-  if (kind === 'steam') { p.vx = (Math.random() - 0.5) * 10; p.vy = -25 - Math.random() * 20; p.max = 1.6; p.r = 0.12 * this.ppm; }
-  if (kind === 'exhaust') { p.vx = -12 - Math.random() * 8; p.vy = -4; p.max = 1.1; p.r = 0.08 * this.ppm; }
-  if (kind === 'spark') { p.vx = (Math.random() - 0.5) * 60; p.vy = -40 - Math.random() * 40; p.max = 0.45; p.r = 1.5; }
-  if (kind === 'confetti') { p.vx = (Math.random() - 0.5) * 260; p.vy = -180 - Math.random() * 160; p.max = 2.2; p.r = 3 + Math.random() * 3; p.hue = Math.floor(Math.random() * 360); p.g = 260; }
-  if (kind === 'dust') { p.vx = 30 + Math.random() * 60; p.vy = (Math.random() - 0.5) * 8; p.max = 3; p.r = 1 + Math.random() * 2.2; }
+/* particles use the supplied effect art: soft exhaust smoke, engine steam, dust, sparks, rain splashes */
+CP.R.FX = { exhaust: 'fx_smoke', smoke: 'fx_smoke_dark', steam: 'fx_steam', dust: 'fx_dust', dustkick: 'fx_dustkick', spark: 'fx_spark', splash: 'fx_splash', fire: 'fx_fire' };
+CP.R.emit = function (kind, x, y, opt) {
+  if (CP.S.reducedFx && Math.random() < 0.6) return;
+  if (this.parts.length > (CP.S.quality === 'low' ? 70 : 240)) return;
+  opt = opt || {};
+  const ppm = this.ppm || 40;
+  const p = { kind, x, y, vx: 0, vy: 0, life: 0, max: 1.6, size: 0.6 * ppm, grow: 0.6, rot: Math.random() * 6.28, rotV: (Math.random() - .5) * 1.2, a: 0.6, tex: this.FX[kind] || null, g: 0 };
+  const wind = (CP.G.shift.weather && CP.G.shift.weather.wind) || 0;
+  switch (kind) {
+    case 'exhaust': p.vx = -6 - Math.random() * 10 + wind * 6; p.vy = -10 - Math.random() * 10; p.max = 1.9 + Math.random(); p.size = 0.32 * ppm; p.grow = 1.5; p.a = 0.28; break;
+    case 'smoke': p.vx = -4 + wind * 8; p.vy = -22 - Math.random() * 16; p.max = 2.6; p.size = 0.5 * ppm; p.grow = 1.8; p.a = 0.5; break;
+    case 'steam': p.vx = (Math.random() - .5) * 10 + wind * 6; p.vy = -26 - Math.random() * 18; p.max = 2.2; p.size = 0.45 * ppm; p.grow = 1.9; p.a = 0.45; break;
+    case 'dust': p.vx = 25 + Math.random() * 55 + wind * 20; p.vy = (Math.random() - .5) * 10; p.max = 3.2; p.size = 0.5 * ppm; p.grow = 1.2; p.a = 0.3; break;
+    case 'dustkick': p.vx = -18 - Math.random() * 22; p.vy = -12 - Math.random() * 12; p.max = 1.5; p.size = 0.5 * ppm; p.grow = 2.2; p.a = 0.45; break;
+    case 'spark': p.vx = (Math.random() - .5) * 90; p.vy = -50 - Math.random() * 60; p.max = 0.6; p.size = 0.28 * ppm; p.grow = 0.2; p.a = 0.95; p.g = 340; break;
+    case 'splash': p.vx = (Math.random() - .5) * 30; p.vy = -30 - Math.random() * 20; p.max = 0.45; p.size = 0.3 * ppm; p.grow = 1.4; p.a = 0.6; p.g = 260; break;
+    case 'confetti': p.vx = (Math.random() - 0.5) * 260; p.vy = -180 - Math.random() * 160; p.max = 2.2; p.size = 4; p.hue = Math.floor(Math.random() * 360); p.g = 260; p.tex = null; break;
+  }
+  Object.assign(p, opt);
   this.parts.push(p);
 };
+CP.R.decal = function (tex, x, yup, w, a) {
+  this.decals = this.decals || [];
+  if (this.decals.length > 40) this.decals.shift();
+  this.decals.push({ tex, x, yup, w, a, t: this.t });
+};
+CP.R.drawDecals = function () {
+  const A = CP.A, ctx = this.ctx; if (!this.decals) return;
+  this.decals = this.decals.filter(d => this.t - d.t < 70);
+  for (const d of this.decals) {
+    const r = A.rect(d.tex); if (!r) continue;
+    const age = (this.t - d.t) / 70; const w = d.w * this.ppm, h = w * r[3] / r[2];
+    ctx.save(); ctx.globalAlpha = d.a * (1 - age * 0.75); A.draw(ctx, d.tex, this.sx(d.x) - w / 2, this.sy(d.yup) - h * 0.5, w); ctx.restore();
+  }
+};
 CP.R.particles = function (s, dt) {
-  const ctx = this.ctx;
-  if ((s.events.dustUntil > s.t || s.loc === 'desert') && Math.random() < (s.events.dustUntil > s.t ? 0.9 : 0.12)) this.emit('dust', -10, Math.random() * this.H);
-  for (const p of this.parts) { p.life += dt; p.x += p.vx * dt; p.y += p.vy * dt; if (p.g) p.vy += p.g * dt; if (p.kind === 'spark') p.vy += 200 * dt; else if (p.kind !== 'dust' && p.kind !== 'confetti') p.r += dt * 6; }
-  this.parts = this.parts.filter(p => p.life < p.max && p.x < this.W + 20 && p.y < this.H + 40);
+  const ctx = this.ctx, A = CP.A;
+  const w = s.weather || { kind: 'clear', i: 0 };
+  if ((s.events.dustUntil > s.t || CP.locBase(s.loc) === 'desert') && Math.random() < (s.events.dustUntil > s.t ? 0.8 : 0.1)) this.emit('dust', -10, this.sy(this.Y.mainGround - Math.random() * 3.5));
   for (const p of this.parts) {
-    const a = 1 - p.life / p.max;
-    if (p.kind === 'confetti') { ctx.fillStyle = `hsla(${p.hue},90%,60%,${a})`; ctx.fillRect(p.x, p.y, p.r, p.r * 1.6); continue; }
-    if (p.kind === 'spark') { ctx.fillStyle = `rgba(255,${200 + Math.floor(55 * a)},120,${a})`; ctx.fillRect(p.x, p.y, 2, 2); continue; }
-    ctx.fillStyle = p.kind === 'dust' ? `rgba(200,170,120,${0.5 * a})` : p.kind === 'steam' ? `rgba(235,235,240,${0.45 * a})` : `rgba(90,90,95,${0.35 * a})`;
-    ctx.beginPath(); ctx.arc(p.x, p.y, p.r, 0, 7); ctx.fill();
+    p.life += dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += (p.g || 0) * dt;
+    p.vx *= (1 - dt * 0.6); p.rot += p.rotV * dt; p.size += p.grow * this.ppm * dt * 0.35;
+  }
+  this.parts = this.parts.filter(p => p.life < p.max && p.x < this.W + 60 && p.y < this.H + 60);
+  for (const p of this.parts) {
+    const k = p.life / p.max; const fade = k < 0.15 ? k / 0.15 : 1 - (k - 0.15) / 0.85;
+    const a = Math.max(0, p.a * fade);
+    if (!p.tex || !A.M.sprites[p.tex]) {
+      if (p.kind === 'confetti') { ctx.fillStyle = `hsla(${p.hue},90%,60%,${a})`; ctx.fillRect(p.x, p.y, p.size, p.size * 1.6); }
+      else { ctx.fillStyle = `rgba(210,210,215,${a * 0.5})`; ctx.beginPath(); ctx.arc(p.x, p.y, p.size * 0.3, 0, 7); ctx.fill(); }
+      continue;
+    }
+    const r = A.rect(p.tex); const wpx = p.size, hpx = wpx * r[3] / r[2];
+    ctx.save(); ctx.globalAlpha = a; ctx.translate(p.x, p.y); ctx.rotate(p.rot);
+    if (p.kind === 'spark' || p.kind === 'fire') ctx.globalCompositeOperation = 'lighter';
+    A.draw(ctx, p.tex, -wpx / 2, -hpx / 2, wpx); ctx.restore();
   }
 };
 
@@ -474,6 +527,26 @@ CP.R.worldUI = function (s, alpha) {
   }
   // emergency vignette
   if (CP.Events.emergency() && !CP.S.reducedFlash) { const a = 0.18 + 0.1 * Math.sin(this.t * 4); const g = ctx.createRadialGradient(this.W / 2, this.H / 2, this.H * 0.35, this.W / 2, this.H / 2, this.W * 0.7); g.addColorStop(0, 'rgba(200,20,20,0)'); g.addColorStop(1, `rgba(200,20,20,${a})`); ctx.fillStyle = g; ctx.fillRect(0, 0, this.W, this.H); }
+  // attention markers: broken vehicles, a jammed gate, a dead generator, a waiting visitor, an ambulance
+  const alerts = [];
+  for (const v of s.vehicles) { if (v.stall || v.leaving) alerts.push({ x: v.x - v.len / 2, y: CP.R.rowY(v.row) + 2.2, c: v.leaving ? '255,90,70' : '255,170,40', t: v.leaving ? '⚠' : '🔧' }); if (v.special === 'ambulance') alerts.push({ x: v.x - v.len / 2, y: CP.R.rowY(v.row) + 2.6, c: '90,160,255', t: '🚑' }); }
+  if (s.gate.jam) alerts.push({ x: RW.gateX, y: this.Y.mainFar + 2.2, c: '255,170,40', t: '🔧' });
+  if (s.equipment.generator !== 'ok') alerts.push({ x: RW.genX, y: this.Y.mainFar + 2.0, c: '255,120,60', t: '⚡' });
+  if (s.visitor && !s.visitor.done) alerts.push({ x: RW.visitorX, y: this.Y.walkFeet + 2.2, c: '140,220,255', t: '?' });
+  const pulse = 0.5 + 0.5 * Math.sin(this.t * 5);
+  for (const al of alerts) {
+    const x = this.sx(al.x), y = this.sy(al.y);
+    if (x < 10 || x > this.W - 10) { // off screen: flashing chevron at the edge
+      const ex = x < 10 ? 16 : this.W - 16; ctx.save(); ctx.globalAlpha = 0.5 + 0.5 * pulse; ctx.fillStyle = `rgb(${al.c})`;
+      ctx.beginPath(); const d = x < 10 ? -1 : 1; ctx.moveTo(ex + d * 10, this.H * 0.45); ctx.lineTo(ex - d * 8, this.H * 0.45 - 12); ctx.lineTo(ex - d * 8, this.H * 0.45 + 12); ctx.fill();
+      ctx.font = `700 14px ${font}`; ctx.textAlign = 'center'; ctx.fillText(al.t, ex, this.H * 0.45 + 30); ctx.restore(); continue;
+    }
+    ctx.save(); ctx.globalAlpha = 0.35 + 0.45 * pulse; ctx.strokeStyle = `rgb(${al.c})`; ctx.lineWidth = 3;
+    ctx.beginPath(); ctx.arc(x, y, (14 + pulse * 10) * (ppm / 40 + 0.5), 0, 7); ctx.stroke();
+    ctx.globalAlpha = 0.9; ctx.fillStyle = `rgb(${al.c})`; ctx.font = `700 ${Math.max(14, 0.4 * ppm)}px ${font}`; ctx.textAlign = 'center'; ctx.fillText(al.t, x, y - 4);
+    ctx.restore();
+    this.glows.push({ x, y, r: 0.9 * ppm, c: al.c, a: 0.5 * pulse });
+  }
   // gate interlock message
   if (s.gate.sensorMsgT > 0) chip(this.sx(RW.gateX + 1.6), this.sy(this.Y.mainFar + 2.2), CP.t('g_sensorBlock'), '#ffb020');
 };

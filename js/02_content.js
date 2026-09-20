@@ -12,7 +12,10 @@ CP.C.portraits = {
   9: { g: 'm', age: 'old' }, 10: { g: 'm', age: 'young' }, 11: { g: 'm', age: 'mid' }, 12: { g: 'f', age: 'mid' },
   13: { g: 'f', age: 'mid' }, 14: { g: 'm', age: 'old' }, 15: { g: 'f', age: 'young' }, 16: { g: 'm', age: 'mid' },
   17: { g: 'm', age: 'young' }, 18: { g: 'f', age: 'old' }, 19: { g: 'm', age: 'mid' }, 20: { g: 'f', age: 'young' },
-  21: { g: 'f', age: 'mid' }, 22: { g: 'm', age: 'old' }, 23: { g: 'm', age: 'young' }, 24: { g: 'f', age: 'mid' }
+  21: { g: 'f', age: 'mid' }, 22: { g: 'm', age: 'old' }, 23: { g: 'm', age: 'young' }, 24: { g: 'f', age: 'mid' },
+  25: { g: 'm', age: 'young' }, 26: { g: 'f', age: 'mid' }, 27: { g: 'm', age: 'young' }, 28: { g: 'f', age: 'mid' },
+  29: { g: 'f', age: 'mid' }, 30: { g: 'm', age: 'mid' }, 31: { g: 'f', age: 'mid' }, 32: { g: 'm', age: 'old' },
+  33: { g: 'f', age: 'old' }, 34: { g: 'm', age: 'old' }, 35: { g: 'f', age: 'young' }, 36: { g: 'm', age: 'mid' }
 };
 CP.C.civFemale = [4, 5, 8, 12];
 CP.C.civMale = [1, 2, 3, 6, 7, 9, 10, 11];

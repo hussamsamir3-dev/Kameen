@@ -404,3 +404,20 @@ html.mob.land #panel .scr { grid-template-columns: 110px 1fr; }
 html.mob.land #panel .docs { grid-template-columns: 1fr 1fr; }
 html.mob.land #panel .decs { grid-template-columns: 1fr 1fr; }
 html.mob #panel .ph h2 { font-size: .95em; }
+
+/* ================= v1.3.3 phones: notch / Dynamic Island / home-bar safe areas, real viewport height ================= */
+:root { --sa-t: env(safe-area-inset-top, 0px); --sa-r: env(safe-area-inset-right, 0px); --sa-b: env(safe-area-inset-bottom, 0px); --sa-l: env(safe-area-inset-left, 0px); }
+#app { height: 100vh; height: 100dvh; }
+#game { inset: var(--sa-t) var(--sa-r) var(--sa-b) var(--sa-l); }
+.screen { padding-left: var(--sa-l); padding-right: var(--sa-r); padding-top: var(--sa-t); padding-bottom: var(--sa-b); }
+.qm { margin-inline-end: max(var(--sa-r), var(--sa-l)); }
+.medal, .promo .pc, .modal .card { max-width: calc(100vw - var(--sa-l) - var(--sa-r) - 16px); }
+#toasts { inset-inline-end: calc(12px + var(--sa-r)); }
+html.mob.land #panel .pw { height: 100% !important; max-height: 100%; }
+html.mob.port #panel .pw { max-height: calc(100% - 40px); }
+html.mob #panel .pb { padding-bottom: 14px; }
+html.mob #panel .ph { flex-wrap: nowrap; min-height: 44px; }
+html.mob #panel .ph h2 { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+html.mob #panel .ph .x { flex: none; }
+html.mob #panel .pf { flex-wrap: wrap; row-gap: 6px; }
+html.mob.land #panel .res { grid-template-columns: 1fr; }

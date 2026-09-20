@@ -133,7 +133,7 @@ M.tutorial = function (force) {
 
 /* ---------------- boot ---------------- */
 /* every script stamps its version; a missing or mismatched stamp means an old or failed file on the server */
-M.EXPECTED = ["00_util", "01_strings", "02_content", "03_assets", "04_state", "05_cases", "06_dialogue", "07_tasks", "08_traffic", "09_actors", "10_actions", "11_events", "12_inspection", "13_screening", "14_render", "15_audio", "16_ui", "17_panels", "18_screens", "19_main", "20_progress", "21_features"];
+M.EXPECTED = ["00_util", "01_strings", "02_content", "03_assets", "04_state", "05_cases", "06_dialogue", "07_tasks", "08_traffic", "09_actors", "10_actions", "11_events", "12_inspection", "13_screening", "14_render", "15_audio", "16_ui", "17_panels", "18_screens", "19_main", "20_progress", "21_features", "22_brand"];
 M.checkFiles = function (silent) {
   const F = window.CP_FILES || {}; const bad = M.EXPECTED.filter(n => F[n] !== CP.VERSION);
   if (!bad.length) return true;
@@ -162,10 +162,11 @@ M.boot = function () {
 M.bootLoad = function () {
   CP.A.load((p, f) => CP.Screens.loadProgress(p, f)).then(errs => {
     if (errs.length) { CP.Screens.loadErrors(errs); if (errs.length > 3) return; }
-    setTimeout(() => CP.Screens.menu(), errs.length ? 1500 : 150);
+    const go = () => CP.Screens.menu();
+    setTimeout(() => { if (errs.length || sessionStorage.getItem('cp_intro')) return go(); try { sessionStorage.setItem('cp_intro', '1'); } catch (e) { } CP.Screens.hideAll(); CP.Brand.intro(go); }, errs.length ? 1500 : 120);
   }).catch(e => { CP.Screens.loadErrors([e.message]); });
 };
 window.addEventListener('DOMContentLoaded', M.boot);
 
 CP.bus.on('caseClosed', () => { const s = CP.G && CP.G.shift; if (s) s.officer.returnAt = s.t + 1.6; });
-;(window.CP_FILES = window.CP_FILES || {})['19_main'] = '1.4.0';
+;(window.CP_FILES = window.CP_FILES || {})['19_main'] = '1.4.1';

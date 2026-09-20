@@ -27,7 +27,7 @@ CP.Screens.back = function () { if (this.cur === 'settings' || this.cur === 'how
 /* ---------- loading ---------- */
 CP.Screens.loading = function () {
   const e = this.show('loading'); e.innerHTML = '';
-  e.append(sh('div', { class: 'title-ar' }, 'كمين: وردية ليل'), sh('div', { class: 'title-en' }, 'CHECKPOINT: NIGHT SHIFT'), sh('div', { class: 'muted', id: 'ldTxt' }, CP.t('loading')), sh('div', { class: 'bar' }, sh('i', { id: 'ldBar' })), sh('div', { class: 'errs', id: 'ldErr' }));
+  e.append(CP.Brand.logo({ size: 0.85, static: true }), sh('div', { class: 'muted', id: 'ldTxt' }, CP.t('loading')), sh('div', { class: 'bar' }, sh('i', { id: 'ldBar' })), sh('div', { class: 'errs', id: 'ldErr' }));
 };
 CP.Screens.loadProgress = function (p, file) { const b = document.getElementById('ldBar'); if (b) b.style.width = (p * 100) + '%'; const t = document.getElementById('ldTxt'); if (t) t.textContent = CP.t('loading') + ' ' + file; };
 CP.Screens.loadErrors = function (errs) {
@@ -321,4 +321,4 @@ CP.Screens.pause = function () {
     sh('button', { class: 'btn bad', onclick: () => CP.UI.confirm(CP.t('end_confirm'), () => { this.hideAll(); CP.Main.endShift(); }) }, CP.t('pause_end'))));
 };
 CP.Screens.resume = function () { this.hideAll(); document.getElementById('game').classList.remove('hidden'); CP.R.resize(); CP.Main.last = performance.now(); };
-;(window.CP_FILES = window.CP_FILES || {})['18_screens'] = '1.4.0';
+;(window.CP_FILES = window.CP_FILES || {})['18_screens'] = '1.4.1';

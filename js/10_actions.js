@@ -54,6 +54,7 @@ CP.Act.defs = {
       if (!CP.once('stop:' + v.id)) return;
       const s = CP.G.shift; c.k.stopped = true; c.k.stopT = s.t; c.status = 'stopped'; v.st = 'stopped';
       CP.Audio.click(); CP.bus.emit('stopped', v); CP.autosave();
+      CP.Act.run('approach');
     }
   },
   wave: {
@@ -81,10 +82,11 @@ CP.Act.defs = {
   },
   docs: {
     label(v, c) { return c && c.k.docsHave ? 'a_docs' : 'a_docs_req'; },
-    avail(v, c) { if (!v) return 'r_noVehicle'; if (!c) return 'r_noCase'; if (!stoppedFor(v, c) && !(c.k.docsHave && !c.k.docsReturned)) return 'r_needStop'; if (!c.k.approached) return 'r_notApproached'; return null; },
+    avail(v, c) { if (!v) return 'r_noVehicle'; if (!c) return 'r_noCase'; if (!stoppedFor(v, c) && !(c.k.docsHave && !c.k.docsReturned)) return 'r_needStop'; if (!c.k.approached) return 'r_notApproached'; if (c.k.docsHanding && !c.k.docsHave) return 'r_docsHanding'; return null; },
     run(v, c) {
       CP.Act.ensureNear(v, 'docs', () => {
-        if (!c.k.docsHave) { CP.Dlg.ask(c, c.k.greeted ? 'greet_docs' : 'greet_docs', CP.Act.tone); }
+        // papers can only be read after asking for them and receiving them from the driver
+        if (!c.k.docsHave) { if (!c.k.docsHanding) CP.Dlg.ask(c, 'greet_docs', CP.Act.tone); CP.UI.open('dialogue', c.id); return; }
         CP.UI.open('docs', c.id);
       });
     }
@@ -272,3 +274,11 @@ CP.Tasks.on('o_generator', () => CP.Events.generatorFixed('officer'), officerAt)
 CP.Tasks.on('o_vehicle', t => { const v = CP.T.get(t.data.vid); if (v) CP.Events.fixVehicle(v); }, officerAt);
 CP.Act.officerTask = () => CP.Tasks.find(t => t.owner === 'officer');
 ;(window.CP_FILES = window.CP_FILES || {})['10_actions'] = '1.3.2';
+
+/* documents handover: the driver passes the papers through the window */
+CP.Tasks.on('handover', t => {
+  const c = CP.G.shift.cases[t.caseId]; if (!c) return;
+  c.k.docsHanding = false; c.k.docsHave = true; CP.Audio.paper();
+  CP.UI.toast(CP.t(CP.Gender.isF(c) ? 'docs_handed_f' : 'docs_handed'), 'ok');
+  CP.bus.emit('dialogue'); CP.UI.refreshDock(true); CP.autosave();
+});

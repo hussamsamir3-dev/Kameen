@@ -60,7 +60,7 @@ M.frame = function (now) {
   while (M.acc >= M.DT && n < 8) { M.step(M.DT); M.acc -= M.DT; n++; if (G.shift.ended) break; }
   if (n >= 8) M.acc = 0;
   // radio replies run on real time even while a reading panel slows the scene, so a check never exceeds 5 real seconds
-  if (ts < 1 && !CP.Screens.cur && !G.shift.ended) { const extra = real * (1 - ts); for (const t of CP.Tasks.all(x => x.owner === 'radio')) t.t = Math.min(t.dur - 1e-3, t.t + extra); }
+  if (ts < 1 && !CP.Screens.cur && !G.shift.ended) { const extra = real * (1 - ts); for (const t of CP.Tasks.all(x => x.owner === 'radio' || x.owner === 'driver')) t.t = Math.min(t.dur - 1e-3, t.t + extra); }
   if (!G.shift.ended && CP.Career.checkEnd()) { M.endShift(); return; }
   CP.R.frame(M.acc / M.DT, real);
   CP.Audio.update(real);

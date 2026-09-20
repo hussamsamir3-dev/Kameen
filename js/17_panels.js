@@ -2,7 +2,7 @@
 CP.addStrings({
   d_driver: ['السواق', 'Driver'], d_mood: ['الصبر', 'Patience'], d_coop: ['التعاون', 'Cooperation'],
   d_name_unknown: ['الاسم هيبان من الرخصة', 'Name shown once you read the licence'],
-  doc_sel: ['مختار: {n}', 'Selected: {n}'], doc_list: ['التعارضات المسجلة', 'Recorded discrepancies'], doc_hint: ['اختار خانتين تتقارنوا (أو تاريخ واحد)، وبعدين سجّل.', 'Select two fields to compare (or one date), then record.'],
+  doc_sel: ['مختار: {n}', 'Selected: {n}'], doc_list: ['المخالفات المسجلة', 'Recorded violations'], doc_hint: ['اختار خانتين تتقارنوا (أو تاريخ واحد)، وبعدين سجّل سبب المخالفة.', 'Select two fields to compare (or one date), then record.'],
   rv_state_none: ['لسه', 'Not run'], rv_log: ['سجل اللاسلكي', 'Radio log'], rv_byPartner: ['خلي الزميل يستعلم', 'Let partner run it'],
   s_grounds: ['الأسباب المسجلة لحد دلوقتي', 'Grounds recorded so far'], s_equipment: ['العهدة', 'Equipment'], s_assistBtn: ['الزميل يساعد في التفتيش', 'Partner assists search'],
   g_disc: ['تعارض في الأوراق', 'Document discrepancy'], g_alert: ['سجل عليه ملاحظة', 'Flagged record'], g_statement: ['أقوال متعارضة', 'Contradicting statements'], g_consent: ['موافقة السواق', 'Driver consent'], g_obs: ['ملاحظة مباشرة', 'Direct observation'],

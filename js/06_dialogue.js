@@ -95,7 +95,8 @@ CP.Dlg.ask = function (c, intent, tone) {
         else if (['release', 'advice'].indexOf(c.ret.lastOutcome) >= 0) D(pr('كنت محترم معايا المرة اللي فاتت، ربنا يكرمك.', 'You treated me decently last time, thank you.'));
         CP.note(c, 'observation', pr('مواطن متعامل معاه قبل كده (' + CP.STR.ar['res_' + c.ret.lastOutcome] + ')', 'Returning citizen — previous outcome: ' + CP.STR.en['res_' + c.ret.lastOutcome]), 'verified');
       }
-      k.docsHave = true; CP.Audio.paper();
+      // the driver now hands the papers over (short, visible handover) — documents are only readable once received
+      if (!k.docsHave && !k.docsHanding) { k.docsHanding = true; CP.Tasks.add({ type: 'handover', owner: 'driver', caseId: c.id, dur: 1.6, key: 'handover:' + c.id, data: {} }); }
       CP.Actors.poseHold('documents', 2.2);
       break; }
     case 'ask_destination': {

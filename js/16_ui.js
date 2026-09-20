@@ -201,6 +201,7 @@ CP.UI.close = function () {
   if (!CP.UI.panel) return;
   CP.UI.panel = null; CP.UI.openCase = null; CP.Audio.duck(false);
   const p = $('#panel'); p.classList.add('hidden'); p.innerHTML = '';
+  CP.UI.sheetSpace();
   CP.UI.refreshDock(true); CP.bus.emit('panelClose');
 };
 CP.UI.renderPanel = function () {
@@ -347,11 +348,20 @@ if (window.matchMedia) { const m = matchMedia('(orientation: landscape)'); if (m
 CP.UI.detect();
 CP.UI.VH = (window.CSS && CSS.supports && CSS.supports('height', '1dvh')) ? 'dvh' : 'vh';
 CP.UI.VW = (window.CSS && CSS.supports && CSS.supports('width', '1dvw')) ? 'dvw' : 'vw';
+CP.UI.sheetSpace = function () {
+  // portrait phones: the road view shrinks to the space above the sheet, so nothing is hidden under it
+  const html = document.documentElement; const pw = document.querySelector('#panel .pw');
+  const on = !!(pw && CP.UI.panel && CP.UI.isMob && !CP.UI.isLand);
+  html.classList.toggle('sheet-open', on);
+  html.classList.toggle('panel-open', !!(pw && CP.UI.panel && CP.UI.isMob));
+  if (on) html.style.setProperty('--sheetPx', Math.round(pw.getBoundingClientRect().height) + 'px');
+};
 CP.UI.applySheet = function () {
-  const pw = document.querySelector('#panel .pw'); if (!pw || !CP.UI.isMob) return;
+  const pw = document.querySelector('#panel .pw'); if (!pw || !CP.UI.isMob) { CP.UI.sheetSpace(); return; }
   const S = CP.S.sheet || {}; pw.classList.toggle('min', !!CP.UI.sheetMin);
   if (CP.UI.isLand) pw.style.setProperty('--sheetW', CP.clamp(S.w || 0.58, 0.4, 0.8) * 100 + CP.UI.VW);
   else pw.style.setProperty('--sheetH', CP.clamp(S.h || 0.6, 0.3, 0.86) * 100 + CP.UI.VH);
+  requestAnimationFrame(() => CP.UI.sheetSpace());
 };
 CP.UI.addGrip = function (pw) {
   if (!CP.UI.isMob) return;

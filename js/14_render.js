@@ -377,6 +377,21 @@ CP.R.worldUI = function (s, alpha) {
   if (this.partnerScr && CP.S.textSize !== 'small') { ctx.font = `600 ${Math.max(9, 0.22 * ppm)}px ${font}`; ctx.fillStyle = 'rgba(245,240,230,.75)'; ctx.textAlign = 'center'; ctx.fillText(CP.t('h_partner'), this.partnerScr.x, this.partnerScr.y - (pt ? 0.8 * ppm : 6)); }
   // walk target marker
   const o = s.officer; if (o.target) { const x = this.sx(o.target.x), y = this.sy(CP.R.actorY(o.target.row || 0)); ctx.strokeStyle = 'rgba(240,184,64,.8)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(x, y, 0.3 * ppm, 0.08 * ppm, 0, 0, 7); ctx.stroke(); }
+  // speech bubble: the driver's latest reply is shown above the car (handy on phones where the log sits lower in the sheet)
+  if (CP.UI && CP.UI.panel && CP.UI.panel.kind === 'dialogue' && CP.UI.isMob) {
+    const c = s.cases[CP.UI.panel.caseId]; const v = c && CP.vehOfCase(c); const L = c && c.dlg.log[c.dlg.log.length - 1];
+    if (v && v._scr && L && L.who !== 'officer') {
+      const txt = CP.L(L.text); ctx.save(); ctx.font = `600 ${Math.max(12, Math.min(15, 0.32 * ppm))}px ${font}`;
+      const maxW = Math.min(this.W * 0.8, 300); const words = txt.split(' '); const lines = []; let cur = '';
+      for (const w of words) { const t = cur ? cur + ' ' + w : w; if (ctx.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; } else cur = t; } if (cur) lines.push(cur);
+      const lh = 18, bw = Math.min(maxW, Math.max(...lines.map(l => ctx.measureText(l).width))) + 20, bh = lines.length * lh + 12;
+      const cx = CP.clamp(v._scr.left + v._scr.w * 0.6, bw / 2 + 6, this.W - bw / 2 - 6), by = Math.max(bh + 6, v._scr.top - 28);
+      ctx.fillStyle = 'rgba(245,240,230,.96)'; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(cx - bw / 2, by - bh, bw, bh, 10) : ctx.rect(cx - bw / 2, by - bh, bw, bh); ctx.fill();
+      ctx.beginPath(); ctx.moveTo(cx - 6, by); ctx.lineTo(cx + 6, by); ctx.lineTo(cx, by + 8); ctx.fill();
+      ctx.fillStyle = '#1b1c22'; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; lines.forEach((l, i) => ctx.fillText(l, cx, by - bh + 6 + lh / 2 + i * lh));
+      ctx.restore();
+    }
+  }
   // floating feedback: +XP popups, decision stamps
   const now = this.t;
   this.fx = this.fx.filter(f => now - f.t0 < f.dur);

@@ -269,7 +269,7 @@ CP.Panels.resolve = function (body, foot, c) {
   for (const d of decs) {
     let why = CP.Cases.decisionReq(c, d, [...sup]);
     if (!why && (d === 'hold' || d === 'handover') && (!v || v.st !== 'bay')) why = 'r_bayForHold';
-    dgrid.appendChild(hh('button', { class: 'btn dec' + (CP.UI.resDec === d ? ' on' : '') + (why ? ' no' : ''), onclick: () => { CP.UI.resDec = d; if (!CP.UI.resReasonUser) CP.UI.resReason = CP.UI.DEF_REASON[d] || CP.UI.resReason; CP.UI.renderPanel(); } }, CP.t('res_' + d), hh('span', { class: 's' }, why ? CP.t(why) : '✓')));
+    dgrid.appendChild(hh('button', { class: 'btn dec' + (CP.UI.resDec === d ? ' on' : '') + (why ? ' no' : ''), onclick: () => { CP.UI.resDec = d; if (!CP.UI.resReasonUser) CP.UI.resReason = CP.UI.DEF_REASON[d] || CP.UI.resReason; CP.UI.renderPanel(); } }, CP.t(d === 'release' && CP.Gender.isF(c) ? 'res_release_f' : 'res_' + d), hh('span', { class: 's' }, why ? CP.t(why) : '✓')));
   }
   const reasons = ['routine', 'expired', 'noLicence', 'admin', 'alert', 'journey', 'screen', 'medical', 'safety', 'conduct', 'evidence', 'favour'];
   const sel = hh('select', { class: 'sel', 'aria-label': CP.t('res_reason'), onchange: e => { CP.UI.resReason = e.target.value || null; CP.UI.resReasonUser = !!e.target.value; } }, hh('option', { value: '' }, '— ' + CP.t('res_reason') + ' —'), ...reasons.map(r => { const o = hh('option', { value: r }, CP.t('rr_' + r)); if (CP.UI.resReason === r) o.selected = true; return o; }));
@@ -281,7 +281,7 @@ CP.Panels.resolve = function (body, foot, c) {
       const e = CP.Act.resolve(c, CP.UI.resDec, CP.UI.resReason, [...sup]);
       if (e) { CP.UI.toast(CP.t(e), 'warn'); CP.Audio.deny(); return; }
       CP.UI.toast(CP.t('res_done', { d: CP.t('res_' + CP.UI.resDec) }), 'ok'); CP.UI.resCase = null; CP.UI.resDec = null; CP.UI.close();
-    } }, CP.icon('resolve'), CP.UI.resDec ? CP.t('res_' + CP.UI.resDec) + ' — ' + CP.t('res_confirmBtn') : CP.t('res_confirmBtn'));
+    } }, CP.icon('resolve'), CP.UI.resDec ? CP.t(CP.UI.resDec === 'release' && CP.Gender.isF(c) ? 'res_release_f' : 'res_' + CP.UI.resDec) + ' — ' + CP.t('res_confirmBtn') : CP.t('res_confirmBtn'));
   left.lastChild.style.whiteSpace = 'pre-line';
   body.appendChild(hh('div', { class: 'res' }, left, right));
   confirmBtn.style.flex = '1'; foot.appendChild(confirmBtn);

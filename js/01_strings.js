@@ -260,7 +260,7 @@ CP.addStrings({
   sc_noReason: ['مفيش مؤشر مسجل يبرر الكشف — هيتحسب على التناسب', 'No recorded indicator justifies screening — this affects proportionality'],
 
   // resolution
-  res_release: ['إطلاق', 'Clear and release'], res_advice: ['نصيحة', 'Give advice'], res_warning: ['إنذار', 'Issue warning'],
+  res_release: ['خليه يعدي', 'Clear and release'], res_release_f: ['خليها تعدي', 'Clear and release'], res_advice: ['نصيحة', 'Give advice'], res_warning: ['إنذار', 'Issue warning'],
   res_citation: ['مخالفة', 'Record citation'], res_refer_admin: ['إحالة إدارية', 'Administrative referral'],
   res_medical: ['مساعدة طبية', 'Arrange medical help'], res_hold: ['تحفظ لحين التحقق', 'Hold pending verification'],
   res_handover: ['تسليم تحت إشراف', 'Supervised handover'],

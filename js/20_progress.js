@@ -11,7 +11,7 @@ CP.addStrings({
   pr_stars: ['نجوم', 'Stars'], pr_xpGain: ['خبرة الوردية', 'Shift XP'], pr_bd_cases: ['القرارات', 'Decisions'], pr_bd_score: ['التقييم', 'Score bonus'],
   pr_bd_stars: ['النجوم', 'Stars'], pr_bd_obj: ['الأهداف', 'Objectives'], pr_bd_streak: ['مكافأة الاستمرار', 'Streak bonus'], pr_total: ['إجمالي الخبرة', 'Total XP'],
   pr_quick: ['عين سريعة', 'Quick eye'], pr_bigCatch: ['قضية كبيرة!', 'Big catch!'], pr_lifeSaver: ['أنقذت حياة', 'Life saver'],
-  st_clear: ['سليم ✓', 'CLEAR ✓'], st_release: ['إطلاق', 'RELEASED'], st_advice: ['نصيحة', 'ADVISED'], st_warning: ['إنذار', 'WARNING'], st_citation: ['مخالفة', 'CITED'],
+  st_clear: ['سليم ✓', 'CLEAR ✓'], st_release: ['يعدي ✓', 'RELEASED'], st_advice: ['نصيحة', 'ADVISED'], st_warning: ['إنذار', 'WARNING'], st_citation: ['مخالفة', 'CITED'],
   st_refer_admin: ['إحالة', 'REFERRED'], st_medical: ['إسعاف', 'MEDICAL'], st_hold: ['تحفظ', 'HELD'], st_handover: ['تسليم', 'HANDOVER']
 });
 CP.Prog = {};

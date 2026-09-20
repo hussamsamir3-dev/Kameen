@@ -59,7 +59,7 @@ CP.R.updateCamera = function (dt) {
   // vertical: keep the focus lane around 60% down the view; never show below the scene bottom
   let cyT = 0;
   if (fy != null && this.zoom > 1.02) cyT = Math.max(0, fy - (this.H * 0.2) / this.ppm);
-  if (fy != null && fa && fa.y1 < this.H * 0.95) { const ty = fa.y1 - (fa.y1 - fa.y0) * 0.14; cyT = Math.max(-0.3, fy - (this.H - ty) / this.ppm); }
+  if (fy != null && fa && fa.y1 < this.H * 0.95) { const ty = fa.y1 - (fa.y1 - fa.y0) * 0.3; cyT = Math.max(-0.3 - (this.H - fa.y1) / this.ppm, fy - (this.H - ty) / this.ppm); }
   this.camY += (cyT - this.camY) * Math.min(1, dt * 2.4);
   const span = this.span;
   if (span >= 38.4) { this.camX = 19 - span / 2 - 0.1; }

@@ -275,15 +275,16 @@ CP.Panels.resolve = function (body, foot, c) {
   const sel = hh('select', { class: 'sel', 'aria-label': CP.t('res_reason'), onchange: e => { CP.UI.resReason = e.target.value || null; CP.UI.resReasonUser = !!e.target.value; } }, hh('option', { value: '' }, '— ' + CP.t('res_reason') + ' —'), ...reasons.map(r => { const o = hh('option', { value: r }, CP.t('rr_' + r)); if (CP.UI.resReason === r) o.selected = true; return o; }));
   const left = hh('div', { class: 'col' }, hh('div', { class: 'lbl' }, CP.t('res_known')), hh('div', { class: 'small muted' }, CP.t('res_support_hint')), facts,
     hh('div', { class: 'lbl' }, CP.t('res_open')), hh('div', { class: 'small' }, open.length ? open.map(x => '• ' + x).join('\n') : CP.t('res_open_none')));
-  const right = hh('div', { class: 'col' }, hh('div', { class: 'lbl' }, CP.t('res_pick')), dgrid, hh('div', { class: 'lbl' }, CP.t('res_reason')), sel,
-    hh('button', { class: 'btn pri', onclick: () => {
+  const right = hh('div', { class: 'col' }, hh('div', { class: 'lbl' }, CP.t('res_pick')), dgrid, hh('div', { class: 'lbl' }, CP.t('res_reason')), sel);
+  const confirmBtn =     hh('button', { class: 'btn pri', onclick: () => {
       if (!CP.UI.resDec) { CP.UI.toast(CP.t('res_pick'), 'warn'); return; }
       const e = CP.Act.resolve(c, CP.UI.resDec, CP.UI.resReason, [...sup]);
       if (e) { CP.UI.toast(CP.t(e), 'warn'); CP.Audio.deny(); return; }
       CP.UI.toast(CP.t('res_done', { d: CP.t('res_' + CP.UI.resDec) }), 'ok'); CP.UI.resCase = null; CP.UI.resDec = null; CP.UI.close();
-    } }, CP.icon('resolve'), CP.t('res_confirmBtn')));
+    } }, CP.icon('resolve'), CP.UI.resDec ? CP.t('res_' + CP.UI.resDec) + ' — ' + CP.t('res_confirmBtn') : CP.t('res_confirmBtn'));
   left.lastChild.style.whiteSpace = 'pre-line';
   body.appendChild(hh('div', { class: 'res' }, left, right));
+  confirmBtn.style.flex = '1'; foot.appendChild(confirmBtn);
 };
 
 /* ---------------- partner ---------------- */

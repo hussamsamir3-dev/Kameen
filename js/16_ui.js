@@ -326,18 +326,32 @@ document.addEventListener('pointerdown', e => { const b = e.target.closest && e.
 /* ---------- device detection & adjustable panel sheet on phones ---------- */
 CP.addStrings({ sh_min: ['صغّر — شوف الطريق', 'Minimise — see the road'], sh_max: ['كبّر', 'Expand'], sh_drag: ['اسحب لتغيير الحجم', 'Drag to resize'] });
 CP.UI.detect = function () {
-  const html = document.documentElement; const w = innerWidth, h = innerHeight;
-  const coarse = window.matchMedia && matchMedia('(pointer: coarse)').matches;
+  const html = document.documentElement; const vv = window.visualViewport;
+  const w = vv ? vv.width : innerWidth, h = vv ? vv.height : innerHeight;
+  const mq = q => !!(window.matchMedia && matchMedia(q).matches);
+  const coarse = mq('(pointer: coarse)');
   const mob = Math.min(w, h) < 560 || (coarse && Math.max(w, h) < 1100);
-  html.classList.toggle('mob', mob); html.classList.toggle('land', w >= h); html.classList.toggle('port', w < h);
-  CP.UI.isMob = mob; CP.UI.isLand = w >= h;
+  // orientation from the media query first (iOS reports stale sizes during rotation), sizes as fallback
+  const land = mq('(orientation: landscape)') || (!mq('(orientation: portrait)') && w >= h);
+  const changed = CP.UI.isLand !== land || CP.UI.isMob !== mob;
+  html.classList.toggle('mob', mob); html.classList.toggle('land', land); html.classList.toggle('port', !land);
+  CP.UI.isMob = mob; CP.UI.isLand = land;
+  if (changed && CP.UI.panel) CP.UI.renderPanel();
+  if (changed && CP.R && CP.R.cv) CP.R.resize();
 };
-window.addEventListener('resize', () => CP.UI.detect()); CP.UI.detect();
+CP.UI.redetect = function () { CP.UI.detect(); clearTimeout(CP.UI._dt); CP.UI._dt = setTimeout(() => { CP.UI.detect(); if (CP.R && CP.R.cv) CP.R.resize(); }, 350); };
+window.addEventListener('resize', CP.UI.redetect);
+window.addEventListener('orientationchange', CP.UI.redetect);
+if (window.visualViewport) visualViewport.addEventListener('resize', CP.UI.redetect);
+if (window.matchMedia) { const m = matchMedia('(orientation: landscape)'); if (m.addEventListener) m.addEventListener('change', CP.UI.redetect); else if (m.addListener) m.addListener(CP.UI.redetect); }
+CP.UI.detect();
+CP.UI.VH = (window.CSS && CSS.supports && CSS.supports('height', '1dvh')) ? 'dvh' : 'vh';
+CP.UI.VW = (window.CSS && CSS.supports && CSS.supports('width', '1dvw')) ? 'dvw' : 'vw';
 CP.UI.applySheet = function () {
   const pw = document.querySelector('#panel .pw'); if (!pw || !CP.UI.isMob) return;
   const S = CP.S.sheet || {}; pw.classList.toggle('min', !!CP.UI.sheetMin);
-  if (CP.UI.isLand) pw.style.setProperty('--sheetW', CP.clamp(S.w || 0.58, 0.38, 1) * 100 + 'vw');
-  else pw.style.setProperty('--sheetH', CP.clamp(S.h || 0.6, 0.3, 1) * 100 + 'vh');
+  if (CP.UI.isLand) pw.style.setProperty('--sheetW', CP.clamp(S.w || 0.58, 0.4, 0.8) * 100 + CP.UI.VW);
+  else pw.style.setProperty('--sheetH', CP.clamp(S.h || 0.6, 0.3, 0.86) * 100 + CP.UI.VH);
 };
 CP.UI.addGrip = function (pw) {
   if (!CP.UI.isMob) return;
@@ -347,8 +361,8 @@ CP.UI.addGrip = function (pw) {
   grip.addEventListener('pointerdown', e => { e.preventDefault(); grip.setPointerCapture(e.pointerId); st = { x: e.clientX, y: e.clientY, w: pw.getBoundingClientRect().width, hh: pw.getBoundingClientRect().height }; CP.UI.sheetMin = false; pw.classList.remove('min'); });
   grip.addEventListener('pointermove', e => {
     if (!st) return; const S = CP.S.sheet = CP.S.sheet || {};
-    if (CP.UI.isLand) { const rtl = document.documentElement.dir === 'rtl'; const dx = (e.clientX - st.x) * (rtl ? 1 : -1); S.w = CP.clamp((st.w + dx) / innerWidth, 0.38, 1); }
-    else { const dy = st.y - e.clientY; S.h = CP.clamp((st.hh + dy) / innerHeight, 0.3, 1); }
+    if (CP.UI.isLand) { const rtl = document.documentElement.dir === 'rtl'; const dx = (e.clientX - st.x) * (rtl ? 1 : -1); S.w = CP.clamp((st.w + dx) / innerWidth, 0.4, 0.8); }
+    else { const dy = st.y - e.clientY; S.h = CP.clamp((st.hh + dy) / innerHeight, 0.3, 0.86); }
     CP.UI.applySheet();
   });
   const end = () => { if (st) { st = null; CP.saveSettings(); } };

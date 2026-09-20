@@ -421,3 +421,23 @@ html.mob #panel .ph h2 { white-space: nowrap; overflow: hidden; text-overflow: e
 html.mob #panel .ph .x { flex: none; }
 html.mob #panel .pf { flex-wrap: wrap; row-gap: 6px; }
 html.mob.land #panel .res { grid-template-columns: 1fr; }
+
+/* ================= v1.3.4 portrait sheet reserves its space; dialogue stacks cleanly ================= */
+html.mob.port.sheet-open #game { grid-template-rows: auto 1fr; padding-bottom: var(--sheetPx, 60vh); }
+html.mob.port.sheet-open #strip, html.mob.port.sheet-open #dock { display: none; }
+html.mob .dlg { height: auto; display: flex; flex-direction: column; gap: 10px; }
+html.mob .dlg .side { display: none; }
+html.mob .dlg .who { flex-direction: row; align-items: center; text-align: start; gap: 12px; }
+html.mob .dlg .who canvas { width: 64px !important; height: 64px !important; }
+html.mob .dlg .who .meter { max-width: 170px; }
+html.mob .dlg .log { max-height: none; min-height: 60px; }
+html.mob .opts .btn { flex: 1 1 auto; }
+html.mob.port .dlg .log { max-height: 22vh; max-height: 22dvh; }
+html.mob.land .dlg .log { max-height: 34vh; max-height: 34dvh; }
+html.mob .dlg .who { padding-bottom: 2px; }
+/* phones: questions first, conversation below (latest reply stays in view) */
+html.mob .dlg > .col { display: flex; flex-direction: column; }
+html.mob .dlg > .col > .row { order: 0; }
+html.mob .dlg > .col > .opts { order: 1; margin-top: 0; }
+html.mob .dlg > .col > .log { order: 2; }
+html.mob.panel-open #ctx, html.mob.panel-open #objBox, html.mob.panel-open #tut { display: none !important; }

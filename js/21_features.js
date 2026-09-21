@@ -446,4 +446,66 @@ CP.Police = {
   }
 };
 CP.bus.on('stepEnd', () => CP.Police.tick(CP.G && CP.G.shift));
+
+/* ======================= checkpoint props + the parked, flashing police car =======================
+   Real-world sizes (metres). Far-side kit stands on the far pavement by the booth; the officer's kit sits on the
+   walkway at the stop line; inspection kit lives in the bay; heavy barriers only where the location calls for them. */
+CP.Props = {
+  H: { crowd_barrier: 1.1, jersey_barrier: 0.82, mirror_trolley: 1.15, table_radio: 0.95, camera_tower: 3.8, sandbags2: 0.75, wheel_clamp: 0.5, wheel_chocks: 0.22,
+       podium: 1.25, metal_detector: 0.34, tool_case: 0.4, stanchions: 1.0, beacon_stand: 1.35, extinguisher_trolley: 1.05, first_aid_cabinet: 1.6, stop_sign_led: 1.2 },
+  W: { spike_strip: 1.6, weigh_plate: 1.3, cable_ramp: 1.15 },
+  frame: 0, nextT: 0,
+  hard(s) { const b = CP.locBase(s.loc); return b === 'desert' || s.loc === 'sinai'; },
+  put(R, id, x, yup, extraH) { const h = (this.H[id] || 1) * R.ppm; CP.A.groundedH(R.ctx, id, R.sx(x), R.sy(yup), h); return { x: R.sx(x), top: R.sy(yup) - h, h }; },
+  flatDraw(R, id, x, yup) { const r = CP.A.rect(id); if (!r) return; const w = this.W[id] * R.ppm, h = w * r[3] / r[2]; CP.A.draw(R.ctx, id, R.sx(x) - w / 2, R.sy(yup) - h * 0.85, w); },
+  shadow(R, x, yup, w) { R.shadow(R.sx(x), R.sy(yup), w * R.ppm * 0.5, 0.07 * R.ppm, 0.35); },
+  far(R, s) {
+    const Y = R.Y, g = Y.mainFar + 0.12, n = R.nightLvl || 0;
+    this.put(R, 'table_radio', 19.5, g);
+    this.put(R, 'metal_detector', 19.75, g + 0.72);
+    const cam = this.put(R, 'camera_tower', 21.6, g);
+    this.put(R, 'first_aid_cabinet', 29.9, g);
+    this.put(R, 'extinguisher_trolley', 30.85, g);
+    // camera tower recording light
+    if (Math.sin(R.t * 3) > 0.6) R.glows.push({ x: cam.x + 0.12 * R.ppm, y: cam.top + 0.35 * R.ppm, r: 0.18 * R.ppm, c: '255,40,40', a: 0.9 });
+  },
+  flat(R, s) {
+    const Y = R.Y;
+    this.flatDraw(R, 'weigh_plate', 34.2, Y.bayGround + 0.02);      // axle scale in inspection bay A
+    this.flatDraw(R, 'cable_ramp', 32.0, Y.walkFeet + 0.05);         // generator cable crossing the walkway
+    this.flatDraw(R, 'spike_strip', 21.4, Y.walkFeet + 0.35);        // stinger rolled out, ready at the officer post
+  },
+  ents(R, s, ents) {
+    const Y = R.Y, self = this, n = R.nightLvl || 0;
+    const add = (id, x, yup) => ents.push({ y: yup, k: 'fn', draw: () => { self.shadow(R, x, yup, 0.8); self.put(R, id, x, yup); } });
+    // officer post on the walkway: podium, LED stop sign before the line, warning beacon
+    add('podium', 20.3, Y.walkFeet + 0.32);
+    add('stanchions', 24.4, Y.walkFeet + 0.3);
+    ents.push({ y: Y.walkFeet + 0.34, k: 'fn', draw: () => { const o = self.put(R, 'stop_sign_led', 14.3, Y.walkFeet + 0.34); if (n > 0.2 && Math.sin(R.t * 4) > 0) R.glows.push({ x: o.x, y: o.top + o.h * 0.22, r: 0.45 * R.ppm, c: '255,40,30', a: 0.9 }); } });
+    ents.push({ y: Y.walkFeet + 0.36, k: 'fn', draw: () => { const o = self.put(R, 'beacon_stand', 15.5, Y.walkFeet + 0.36); const ph = Math.sin(R.t * (CP.S.reducedFlash ? 2 : 7)) > 0;
+      R.glows.push({ x: o.x - 0.16 * R.ppm, y: o.top + 0.1 * R.ppm, r: 0.5 * R.ppm, c: '255,40,40', a: ph ? 0.9 : 0.15 }); R.glows.push({ x: o.x + 0.16 * R.ppm, y: o.top + 0.1 * R.ppm, r: 0.5 * R.ppm, c: '60,120,255', a: ph ? 0.15 : 0.9 }); } });
+    // inspection bay kit
+    add('mirror_trolley', 21.7, Y.bayNear + 0.1);
+    add('tool_case', 22.7, Y.bayNear + 0.08);
+    add('wheel_clamp', 23.6, Y.bayNear + 0.1);
+    add('wheel_chocks', 29.9, Y.bayGround - 0.05);
+    // crowd barriers keep pedestrians off the bay edge
+    add('crowd_barrier', 12.6, 0.22); add('crowd_barrier', 14.9, 0.22);
+    // hard locations (desert road, Sinai): jersey barrier at the approach and sandbags by the post
+    if (this.hard(s)) { add('jersey_barrier', 3.6, 0.22); add('sandbags2', 1.1, Y.walkFeet + 0.34); }
+    // the checkpoint's parked police car on the shoulder, beacons alternating (two supplied frames, random timing)
+    ents.push({ y: Y.bayGround + 0.02, k: 'fn', draw: () => {
+      if (R.t > self.nextT) { self.frame = Math.random() < 0.5 ? 0 : 1; self.nextT = R.t + 0.08 + Math.random() * 0.26; }
+      const id = 'polcar_f' + self.frame, r = CP.A.rect(id); if (!r) return;
+      const L = 4.6, w = L * R.ppm, h = w * r[3] / r[2], x0 = R.sx(1.4), gy = R.sy(Y.bayGround + 0.02);
+      R.shadow(x0 + w / 2, gy, w * 0.5, 0.2 * R.ppm, 0.45);
+      CP.A.draw(R.ctx, id, x0, gy - h, w);
+      const bx = x0 + w * 0.5, by = gy - h * 0.62;
+      R.glows.push({ x: bx - 0.25 * R.ppm, y: by, r: 1.1 * R.ppm, c: '255,40,40', a: self.frame === 0 ? 0.85 : 0.1, big: true });
+      R.glows.push({ x: bx + 0.25 * R.ppm, y: by, r: 1.1 * R.ppm, c: '60,120,255', a: self.frame === 1 ? 0.85 : 0.1, big: true });
+      (R.occluders = R.occluders || []).push({ x0, x1: x0 + w, y0: gy - h * 0.7, y1: gy, h: h * 0.7 });
+    } });
+  }
+};
+CP.Police.parked = () => null;
 ;(window.CP_FILES = window.CP_FILES || {})['21_features'] = '1.4.1';

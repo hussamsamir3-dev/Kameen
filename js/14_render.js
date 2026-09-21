@@ -146,12 +146,14 @@ CP.R.frame = function (alpha, dt) {
   this.tile('pavement', Y.bayNear + 0.02, 0, 1);
   this.markings(s);
   this.drawDecals();
+  if (CP.Props) CP.Props.flat(this, s);
   // 4. far-side structures & props
   this.structures(s);
+  if (CP.Props) CP.Props.far(this, s);
   // 6. depth-sorted entities
   const ents = [];
   for (const v of s.vehicles) { const row = CP.lerp(v.prow, v.row, alpha); ents.push({ y: CP.R.rowY(row), k: 'v', v, row }); }
-  const pk = CP.Police && CP.Police.parked(s); if (pk) ents.push({ y: CP.R.rowY(pk.row), k: 'v', v: pk, row: pk.row });
+  if (CP.Props) CP.Props.ents(this, s, ents);
   const o = s.officer, p = s.partner;
   ents.push({ y: CP.R.actorY(CP.lerp(o.prow ?? o.row, o.row, alpha)), k: 'a', a: o, who: 'officer' });
   ents.push({ y: CP.R.actorY(CP.lerp(p.prow ?? p.row, p.row, alpha)) + 0.01, k: 'a', a: p, who: 'partner' });
@@ -169,6 +171,7 @@ CP.R.frame = function (alpha, dt) {
     else if (e.k === 'a') this.drawActor(e.a, e.who, alpha);
     else if (e.k === 'prop') { const r = A.rect(e.id); const h = e.h * ppm; this.shadow(this.sx(e.x), this.sy(e.y), h * r[2] / r[3] * 0.55, h * 0.12, .35); A.groundedH(ctx, e.id, this.sx(e.x), this.sy(e.y), h); }
     else if (e.k === 'gate') this.gateFront(s);
+    else if (e.k === 'fn') e.draw();
     else if (e.k === 'civ') { this.shadow(this.sx(e.x), this.sy(e.y), 0.35 * ppm, 0.08 * ppm, .4); A.groundedH(ctx, e.id, this.sx(e.x), this.sy(e.y), 1.72 * ppm); }
   }
   // 7. lighting

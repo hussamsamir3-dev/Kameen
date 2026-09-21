@@ -459,6 +459,19 @@ CP.Props = {
   put(R, id, x, yup, extraH) { const h = (this.H[id] || 1) * R.ppm; CP.A.groundedH(R.ctx, id, R.sx(x), R.sy(yup), h); return { x: R.sx(x), top: R.sy(yup) - h, h }; },
   flatDraw(R, id, x, yup) { const r = CP.A.rect(id); if (!r) return; const w = this.W[id] * R.ppm, h = w * r[3] / r[2]; CP.A.draw(R.ctx, id, R.sx(x) - w / 2, R.sy(yup) - h * 0.85, w); },
   shadow(R, x, yup, w) { R.shadow(R.sx(x), R.sy(yup), w * R.ppm * 0.5, 0.07 * R.ppm, 0.35); },
+  // the checkpoint's own police car: parked on the far side under the checkpoint canopy, facing the traffic,
+  // visible in every camera framing; beacons alternate between the two supplied frames at random intervals
+  farBack(R, s) {
+    const self = this, Y = R.Y;
+    if (R.t > self.nextT) { self.frame = Math.random() < 0.5 ? 0 : 1; self.nextT = R.t + 0.08 + Math.random() * 0.26; }
+    const id = 'polcar_f' + self.frame, r = CP.A.rect(id); if (!r) return;
+    const L = 4.6, w = L * R.ppm, h = w * r[3] / r[2], x0 = R.sx(10.4), gy = R.sy(Y.mainFar + 0.14);
+    R.shadow(x0 + w / 2, gy, w * 0.5, 0.18 * R.ppm, 0.45);
+    CP.A.draw(R.ctx, id, x0, gy - h, w);
+    const bx = x0 + w * 0.5, by = gy - h * 0.62;
+    R.glows.push({ x: bx - 0.25 * R.ppm, y: by, r: 1.1 * R.ppm, c: '255,40,40', a: self.frame === 0 ? 0.85 : 0.1, big: true });
+    R.glows.push({ x: bx + 0.25 * R.ppm, y: by, r: 1.1 * R.ppm, c: '60,120,255', a: self.frame === 1 ? 0.85 : 0.1, big: true });
+  },
   far(R, s) {
     const Y = R.Y, g = Y.mainFar + 0.12, n = R.nightLvl || 0;
     this.put(R, 'table_radio', 19.5, g);
@@ -479,10 +492,10 @@ CP.Props = {
     const Y = R.Y, self = this, n = R.nightLvl || 0;
     const add = (id, x, yup) => ents.push({ y: yup, k: 'fn', draw: () => { self.shadow(R, x, yup, 0.8); self.put(R, id, x, yup); } });
     // officer post on the walkway: podium, LED stop sign before the line, warning beacon
-    add('podium', 20.3, Y.walkFeet + 0.32);
-    add('stanchions', 24.4, Y.walkFeet + 0.3);
-    ents.push({ y: Y.walkFeet + 0.34, k: 'fn', draw: () => { const o = self.put(R, 'stop_sign_led', 14.3, Y.walkFeet + 0.34); if (n > 0.2 && Math.sin(R.t * 4) > 0) R.glows.push({ x: o.x, y: o.top + o.h * 0.22, r: 0.45 * R.ppm, c: '255,40,30', a: 0.9 }); } });
-    ents.push({ y: Y.walkFeet + 0.36, k: 'fn', draw: () => { const o = self.put(R, 'beacon_stand', 15.5, Y.walkFeet + 0.36); const ph = Math.sin(R.t * (CP.S.reducedFlash ? 2 : 7)) > 0;
+    add('podium', 20.3, Y.walkFeet - 0.28);
+    add('stanchions', 24.4, Y.walkFeet - 0.3);
+    ents.push({ y: Y.walkFeet - 0.32, k: 'fn', draw: () => { const o = self.put(R, 'stop_sign_led', 13.6, Y.walkFeet - 0.32); if (n > 0.2 && Math.sin(R.t * 4) > 0) R.glows.push({ x: o.x, y: o.top + o.h * 0.22, r: 0.45 * R.ppm, c: '255,40,30', a: 0.9 }); } });
+    ents.push({ y: Y.walkFeet - 0.3, k: 'fn', draw: () => { const o = self.put(R, 'beacon_stand', 14.8, Y.walkFeet - 0.3); const ph = Math.sin(R.t * (CP.S.reducedFlash ? 2 : 7)) > 0;
       R.glows.push({ x: o.x - 0.16 * R.ppm, y: o.top + 0.1 * R.ppm, r: 0.5 * R.ppm, c: '255,40,40', a: ph ? 0.9 : 0.15 }); R.glows.push({ x: o.x + 0.16 * R.ppm, y: o.top + 0.1 * R.ppm, r: 0.5 * R.ppm, c: '60,120,255', a: ph ? 0.15 : 0.9 }); } });
     // inspection bay kit
     add('mirror_trolley', 21.7, Y.bayNear + 0.1);
@@ -493,18 +506,6 @@ CP.Props = {
     add('crowd_barrier', 12.6, 0.22); add('crowd_barrier', 14.9, 0.22);
     // hard locations (desert road, Sinai): jersey barrier at the approach and sandbags by the post
     if (this.hard(s)) { add('jersey_barrier', 3.6, 0.22); add('sandbags2', 1.1, Y.walkFeet + 0.34); }
-    // the checkpoint's parked police car on the shoulder, beacons alternating (two supplied frames, random timing)
-    ents.push({ y: Y.bayGround + 0.02, k: 'fn', draw: () => {
-      if (R.t > self.nextT) { self.frame = Math.random() < 0.5 ? 0 : 1; self.nextT = R.t + 0.08 + Math.random() * 0.26; }
-      const id = 'polcar_f' + self.frame, r = CP.A.rect(id); if (!r) return;
-      const L = 4.6, w = L * R.ppm, h = w * r[3] / r[2], x0 = R.sx(1.4), gy = R.sy(Y.bayGround + 0.02);
-      R.shadow(x0 + w / 2, gy, w * 0.5, 0.2 * R.ppm, 0.45);
-      CP.A.draw(R.ctx, id, x0, gy - h, w);
-      const bx = x0 + w * 0.5, by = gy - h * 0.62;
-      R.glows.push({ x: bx - 0.25 * R.ppm, y: by, r: 1.1 * R.ppm, c: '255,40,40', a: self.frame === 0 ? 0.85 : 0.1, big: true });
-      R.glows.push({ x: bx + 0.25 * R.ppm, y: by, r: 1.1 * R.ppm, c: '60,120,255', a: self.frame === 1 ? 0.85 : 0.1, big: true });
-      (R.occluders = R.occluders || []).push({ x0, x1: x0 + w, y0: gy - h * 0.7, y1: gy, h: h * 0.7 });
-    } });
   }
 };
 CP.Police.parked = () => null;

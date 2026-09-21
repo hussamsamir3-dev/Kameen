@@ -148,6 +148,7 @@ CP.R.frame = function (alpha, dt) {
   this.drawDecals();
   if (CP.Props) CP.Props.flat(this, s);
   // 4. far-side structures & props
+  if (CP.Props && CP.Props.farBack) CP.Props.farBack(this, s);
   this.structures(s);
   if (CP.Props) CP.Props.far(this, s);
   // 6. depth-sorted entities

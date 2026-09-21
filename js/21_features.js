@@ -194,22 +194,22 @@ CP.Phys = {
   step(v, dt, dx, row) {
     const P = v.ph || (v.ph = { zf: 0, vf: 0, zr: 0, vr: 0 });
     const heavy = v.len > 7;
-    const k = heavy ? 55 : 78, c = heavy ? 8.5 : 9.5;           // realistic: firm springs, well damped (settles in ~1 bounce)
+    const k = heavy ? 50 : 70, c = heavy ? 7.0 : 7.6;           // realistic: firm springs, well damped (settles in ~1 bounce)
     const a = v.a || 0;
-    const wt = CP.clamp(-a * 0.018, -0.055, 0.055);                 // weight transfer front/rear
+    const wt = CP.clamp(-a * 0.025, -0.07, 0.07);                 // weight transfer front/rear
     const ff = -k * (P.zf - wt) - c * P.vf, fr = -k * (P.zr + wt) - c * P.vr;
     const front = v.x, rear = v.x - v.len * 0.8;
     const hit = (p, x0) => row === 0 && v.v > 0.4 && p - dx < x0 && p >= x0;
     for (const x0 of [10.3, 10.45, 10.6, 10.75]) {
-      if (hit(front, x0)) P.vf += 0.22 + v.v * 0.03;
-      if (hit(rear, x0)) P.vr += 0.22 + v.v * 0.03;
+      if (hit(front, x0)) P.vf += 0.3 + v.v * 0.04;
+      if (hit(rear, x0)) P.vr += 0.3 + v.v * 0.04;
     }
     if (v.v > 1.5 && Math.random() < 0.25) { const n = (Math.random() - 0.5) * v.v * 0.014; P.vf += n; P.vr -= n * 0.7; }
     if (v.stall && v.stallKind === 'overheat' && Math.random() < 0.2) { P.vf += 0.12; P.vr -= 0.1; }
     P.vf += ff * dt; P.vr += fr * dt; P.zf += P.vf * dt; P.zr += P.vr * dt;
-    P.zf = CP.clamp(P.zf, -0.075, 0.075); P.zr = CP.clamp(P.zr, -0.075, 0.075);
-    v.heave = (P.zf + P.zr) * 0.45;                                // metres of body travel
-    v.pitch = CP.clamp((P.zf - P.zr) / Math.max(2.6, v.len * 0.8), -0.045, 0.045);
+    P.zf = CP.clamp(P.zf, -0.09, 0.09); P.zr = CP.clamp(P.zr, -0.09, 0.09);
+    v.heave = (P.zf + P.zr) * 0.5;                                // metres of body travel
+    v.pitch = CP.clamp((P.zf - P.zr) / Math.max(2.6, v.len * 0.8), -0.055, 0.055);
   }
 };
 
@@ -364,6 +364,11 @@ CP.bus.on('stepEnd', () => {
   if (!s.weather) CP.Weather.init(s);
   if (s.daily && !s.daily.spawned && s.t > 150 && s.t < s.dur - 60) { const v = CP.T.spawnCivilian({ fam: s.daily.fam }); if (v) { s.daily.spawned = true; CP.UI.banner(CP.t('daily_case'), 'info'); } }
   if (!s.castSpawned && s.t > 90 && Math.floor(s.t) % 20 === 0) CP.Cast.maybeSpawn(s);
+  // a car broken down for 45 s gets a police tow truck
+  for (const v of s.vehicles) {
+    if (v.stall && v.stallKind) { if (v.stallT0 == null) v.stallT0 = s.t; if (!v.towCalled && s.t - v.stallT0 > 45) { v.towCalled = true; s.events.pickups = s.events.pickups || []; s.events.pickups.push({ caseId: v.caseId, vid: v.id, at: s.t + 2, tow: true }); CP.UI.banner(CP.t('ev_towCalled'), 'warn'); } }
+    else v.stallT0 = null;
+  }
 });
 
 /* ======================= simplified menu + map-based briefing ======================= */
@@ -418,4 +423,27 @@ CP.bus.on('stepEnd', () => {
           sh('button', { class: 'btn pri mb play', 'aria-disabled': open ? 'false' : 'true', onclick: () => open && CP.Main.startShift(this.loc) }, CP.t('br_go')), opts))));
   };
 }
+
+/* ======================= police vehicles at the checkpoint ======================= */
+CP.addStrings({ pol_patrol: ['🚓 دورية شرطة معدية من حارة الطوارئ', '🚓 A police patrol is passing through the priority lane'] });
+CP.Police = {
+  // the checkpoint's own car, parked by the bay: chosen to suit the location
+  typeFor(loc) { const b = CP.locBase(loc); return loc === 'sinai' || b === 'desert' ? 'pol_4x4' : loc === 'alex' || loc === 'cairo' ? 'pol_traffic_sedan' : loc === 'hurghada' ? 'pol_suv' : 'pol_pickup'; },
+  parked(s) {
+    if (!s) return null; const t = this.typeFor(s.loc); if (!CP.A.M.vehicles[t]) return null;
+    if (!this._pk || this._pk.type !== t) { const L = CP.A.M.vehicles[t].lengthMetres; this._pk = { id: 'parked', type: t, len: L, x: 7.2, px: 7.2, row: 2, prow: 2, v: 0, a: 0, wheel: 0, pwheel: 0, pitch: 0, heave: 0, beacon: true, idleT: 0, noPick: true }; }
+    return this._pk;
+  },
+  // every few minutes a patrol car drives through the priority lane when it is open
+  tick(s) {
+    if (!s || s.tutorial.step < 99) return;
+    s.polT = (s.polT == null ? 140 + Math.random() * 60 : s.polT) - 1 / 60;
+    if (s.polT > 0) return; s.polT = 170 + Math.random() * 120;
+    if (!s.prioOpen || s.vehicles.some(v => v.special === 'ambulance' || v.special === 'patrol')) return;
+    const types = ['pol_traffic_sedan', 'pol_sedan', 'pol_hatch', 'pol_suv'].concat(CP.locBase(s.loc) === 'desert' ? ['pol_4x4', 'pol_armored'] : ['pol_van']);
+    const t = types[Math.floor(Math.random() * types.length)]; if (!CP.C.veh[t]) return;
+    CP.T.spawnService(t, { special: 'patrol', beacon: true, maxV: 12 }); CP.UI.banner(CP.t('pol_patrol'), 'info');
+  }
+};
+CP.bus.on('stepEnd', () => CP.Police.tick(CP.G && CP.G.shift));
 ;(window.CP_FILES = window.CP_FILES || {})['21_features'] = '1.4.1';

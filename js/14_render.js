@@ -62,6 +62,7 @@ CP.R.updateCamera = function (dt) {
   let cyT = 0;
   if (fy != null && this.zoom > 1.02) cyT = Math.max(0, fy - (this.H * 0.2) / this.ppm);
   if (fy != null && fa && fa.y1 < this.H * 0.95) { const ty = fa.y1 - (fa.y1 - fa.y0) * 0.3; cyT = Math.max(-0.3 - (this.H - fa.y1) / this.ppm, fy - (this.H - ty) / this.ppm); }
+  cyT += (this.panY || 0);
   this.camY += (cyT - this.camY) * Math.min(1, dt * 2.4);
   const span = this.span;
   if (span >= 38.4) { this.camX = 19 - span / 2 - 0.1; }
@@ -150,6 +151,7 @@ CP.R.frame = function (alpha, dt) {
   // 6. depth-sorted entities
   const ents = [];
   for (const v of s.vehicles) { const row = CP.lerp(v.prow, v.row, alpha); ents.push({ y: CP.R.rowY(row), k: 'v', v, row }); }
+  const pk = CP.Police && CP.Police.parked(s); if (pk) ents.push({ y: CP.R.rowY(pk.row), k: 'v', v: pk, row: pk.row });
   const o = s.officer, p = s.partner;
   ents.push({ y: CP.R.actorY(CP.lerp(o.prow ?? o.row, o.row, alpha)), k: 'a', a: o, who: 'officer' });
   ents.push({ y: CP.R.actorY(CP.lerp(p.prow ?? p.row, p.row, alpha)) + 0.01, k: 'a', a: p, who: 'partner' });
@@ -263,7 +265,7 @@ CP.R.drawVeh = function (v, row, alpha, s) {
   A.drawVehicle(ctx, v.type, left, ground, ppm, CP.lerp(v.pwheel, v.wheel, alpha), v.pitch, v.heave * ppm + idle + shake);
   const top = ground - g.bodyBottom;
   v._scr = { left, top, w: g.width, h: g.bodyBottom, ground };
-  this.hits.push({ id: v.id, x0: left, x1: left + g.width, y0: top, y1: ground });
+  if (!v.noPick) this.hits.push({ id: v.id, x0: left, x1: left + g.width, y0: top, y1: ground });
   (this.occluders = this.occluders || []).push({ x0: left, x1: left + g.width, y0: top, y1: ground, h: g.bodyBottom });
   // brake lights (rear = left side)
   if (v.brake && this.nightLvl > 0.25) this.glows.push({ x: left + g.width * 0.015, y: top + g.height * 0.5, r: 0.45 * ppm, c: '255,40,30', a: 0.55 });

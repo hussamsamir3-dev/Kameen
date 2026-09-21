@@ -248,7 +248,7 @@ CP.R.gateFront = function (s) {
   const gr = ctx.createRadialGradient(lx, ly, 0, lx, ly, 0.35 * ppm); gr.addColorStop(0, `rgba(${col},.95)`); gr.addColorStop(1, `rgba(${col},0)`);
   ctx.fillStyle = gr; ctx.fillRect(lx - 0.35 * ppm, ly - 0.35 * ppm, 0.7 * ppm, 0.7 * ppm);
   this.glows.push({ x: lx, y: ly, r: 0.35 * ppm, c: col, a: 0.8 });
-  if ((g.state === 'opening' || g.state === 'closing') && Math.random() < 0.3) this.emit('spark', x - 0.05 * ppm, y - 0.9 * ppm);
+  if ((g.state === 'opening' || g.state === 'closing') && Math.random() < 0.04) this.emit('spark', x - 0.05 * ppm, y - 0.9 * ppm);
 };
 
 CP.R.drawVeh = function (v, row, alpha, s) {
@@ -276,16 +276,17 @@ CP.R.drawVeh = function (v, row, alpha, s) {
   }
   // particles emitters
   if (v.stallKind === 'overheat') {
-    if (Math.random() < 0.6) this.emit('steam', left + g.width * 0.86, top + g.height * 0.2);
-    if (Math.random() < 0.2) this.emit('smoke', left + g.width * 0.86, top + g.height * 0.25);
+    if (Math.random() < 0.18) this.emit('steam', left + g.width * 0.86, top + g.height * 0.2);
+    if (Math.random() < 0.04) this.emit('smoke', left + g.width * 0.86, top + g.height * 0.25);
     if (Math.random() < 0.01) this.decal('fx_oil', x - v.len * 0.5, CP.R.rowY(row) - 0.05, 1.6, 0.6);
   }
   // soft exhaust from the tailpipe: a gentle puff when idling, more under acceleration
-  const idling = v.v < 0.4 && !v.stall && v.caseId;
-  if ((v.a > 0.25 && Math.random() < 0.35) || (idling && Math.random() < 0.06)) this.emit('exhaust', left + 2, ground - 0.28 * ppm, idling ? { vy: -6, size: 0.22 * ppm, a: 0.18 } : null);
-  if (v.a > 1.2 && v.v > 1 && (CP.locBase(s.loc) === 'desert' || (s.weather && s.weather.kind === 'dust')) && Math.random() < 0.3) this.emit('dustkick', left + 4, ground - 0.1 * ppm);
+  // only vehicles in the main lane near the checkpoint puff, and only occasionally
+  const idling = v.v < 0.4 && !v.stall && v.caseId && v.row === 0;
+  if ((v.a > 0.6 && v.v < 6 && Math.random() < 0.1) || (idling && Math.random() < 0.012)) this.emit('exhaust', left + 2, ground - 0.28 * ppm, idling ? { vy: -6, size: 0.22 * ppm, a: 0.18 } : null);
+  if (v.a > 1.2 && v.v > 1 && (CP.locBase(s.loc) === 'desert' || (s.weather && s.weather.kind === 'dust')) && Math.random() < 0.08) this.emit('dustkick', left + 4, ground - 0.1 * ppm);
   if (v.a < -3.2 && v.v > 3 && Math.random() < 0.25) { this.decal('fx_skid', x - v.len * 0.5, CP.R.rowY(row) - 0.02, v.len * 0.9, 0.5); if (Math.random() < 0.3) this.emit('spark', left + g.width * 0.2, ground - 2); }
-  if (s.weather && s.weather.kind === 'rain' && v.v > 4 && Math.random() < 0.25) this.emit('splash', left + g.width * (Math.random() < 0.5 ? 0.15 : 0.85), ground - 2);
+  if (s.weather && s.weather.kind === 'rain' && v.v > 4 && Math.random() < 0.08) this.emit('splash', left + g.width * (Math.random() < 0.5 ? 0.15 : 0.85), ground - 2);
 };
 
 CP.R.drawActor = function (a, who, alpha) {
@@ -398,18 +399,18 @@ CP.R.lighting = function (s, night, alpha) {
 CP.R.FX = { exhaust: 'fx_smoke', smoke: 'fx_smoke_dark', steam: 'fx_steam', dust: 'fx_dust', dustkick: 'fx_dustkick', spark: 'fx_spark', splash: 'fx_splash', fire: 'fx_fire' };
 CP.R.emit = function (kind, x, y, opt) {
   if (CP.S.reducedFx && Math.random() < 0.6) return;
-  if (this.parts.length > (CP.S.quality === 'low' ? 70 : 240)) return;
+  if (this.parts.length > (CP.S.quality === 'low' ? 40 : 110)) return;
   opt = opt || {};
   const ppm = this.ppm || 40;
   const p = { kind, x, y, vx: 0, vy: 0, life: 0, max: 1.6, size: 0.6 * ppm, grow: 0.6, rot: Math.random() * 6.28, rotV: (Math.random() - .5) * 1.2, a: 0.6, tex: this.FX[kind] || null, g: 0 };
   const wind = (CP.G.shift.weather && CP.G.shift.weather.wind) || 0;
   switch (kind) {
-    case 'exhaust': p.vx = -6 - Math.random() * 10 + wind * 6; p.vy = -10 - Math.random() * 10; p.max = 1.9 + Math.random(); p.size = 0.32 * ppm; p.grow = 1.5; p.a = 0.28; break;
-    case 'smoke': p.vx = -4 + wind * 8; p.vy = -22 - Math.random() * 16; p.max = 2.6; p.size = 0.5 * ppm; p.grow = 1.8; p.a = 0.5; break;
-    case 'steam': p.vx = (Math.random() - .5) * 10 + wind * 6; p.vy = -26 - Math.random() * 18; p.max = 2.2; p.size = 0.45 * ppm; p.grow = 1.9; p.a = 0.45; break;
-    case 'dust': p.vx = 25 + Math.random() * 55 + wind * 20; p.vy = (Math.random() - .5) * 10; p.max = 3.2; p.size = 0.5 * ppm; p.grow = 1.2; p.a = 0.3; break;
-    case 'dustkick': p.vx = -18 - Math.random() * 22; p.vy = -12 - Math.random() * 12; p.max = 1.5; p.size = 0.5 * ppm; p.grow = 2.2; p.a = 0.45; break;
-    case 'spark': p.vx = (Math.random() - .5) * 90; p.vy = -50 - Math.random() * 60; p.max = 0.6; p.size = 0.28 * ppm; p.grow = 0.2; p.a = 0.95; p.g = 340; break;
+    case 'exhaust': p.vx = -6 - Math.random() * 10 + wind * 6; p.vy = -10 - Math.random() * 10; p.max = 1.4 + Math.random() * 0.6; p.size = 0.24 * ppm; p.grow = 1.0; p.a = 0.16; break;
+    case 'smoke': p.vx = -4 + wind * 8; p.vy = -22 - Math.random() * 16; p.max = 2.0; p.size = 0.4 * ppm; p.grow = 1.3; p.a = 0.32; break;
+    case 'steam': p.vx = (Math.random() - .5) * 10 + wind * 6; p.vy = -26 - Math.random() * 18; p.max = 1.8; p.size = 0.36 * ppm; p.grow = 1.4; p.a = 0.3; break;
+    case 'dust': p.vx = 25 + Math.random() * 55 + wind * 20; p.vy = (Math.random() - .5) * 10; p.max = 2.6; p.size = 0.4 * ppm; p.grow = 0.8; p.a = 0.16; break;
+    case 'dustkick': p.vx = -18 - Math.random() * 22; p.vy = -12 - Math.random() * 12; p.max = 1.1; p.size = 0.36 * ppm; p.grow = 1.4; p.a = 0.28; break;
+    case 'spark': p.vx = (Math.random() - .5) * 70; p.vy = -40 - Math.random() * 40; p.max = 0.45; p.size = 0.18 * ppm; p.grow = 0.1; p.a = 0.8; p.g = 340; break;
     case 'splash': p.vx = (Math.random() - .5) * 30; p.vy = -30 - Math.random() * 20; p.max = 0.45; p.size = 0.3 * ppm; p.grow = 1.4; p.a = 0.6; p.g = 260; break;
     case 'confetti': p.vx = (Math.random() - 0.5) * 260; p.vy = -180 - Math.random() * 160; p.max = 2.2; p.size = 4; p.hue = Math.floor(Math.random() * 360); p.g = 260; p.tex = null; break;
   }
@@ -433,7 +434,7 @@ CP.R.drawDecals = function () {
 CP.R.particles = function (s, dt) {
   const ctx = this.ctx, A = CP.A;
   const w = s.weather || { kind: 'clear', i: 0 };
-  if ((s.events.dustUntil > s.t || CP.locBase(s.loc) === 'desert') && Math.random() < (s.events.dustUntil > s.t ? 0.8 : 0.1)) this.emit('dust', -10, this.sy(this.Y.mainGround - Math.random() * 3.5));
+  if (s.events.dustUntil > s.t && Math.random() < 0.25) this.emit('dust', -10, this.sy(this.Y.mainFar - Math.random() * 1.2));
   for (const p of this.parts) {
     p.life += dt; p.x += p.vx * dt; p.y += p.vy * dt; p.vy += (p.g || 0) * dt;
     p.vx *= (1 - dt * 0.6); p.rot += p.rotV * dt; p.size += p.grow * this.ppm * dt * 0.35;

@@ -194,22 +194,22 @@ CP.Phys = {
   step(v, dt, dx, row) {
     const P = v.ph || (v.ph = { zf: 0, vf: 0, zr: 0, vr: 0 });
     const heavy = v.len > 7;
-    const k = heavy ? 42 : 62, c = heavy ? 4.6 : 4.0;            // softer springs, light damping → visible bounce
+    const k = heavy ? 55 : 78, c = heavy ? 8.5 : 9.5;           // realistic: firm springs, well damped (settles in ~1 bounce)
     const a = v.a || 0;
-    const wt = CP.clamp(-a * 0.035, -0.11, 0.11);                 // weight transfer front/rear
+    const wt = CP.clamp(-a * 0.018, -0.055, 0.055);                 // weight transfer front/rear
     const ff = -k * (P.zf - wt) - c * P.vf, fr = -k * (P.zr + wt) - c * P.vr;
     const front = v.x, rear = v.x - v.len * 0.8;
     const hit = (p, x0) => row === 0 && v.v > 0.4 && p - dx < x0 && p >= x0;
     for (const x0 of [10.3, 10.45, 10.6, 10.75]) {
-      if (hit(front, x0)) P.vf += 0.5 + v.v * 0.07;
-      if (hit(rear, x0)) P.vr += 0.5 + v.v * 0.07;
+      if (hit(front, x0)) P.vf += 0.22 + v.v * 0.03;
+      if (hit(rear, x0)) P.vr += 0.22 + v.v * 0.03;
     }
-    if (v.v > 1.5 && Math.random() < 0.3) { const n = (Math.random() - 0.5) * v.v * 0.035; P.vf += n; P.vr -= n * 0.7; }
+    if (v.v > 1.5 && Math.random() < 0.25) { const n = (Math.random() - 0.5) * v.v * 0.014; P.vf += n; P.vr -= n * 0.7; }
     if (v.stall && v.stallKind === 'overheat' && Math.random() < 0.2) { P.vf += 0.12; P.vr -= 0.1; }
     P.vf += ff * dt; P.vr += fr * dt; P.zf += P.vf * dt; P.zr += P.vr * dt;
-    P.zf = CP.clamp(P.zf, -0.14, 0.14); P.zr = CP.clamp(P.zr, -0.14, 0.14);
-    v.heave = (P.zf + P.zr) * 0.5;                                // metres of body travel
-    v.pitch = CP.clamp((P.zf - P.zr) / Math.max(2.4, v.len * 0.75), -0.075, 0.075);
+    P.zf = CP.clamp(P.zf, -0.075, 0.075); P.zr = CP.clamp(P.zr, -0.075, 0.075);
+    v.heave = (P.zf + P.zr) * 0.45;                                // metres of body travel
+    v.pitch = CP.clamp((P.zf - P.zr) / Math.max(2.6, v.len * 0.8), -0.045, 0.045);
   }
 };
 
@@ -265,7 +265,7 @@ CP.Env.front = function (s, ctx, W, H, ppm, Y, night, dt) {
         const g = ctx.createLinearGradient(0, top, 0, bot); g.addColorStop(0, `rgba(255,240,205,${a})`); g.addColorStop(1, 'rgba(255,240,205,0)');
         ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(x - 0.25 * ppm, top); ctx.lineTo(x + 0.25 * ppm, top); ctx.lineTo(x + spread, bot); ctx.lineTo(x - spread, bot); ctx.closePath(); ctx.fill();
       }
-      for (let m = 0; m < 14; m++) { const t = R.t * 0.3 + m * 1.7; const mx = x + Math.sin(t * 1.3 + m) * 1.6 * ppm, my = top + ((t * 30 + m * 37) % Math.max(1, (bot - top))); ctx.fillStyle = `rgba(255,245,220,${0.25 * night})`; ctx.fillRect(mx, my, 1.4, 1.4); }
+      for (let m = 0; m < 5; m++) { const t = R.t * 0.3 + m * 1.7; const mx = x + Math.sin(t * 1.3 + m) * 1.6 * ppm, my = top + ((t * 30 + m * 37) % Math.max(1, (bot - top))); ctx.fillStyle = `rgba(255,245,220,${0.14 * night})`; ctx.fillRect(mx, my, 1.2, 1.2); }
     }
     ctx.restore();
   }

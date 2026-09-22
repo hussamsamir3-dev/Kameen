@@ -113,7 +113,7 @@ CP.addStrings({
 CP.bus.on('caseClosed', c => { const s = CP.G.shift; if (s && c.res && c.res.eval && c.res.eval.sound) s.events.lastSoundT = s.t; });
 CP.bus.on('stepEnd', () => {
   const s = CP.G && CP.G.shift; if (!s || !s.prog || s.ended) return; const E = s.events;
-  if (s.prog.combo >= 2 && E.lastSoundT != null && s.t - E.lastSoundT > 55) { s.prog.combo = 0; CP.UI.toast(CP.t('pl_heatLost'), 'warn'); CP.Audio.chime('bad'); }
+  if (s.prog.combo >= 2 && E.lastSoundT != null && s.t - E.lastSoundT > (CP.Pulse.comboTimeout || 55)) { s.prog.combo = 0; CP.UI.toast(CP.t('pl_heatLost'), 'warn'); CP.Audio.chime('bad'); }
   if (E.inspUntil && E.inspUntil <= s.t) { E.inspUntil = 0; E.active = E.active.filter(e => e.type !== 'inspect'); CP.UI.banner(CP.t('pl_inspEnd'), 'ok'); CP.Prog.gain(60, null, null, '#8fe3a8'); CP.Audio.chime('obj'); }
 });
 /* supervisor inspection: 80 s window, ×2 XP for sound decisions, −60 XP and a complaint for mistakes */
@@ -132,7 +132,7 @@ CP.bus.on('caseClosed', c => {
     const pill = (text, bg, fg, y) => { ctx.save(); ctx.font = `800 ${CP.UI.isMob ? 12 : 14}px ${font}`; const w = ctx.measureText(text).width + 22, h = 26, x = W / 2 - w / 2; ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, 8) : ctx.rect(x, y, w, h); ctx.fill(); ctx.fillStyle = fg; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, W / 2, y + h / 2 + 1); ctx.restore(); };
     let y = this.H * 0.16;
     if (E.inspUntil > s.t) { pill('👔 ' + CP.t('pl_inspHud') + ' ×2  ' + CP.fmtTime(E.inspUntil - s.t), `rgba(150,120,255,${0.8 + 0.2 * Math.sin(this.t * 4)})`, '#fff', y); y += 34; }
-    if (s.prog && s.prog.combo >= 2 && E.lastSoundT != null) { const left = 55 - (s.t - E.lastSoundT); if (left < 15) pill('⏳ ' + CP.t('pl_heat') + ' ' + Math.ceil(left), `rgba(255,90,60,${0.6 + 0.4 * Math.sin(this.t * 8)})`, '#fff', y); }
+    if (s.prog && s.prog.combo >= 2 && E.lastSoundT != null) { const left = (CP.Pulse.comboTimeout || 55) - (s.t - E.lastSoundT); if (left < 15) pill('⏳ ' + CP.t('pl_heat') + ' ' + Math.ceil(left), `rgba(255,90,60,${0.6 + 0.4 * Math.sin(this.t * 8)})`, '#fff', y); }
   }; }
 /* high-stakes situations added to the choice-event pool */
 CP.FUN.push(
@@ -144,4 +144,4 @@ CP.FUN.push(
 { const ap = CP.Fun.apply; CP.Fun.apply = function (fx) { if (fx.xp < 0 && CP.G.shift.prog) { CP.G.shift.prog.xp = Math.max(0, CP.G.shift.prog.xp + fx.xp); CP.R.popup(CP.num(fx.xp) + ' ' + CP.t('pr_xp'), null, null, '#ff6a6a'); fx = Object.assign({}, fx, { xp: 0 }); } return ap.call(this, fx); }; }
 CP.bus.on('stepEnd', () => { const s = CP.G && CP.G.shift; const ob = document.getElementById('objBox'); if (!s || !ob) return; const dim = s.t > 12 && !(s.t - (s.events.objPingT || -99) < 8); ob.classList.toggle('dim', dim); });
 { const chk = CP.Prog.checkObjectives; CP.Prog.checkObjectives = function () { const s = CP.G.shift; const before = s && s.prog ? s.prog.objs.filter(o => o.done).length : 0; chk.apply(this, arguments); if (s && s.prog && s.prog.objs.filter(o => o.done).length !== before) s.events.objPingT = s.t; }; }
-;(window.CP_FILES = window.CP_FILES || {})['24_pulse'] = '1.9.1';
+;(window.CP_FILES = window.CP_FILES || {})['24_pulse'] = '2.0.0';

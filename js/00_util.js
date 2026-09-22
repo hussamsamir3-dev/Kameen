@@ -1,7 +1,7 @@
 /* CHECKPOINT: NIGHT SHIFT — core utilities (namespace, seeded RNG, i18n, math) */
 'use strict';
 const CP = window.CP = {};
-CP.VERSION = '1.9.1';
+CP.VERSION = '2.0.0';
 CP.SAVE_VERSION = 1;
 
 /* ---------- Seeded RNG (mulberry32) — state is a single serializable uint32 ---------- */
@@ -100,4 +100,4 @@ CP.Gender = CP.Gender || {
   driverWord: c => (c && c.driver && c.driver.g === 'f') ? { ar: 'السواقة', en: 'Driver' } : { ar: 'السواق', en: 'Driver' },
   pers: (c, p) => CP.C.persLabel[p]
 };
-;(window.CP_FILES = window.CP_FILES || {})['00_util'] = '1.9.1';
+;(window.CP_FILES = window.CP_FILES || {})['00_util'] = '2.0.0';

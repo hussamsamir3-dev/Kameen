@@ -736,3 +736,19 @@ html.short .rv-menu .logo3d, html.short .rv-menu .brandimg { transform: scale(.7
 @keyframes itemIn { from { opacity: 0; transform: translateY(10px); } }
 .rv-menu .logo3d, .rv-menu .brandimg { filter: drop-shadow(0 12px 30px rgba(240,184,64,.35)); animation: logoFloat 6s ease-in-out infinite; }
 @keyframes logoFloat { 50% { transform: translateY(-5px); } }
+
+/* ===== v2.0: directives bulletin, perks, mail, cosmetics ===== */
+.bulletin ul { margin: 6px 0 12px; padding-inline-start: 18px; line-height: 1.6; }
+.bulletin li { margin: 4px 0; }
+.modal { position: fixed; inset: 0; z-index: 60; display: grid; place-items: center; background: rgba(0,0,0,.55); backdrop-filter: blur(6px); }
+.perks { width: min(880px, 94vw); max-height: 90vh; overflow: auto; display: flex; flex-direction: column; gap: 10px; }
+.perk-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.perk-branch { display: flex; flex-direction: column; gap: 8px; padding: 10px; border-radius: 14px; background: rgba(255,255,255,.04); border: 1px solid var(--line); }
+.perk-branch > b { text-align: center; color: #ffe4a3; }
+.perk { display: flex; align-items: center; gap: 10px; padding: 10px; border-radius: 12px; border: 1px solid var(--line2); background: rgba(255,255,255,.05); color: var(--ink); cursor: pointer; text-align: start; }
+.perk:hover { border-color: var(--amber); } .perk.own { border-color: rgba(143,227,168,.6); background: rgba(60,160,110,.14); } .perk.locked { opacity: .45; }
+.pk-i { font-size: 22px; width: 30px; text-align: center; } .pk-t { flex: 1; } .pk-t b { display: block; } .pk-t small { opacity: .7; } .pk-c { font-size: .8em; opacity: .8; white-space: nowrap; }
+.swatch { width: 34px; height: 34px; border-radius: 50%; border: 3px solid transparent; cursor: pointer; } .swatch.on { border-color: #fff; box-shadow: 0 0 10px #fff; } .swatch[aria-disabled=true] { opacity: .3; }
+.mail .ln { padding: 8px 10px; border-radius: 10px; margin-top: 6px; } .mail .cmd { background: rgba(60,160,110,.16); } .mail .cmp { background: rgba(200,60,60,.16); }
+.rankchip { border-color: var(--amberUser, var(--amber)) !important; }
+@media (max-width: 720px) { .perk-grid { grid-template-columns: 1fr; } }

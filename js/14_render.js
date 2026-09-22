@@ -271,7 +271,7 @@ CP.R.structures = function (s) {
 CP.R.gateFront = function (s) {
   const A = CP.A, ctx = this.ctx, ppm = this.ppm, g = s.gate;
   const x = this.sx(RW.gateX + 0.15), y = this.sy(this.Y.mainFar + 0.12);
-  const NF = (CP.A.M.gateFrames || 5) - 1; const H = 3.3 * ppm; const f = CP.clamp(g.ang, 0, 1) * NF; const i0 = Math.floor(f), fr = f - i0;
+  const NF = (CP.A.M.gateFrames || 5) - 1; const H = 3.3 * ppm; const bounce = g.bounceT > 0 ? Math.sin((0.7 - g.bounceT) * 16) * 0.06 * g.bounceT * (g.state === 'open' ? -1 : 1) : 0; const f = CP.clamp(g.ang + bounce, 0, 1) * NF; const i0 = Math.floor(f), fr = f - i0;
   this.shadow(x - 0.1 * ppm, y, 0.75 * ppm, 0.12 * ppm, .45);
   const drawF = (i, a) => { if (i > NF || a <= 0.01) return; const id = 'gate_f' + i; const r = A.rect(id); const an = A.M.sprites[id].anchor; const k = H / r[3]; ctx.globalAlpha = a; ctx.drawImage(A.img.gate_barrier, r[0], r[1], r[2], r[3], x - an[0] * r[2] * k, y - an[1] * r[3] * k, r[2] * k, r[3] * k); ctx.globalAlpha = 1; };
   if (A.img.gate_barrier) { drawF(i0, 1); drawF(i0 + 1, fr); }
@@ -599,4 +599,4 @@ CP.R.pick = function (px, py) {
 CP.R.popup = function (text, x, yup, color) { this.fx.push({ kind: 'xp', text, x, yup, color, t0: this.t, dur: 1.6 }); };
 CP.R.stamp = function (text, color, x, yup) { this.fx.push({ kind: 'stamp', text, color, x, yup, t0: this.t, dur: 1.8 }); };
 CP.R.confetti = function (n, x, y) { for (let i = 0; i < (n || 60); i++) { this.emit('confetti', x ?? this.W / 2, y ?? this.H * 0.35); } };
-;(window.CP_FILES = window.CP_FILES || {})['14_render'] = '1.9.1';
+;(window.CP_FILES = window.CP_FILES || {})['14_render'] = '2.0.0';

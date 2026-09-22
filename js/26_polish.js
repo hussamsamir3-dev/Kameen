@@ -54,7 +54,7 @@ PO.skillCheck = function (task) {
   if (document.getElementById('fixbar')) return; task.rate = 0.45; let hits = 0, tries = 0, pos = 0, dir = 1, last = performance.now(), alive = true;
   const box = ph('div', { id: 'fixbar', role: 'dialog' }, ph('div', { class: 'lbl' }, '🔧 ' + CP.t('po_fix')), ph('div', { class: 'track' }, ph('div', { class: 'zone' }), ph('div', { class: 'needle' })), ph('div', { class: 'dots' }, ph('i'), ph('i'), ph('i')));
   document.getElementById('stage').appendChild(box); const needle = box.querySelector('.needle'), dots = box.querySelectorAll('.dots i');
-  const zoneL = 0.36 + Math.random() * 0.2, zoneW = 0.18; const zone = box.querySelector('.zone'); zone.style.left = (zoneL * 100) + '%'; zone.style.width = (zoneW * 100) + '%';
+  const zoneW = PO.zoneW || 0.18, zoneL = 0.3 + Math.random() * (0.6 - zoneW); const zone = box.querySelector('.zone'); zone.style.left = (zoneL * 100) + '%'; zone.style.width = (zoneW * 100) + '%';
   const tap = () => { if (!alive) return; tries++; const ok = pos >= zoneL && pos <= zoneL + zoneW;
     if (ok) { hits++; dots[hits - 1].classList.add('on'); task.t += task.dur * 0.22; task.rate = Math.min(1.8, task.rate + 0.45); CP.Audio.chime('xp'); CP.R.popup(CP.t('po_hit'), null, null, '#8fe3a8'); zone.style.left = ((0.2 + Math.random() * 0.5) * 100) + '%'; }
     else { task.rate = Math.max(0.3, task.rate - 0.1); CP.Audio.chime('bad'); box.classList.add('shake'); setTimeout(() => box.classList.remove('shake'), 260); }
@@ -88,4 +88,4 @@ PO.burst = el => { const r = el.getBoundingClientRect(); for (let i = 0; i < 18;
 /* ---------- responsive type scale ---------- */
 PO.fit = () => { const w = window.innerWidth, h = window.innerHeight; const base = Math.min(w / 1440, h / 820); const s = CP.clamp(0.86 + base * 0.32, 0.86, 1.32); document.documentElement.style.setProperty('--ui', s.toFixed(3)); document.documentElement.classList.toggle('wide', w / h > 2); document.documentElement.classList.toggle('short', h < 620); };
 window.addEventListener('resize', PO.fit); PO.fit();
-;(window.CP_FILES = window.CP_FILES || {})['26_polish'] = '1.9.1';
+;(window.CP_FILES = window.CP_FILES || {})['26_polish'] = '2.0.0';

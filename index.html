@@ -39,5 +39,42 @@
 <script src="js/21_features.js?v=1.4.1.09220232"></script>
 <script src="js/22_brand.js?v=1.4.1.09220232"></script>
 <script src="js/19_main.js?v=1.4.1.09220232"></script>
+
+<!-- ================================================================================ -->
+<!-- KAMEEN ENHANCED v2.0 - NEW SYSTEMS -->
+<!-- ================================================================================ -->
+<!-- Advanced Officer AI: Context-aware officer behavior with smart animations -->
+<script src="js/23_officer_ai.js"></script>
+
+<!-- Daily Engagement System: Daily rewards, streaks, and time-limited challenges -->
+<script src="js/24_daily_system.js"></script>
+
+<!-- Enhanced Repair UI: Interactive repairs with hover indicators and progress -->
+<script src="js/25_repair_ui.js"></script>
+
+<!-- Realistic Audio System: Vehicle sounds, action effects, spatial panning -->
+<script src="js/25_enhanced_audio.js"></script>
+
+<!-- Props Alignment System: Corrected positioning for all checkpoint props -->
+<script src="js/26_props_alignment.js"></script>
+
+<!-- Dialogue Cleanup: Removes duplicates and improves conversation flow -->
+<script src="js/27_dialogue_cleanup.js"></script>
+
+<!-- Integration Module: Orchestrates all enhanced systems -->
+<script src="js/28_integration.js"></script>
+
+<!-- Initialize Enhanced Systems (add this to js/19_main.js after game initialization) -->
+<script>
+// Initialize Kameen Enhanced v2.0 systems
+setTimeout(() => {
+  if (CP && CP.Integration) {
+    CP.Integration.init();
+    console.log('✓ Kameen Enhanced v2.0 - All systems initialized successfully');
+  }
+}, 1000);
+</script>
+<!-- ================================================================================ -->
+
 </body>
 </html>

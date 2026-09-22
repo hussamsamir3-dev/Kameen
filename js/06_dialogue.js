@@ -25,7 +25,8 @@ const placeIdx = (c, p) => DC.places[c.loc].indexOf(p);
 /* ---------------- availability ---------------- */
 CP.Dlg.intents = function (c) {
   const k = c.k, s = CP.G.shift; const out = [];
-  const add = (id, cond) => { if (cond) out.push(id); };
+  const seen = new Set(); // DEDUP: track seen options
+  const add = (id, cond) => { if (cond && !seen.has(id)) { out.push(id); seen.add(id); } }; // DEDUP: check Set before adding
   if (!k.approached) return [];
   if (k.favourOffered && !k.favourHandled) return ['refuse_favour_record', 'refuse_favour_polite'];
   add('greet_docs', !k.greeted);
@@ -48,7 +49,6 @@ CP.Dlg.intents = function (c) {
   add('ask_health', (k.asked.ask_health || 0) < 2);
   add('ask_drink', !k.asked.ask_drink);
   add('repeat_destination', k.asked.ask_destination && (k.asked.repeat_destination || 0) < 2);
-  add('explain', !k.explained);
   add('close', true);
   return out;
 };

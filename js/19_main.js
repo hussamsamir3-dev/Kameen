@@ -18,6 +18,7 @@ M.step = function (dt) {
   const s = CP.G.shift;
   s.t += dt;
   CP.Actors.update(dt);
+  if (CP.Actors.smartAI) CP.Actors.smartAI(dt); // SMART OFFICER AI
   CP.T.step(dt);
   CP.Gate.update(dt);
   CP.Tasks.update(dt);

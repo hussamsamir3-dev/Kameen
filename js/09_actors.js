@@ -142,4 +142,24 @@ CP.Actors.partnerTraffic = function (dt) {
   s.flowT = (s.flowT || 0) + dt;
   if (s.flowT > 3.2) { s.flowT = 0; CP.Act.doWave(v, 'partner'); CP.Actors.seq('partner', ['lower', 'wave', 'idle'], 0.22); }
 };
+/* SMART OFFICER AI - realistic patrol and interactive behavior */
+CP.Actors.smartAI = function (dt) {
+  const s = CP.G.shift; if (!s || !s.officer) return;
+  const o = s.officer;
+  // Only patrol if officer is idle and no pending action
+  if (!o.target && !o.pending && !o.seq) {
+    o._aiT = (o._aiT || 0) + dt;
+    // Every 8-16 seconds, patrol to a new location
+    if (o._aiT > 8 + Math.random() * 8) {
+      o._aiT = 0;
+      const patrolSpots = [15, 18, 20, 22, 10, 25]; // realistic positions at checkpoint
+      const spot = patrolSpots[Math.floor(Math.random() * patrolSpots.length)];
+      o.target = { x: spot, row: Math.random() * 0.4 }; // vary row slightly
+    }
+  }
+  // When moving, vary animation state between walk and idle naturally
+  if (o.moving && !o._poseVar) {
+    o._poseVar = Math.random() > 0.7 ? 'watch' : 'idle';
+  }
+};
 ;(window.CP_FILES = window.CP_FILES || {})['09_actors'] = '1.4.1';

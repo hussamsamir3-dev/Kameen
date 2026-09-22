@@ -31,7 +31,7 @@ CP.newCareer = function (mode) {
   const seed = (Date.now() ^ (Math.random() * 1e9)) >>> 0;
   return {
     v: CP.SAVE_VERSION, created: Date.now(), mode: mode || 'career', rng: { s: seed },
-    career: { shiftNo: 1, credits: 0, upgrades: { lighting: 0, radio: 0, supplies: 0, partner: 0, bay: 0 }, tutorialDone: false, trust: 60, history: [], returning: [], updates: [], date: '2026-10-03', daily: { lastLogin: 0, streak: 0, level: 0, rewards: [], challenges: {} } },
+    career: { shiftNo: 1, credits: 0, upgrades: { lighting: 0, radio: 0, supplies: 0, partner: 0, bay: 0 }, tutorialDone: false, trust: 60, history: [], returning: [], updates: [], date: '2026-10-03' },
     shift: null
   };
 };
@@ -121,4 +121,4 @@ CP.once = function (key) {
   const s = CP.G.shift; if (!s) return false;
   if (s.idem[key]) return false; s.idem[key] = 1; return true;
 };
-;(window.CP_FILES = window.CP_FILES || {})['04_state'] = '1.4.1';
+;(window.CP_FILES = window.CP_FILES || {})['04_state'] = '1.5.0';

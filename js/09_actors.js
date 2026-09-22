@@ -68,11 +68,27 @@ CP.Actors.update = function (dt) {
   if (task && !p.moving) { p.basePose = task.data.pose || 'idle'; if (task.data.faceX != null) CP.Actors.face(task.data.faceX, 'partner'); }
   else if (!task) { p.basePose = 'idle'; if (!p.moving) p.dir = -1; }
 };
+/* v1.5 officer sheet: 4 characters (0 navy, 1 white, 2 navy senior, 3 white senior), each with run / stop / wave / idle / radio frames.
+   The player is character 0, the partner character 1; extra checkpoint staff (23_staff.js) use 2 and 3. */
+CP.Actors.POSE = { idle: 'idle', raise: 'stop_1', stop: 'stop_3', lower: 'stop_2', wave: 'wave', radio: 'radio_2', documents: 'radio_1', flashlight: 'radio_3' };
+CP.Actors.IDLE_SEQ = [0, 0, 0, 1, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 0];
+CP.Actors.charOf = a => a.char != null ? a.char : (CP.G && CP.G.shift && a === CP.G.shift.partner ? 1 : 0);
+CP.Actors.frameFor = function (ch, pose, moving, walkT, t) {
+  const S = CP.A.M.sprites; const has = id => !!S[id];
+  if (moving) return 'o' + ch + '_run_' + (((Math.floor(walkT / 0.24) % 4) + 4) % 4);
+  pose = pose || 'idle';
+  if (pose === 'idle') {
+    if (has('o' + ch + '_idle_0')) return 'o' + ch + '_idle_' + CP.Actors.IDLE_SEQ[((Math.floor(t * 6) % 16) + 16) % 16];
+    // senior characters have no dedicated idle row: breathe between the two standing frames
+    return 'o' + ch + (Math.floor(t * 1.3) % 2 ? '_wave_0' : '_stop_0');
+  }
+  if (pose === 'wave') return 'o' + ch + '_wave_' + [1, 2, 3, 2][((Math.floor(t * 8) % 4) + 4) % 4];
+  const m = CP.Actors.POSE[pose]; const id = 'o' + ch + '_' + (m || pose);
+  return has(id) ? id : 'o' + ch + '_stop_0';
+};
 CP.Actors.frameOf = function (a) {
-  // supplied 24-frame walk cycle (one stride pair ≈ 1.45 m) and 16-frame breathing idle
-  if (a.moving) return 'ofw_' + String(((Math.floor(a.walkT / (1.45 / 24)) % 24) + 24) % 24).padStart(2, '0');
-  if ((a.pose || 'idle') === 'idle') { const t = (CP.R && CP.R.t || 0) + (a === CP.G.shift.partner ? 0.9 : 0); return 'ofi_' + String(((Math.floor(t * 7) % 16) + 16) % 16).padStart(2, '0'); }
-  return 'officer_' + (a.pose || 'idle');
+  const t = (CP.R && CP.R.t || 0) + (a.animOff || (CP.G && CP.G.shift && a === CP.G.shift.partner ? 0.9 : 0));
+  return CP.Actors.frameFor(CP.Actors.charOf(a), a.pose, a.moving, a.walkT || 0, t);
 };
 
 /* ---------------- partner tasks ---------------- */
@@ -142,80 +158,4 @@ CP.Actors.partnerTraffic = function (dt) {
   s.flowT = (s.flowT || 0) + dt;
   if (s.flowT > 3.2) { s.flowT = 0; CP.Act.doWave(v, 'partner'); CP.Actors.seq('partner', ['lower', 'wave', 'idle'], 0.22); }
 };
-/* SMART OFFICER AI - realistic patrol and interactive behavior */
-CP.Actors.smartAI = function (dt) {
-  const s = CP.G.shift; if (!s || !s.officer) return;
-  const o = s.officer;
-  // Only patrol if officer is idle and no pending action
-  if (!o.target && !o.pending && !o.seq) {
-    o._aiT = (o._aiT || 0) + dt;
-    // Every 8-16 seconds, patrol to a new location
-    if (o._aiT > 8 + Math.random() * 8) {
-      o._aiT = 0;
-      const patrolSpots = [15, 18, 20, 22, 10, 25]; // realistic positions at checkpoint
-      const spot = patrolSpots[Math.floor(Math.random() * patrolSpots.length)];
-      o.target = { x: spot, row: Math.random() * 0.4 }; // vary row slightly
-    }
-  }
-  // When moving, vary animation state between walk and idle naturally
-  if (o.moving && !o._poseVar) {
-    o._poseVar = Math.random() > 0.7 ? 'watch' : 'idle';
-  }
-};
-
-/* PROPS ALIGNMENT - Fix misalignment across all maps */
-CP.PropsAlign = {
-  /* Map-specific prop corrections (world coordinates) */
-  corrections: {
-    cairo: {
-      gate_barrier: { y: 4.30 }, // main gate arm
-      booth_main: { x: 3.2, y: 3.5 },
-      umbrella_stand: { x: 2.8, y: 3.8 },
-      lightpole_1: { x: 8.5, y: 4.0 }
-    },
-    alex: {
-      gate_barrier: { y: 4.25 }, // was misaligned 0.15m high
-      booth_main: { x: 3.5, y: 3.5 },
-      umbrella_stand: { x: 3.1, y: 3.8 },
-      lightpole_1: { x: 9.2, y: 4.0 },
-      checkpoint_booth: { x: 4.2, y: 3.45 } // Alexandria specific
-    },
-    sinai: {
-      gate_barrier: { y: 4.30 },
-      booth_main: { x: 3.0, y: 3.5 },
-      lightpole_1: { x: 8.0, y: 4.0 }
-    },
-    hurghada: {
-      gate_barrier: { y: 4.28 },
-      booth_main: { x: 3.3, y: 3.5 },
-      umbrella_stand: { x: 2.5, y: 3.8 }
-    },
-    luxor: {
-      gate_barrier: { y: 4.30 },
-      booth_main: { x: 3.2, y: 3.5 }
-    },
-    aswan: {
-      gate_barrier: { y: 4.29 },
-      booth_main: { x: 3.1, y: 3.5 }
-    },
-    desert: {
-      gate_barrier: { y: 4.31 },
-      booth_main: { x: 3.0, y: 3.5 }
-    }
-  },
-  
-  apply() {
-    const s = CP.G.shift;
-    if (!s) return;
-    const loc = s.loc;
-    const corrections = this.corrections[loc];
-    if (!corrections) return;
-    // Props corrections would be applied here to render pipeline
-    // This establishes the alignment standard
-  },
-  
-  getReport() {
-    return "Props alignment: All locations checked and corrected. Alexandria gate barrier height fixed (+0.15m).";
-  }
-};
-;(window.CP_FILES = window.CP_FILES || {})['09_actors'] = '1.4.1';
+;(window.CP_FILES = window.CP_FILES || {})['09_actors'] = '1.5.0';

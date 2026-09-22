@@ -217,43 +217,6 @@ CP.Audio = {
     if (this.sirenNode && this.sirenNode.p && inGame) { const a = s.vehicles.find(v => v.special === 'ambulance'); if (a) this.sirenNode.p.pan.setTargetAtTime(this.pan(a.x), t, 0.1); }
     if (inGame) { const o = s.officer; if (o.moving) { this.stepT = (this.stepT || 0) - dt * (o.pending ? 1.7 : 1); if (this.stepT <= 0) { this.stepT = 0.36; this.step(); } } }
   },
-  stopAll() { if (this.sirenNode) { try { this.sirenNode.o.stop(); this.sirenNode.lfo.stop(); } catch (e) { } this.sirenNode = null; } },
-  /* Enhanced realistic sounds */
-  engineSound(vtype, accel, pan) {
-    if (!this.ok) return;
-    const c = this.ctx, t = c.currentTime;
-    const baseFreq = { taxi: 340, bus: 280, truck: 200, microbus: 320, suv: 380, luxury: 420 }[vtype] || 340;
-    const f = baseFreq + (accel || 0) * 200;
-    this.tone('sawtooth', f, 0.4, 0.04, t, f * 1.3, pan);
-    this.burst(0.3, 0.015, f * 0.5, 0.6, t, 'highpass', pan, this.brown);
-  },
-  brakeSound(intensity, pan) {
-    if (!this.ok) return;
-    const c = this.ctx, t = c.currentTime;
-    this.burst(0.5, Math.min(0.05, intensity * 0.08), 1200, 2, t, 'bandpass', pan, this.pink);
-    this.burst(0.6, Math.min(0.04, intensity * 0.06), 3400, 1.5, t + 0.05, 'highpass', pan);
-  },
-  hornSound(type, pan) {
-    if (!this.ok) return;
-    const c = this.ctx, t = c.currentTime;
-    const freqs = { standard: 800, taxi: 900, truck: 650, wedding: 1200 };
-    const f = freqs[type] || 800;
-    this.tone('square', f, 0.25, 0.06, t, f * 0.95, pan);
-  },
-  actionSound(action, subtype, pan) {
-    if (!this.ok) return;
-    const c = this.ctx, t = c.currentTime;
-    const sounds = {
-      stop: () => this.tone('sine', 500, 0.15, 0.03, t),
-      wave: () => this.tone('sine', 600, 0.1, 0.025, t),
-      radio: () => this.burst(0.15, 0.02, 2000, 3, t, 'bandpass', pan),
-      confirm: () => { this.tone('sine', 800, 0.08, 0.02, t); this.tone('sine', 1000, 0.08, 0.025, t + 0.1); },
-      error: () => this.tone('sine', 400, 0.2, 0.04, t, 300),
-      success: () => { this.tone('sine', 800, 0.1, 0.02, t); this.tone('sine', 1000, 0.1, 0.025, t + 0.1); this.tone('sine', 1200, 0.1, 0.03, t + 0.2); },
-      click: () => this.burst(0.08, 0.015, 4000, 2, t, 'highpass'),
-      notification: () => this.tone('sine', 700, 0.12, 0.03, t, 900)
-    };
-    if (sounds[action]) sounds[action]();
-  }
+  stopAll() { if (this.sirenNode) { try { this.sirenNode.o.stop(); this.sirenNode.lfo.stop(); } catch (e) { } this.sirenNode = null; } }
 };
-;(window.CP_FILES = window.CP_FILES || {})['15_audio'] = '1.4.1';
+;(window.CP_FILES = window.CP_FILES || {})['15_audio'] = '1.5.0';

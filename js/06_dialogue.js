@@ -1,60 +1,3 @@
-/* DAILY ENGAGEMENT SYSTEM - Streaks, bonuses, challenges */
-CP.Daily = {
-  checkLogin() {
-    const k = CP.G.career;
-    const now = Math.floor(Date.now() / 1000);
-    const lastLogin = k.daily?.lastLogin || 0;
-    const daysSinceLogin = Math.floor((now - lastLogin) / 86400);
-    
-    if (daysSinceLogin > 1) {
-      k.daily.streak = 0; // Reset streak if more than 1 day
-    }
-    
-    if (daysSinceLogin >= 1) {
-      k.daily.lastLogin = now;
-      k.daily.streak = Math.min((k.daily.streak || 0) + 1, 365);
-      k.daily.level = Math.min((k.daily.level || 0) + 1, 100);
-      
-      const streakReward = Math.floor(50 * (1 + k.daily.streak * 0.1));
-      k.cash = (k.cash || 0) + streakReward;
-      
-      if (k.daily.streak === 7) { k.cash += 500; }
-      if (k.daily.streak === 30) { k.cash += 2000; }
-      if (k.daily.streak === 100) { k.cash += 5000; }
-      
-      this.generateDaily();
-      CP.save();
-    }
-  },
-  
-  generateDaily() {
-    const k = CP.G.career;
-    const challenges = [
-      { id: 'checks_10', name: { ar: 'فحص 10 سيارات', en: 'Check 10 vehicles' }, target: 10, reward: 500 },
-      { id: 'no_bribes', name: { ar: 'بدون رشوة اليوم', en: 'No bribes today' }, target: 1, reward: 1000 },
-      { id: 'perfect_shift', name: { ar: 'نوبة مثالية', en: 'Perfect shift' }, target: 1, reward: 800 },
-      { id: 'busted_5', name: { ar: 'اكتشف 5 خاطئين', en: 'Bust 5 offenders' }, target: 5, reward: 600 }
-    ];
-    
-    k.daily.challenges = {};
-    for (let i = 0; i < 3; i++) {
-      const c = challenges[Math.floor(Math.random() * challenges.length)];
-      k.daily.challenges[c.id] = { name: c.name, target: c.target, current: 0, reward: c.reward, done: false };
-    }
-  },
-  
-  updateChallenge(challengeId, amount = 1) {
-    const k = CP.G.career;
-    const ch = k.daily?.challenges?.[challengeId];
-    if (!ch || ch.done) return;
-    ch.current = Math.min(ch.current + amount, ch.target);
-    if (ch.current >= ch.target) {
-      ch.done = true;
-      k.cash = (k.cash || 0) + ch.reward;
-    }
-  }
-};
-
 /* Dialogue: authored intents with conditions. Answers derive from the case truth + previous statements; tone changes cooperation, never truth. */
 CP.Dlg = {};
 const DC = CP.C;
@@ -82,8 +25,7 @@ const placeIdx = (c, p) => DC.places[c.loc].indexOf(p);
 /* ---------------- availability ---------------- */
 CP.Dlg.intents = function (c) {
   const k = c.k, s = CP.G.shift; const out = [];
-  const seen = new Set(); // DEDUP: track seen options
-  const add = (id, cond) => { if (cond && !seen.has(id)) { out.push(id); seen.add(id); } }; // DEDUP: check Set before adding
+  const add = (id, cond) => { if (cond) out.push(id); };
   if (!k.approached) return [];
   if (k.favourOffered && !k.favourHandled) return ['refuse_favour_record', 'refuse_favour_polite'];
   add('greet_docs', !k.greeted);
@@ -106,6 +48,7 @@ CP.Dlg.intents = function (c) {
   add('ask_health', (k.asked.ask_health || 0) < 2);
   add('ask_drink', !k.asked.ask_drink);
   add('repeat_destination', k.asked.ask_destination && (k.asked.repeat_destination || 0) < 2);
+  add('explain', !k.explained);
   add('close', true);
   return out;
 };
@@ -334,4 +277,4 @@ GF.pers = (c, p) => { const L = CP.C.persLabel[p]; if (!GF.isF(c)) return L; con
     const r = st(c, key, t, val, extra);
     if (!pax && GF.isF(c)) { const n = CP.G.shift.notes[CP.G.shift.notes.length - 1]; if (n && n.caseId === c.id && n.type === 'statement' && n.text.ar.indexOf('السواق: ') === 0) n.text = { ar: 'السواقة: ' + n.text.ar.slice(8), en: n.text.en }; }
     return r; }; }
-;(window.CP_FILES = window.CP_FILES || {})['06_dialogue'] = '1.4.1';
+;(window.CP_FILES = window.CP_FILES || {})['06_dialogue'] = '1.5.0';

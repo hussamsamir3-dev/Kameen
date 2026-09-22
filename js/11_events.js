@@ -48,7 +48,7 @@ Ev.spawnTick = function (dt) {
   }
   if (s.spawnT > 0) return;
   const tut = s.tutorial.step < 99;
-  const dens = CP.locBase(s.loc) === 'cairo' ? [21, 38] : [26, 48];
+  const dens = CP.Pulse ? CP.Pulse.spawnGap(s) : (CP.locBase(s.loc) === 'cairo' ? [21, 38] : [26, 48]);
   const r = CP.srng();
   s.spawnT = tut ? 40 : dens[0] + r() * (dens[1] - dens[0]);
   if (tut) {
@@ -325,4 +325,4 @@ CP.Career.buy = function (k) {
   const cost = U.cost[u[k]]; if (G.career.credits < cost) return 'up_noCredit';
   G.career.credits -= cost; u[k]++; CP.save('auto'); return null;
 };
-;(window.CP_FILES = window.CP_FILES || {})['11_events'] = '1.4.1';
+;(window.CP_FILES = window.CP_FILES || {})['11_events'] = '1.5.0';

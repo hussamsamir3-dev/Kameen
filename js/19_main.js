@@ -18,9 +18,6 @@ M.step = function (dt) {
   const s = CP.G.shift;
   s.t += dt;
   CP.Actors.update(dt);
-  if (CP.Officers) CP.Officers.update(dt, s); // OFFICER AI
-  if (CP.Actors.smartAI) CP.Actors.smartAI(dt); // SMART OFFICER AI
-  if (CP.RepairUI) CP.RepairUI.update(dt, CP.G.career); // REPAIR UI + PROGRESSION
   CP.T.step(dt);
   CP.Gate.update(dt);
   CP.Tasks.update(dt);
@@ -102,7 +99,7 @@ M.enterGame = function () {
   CP.Screens.hideAll(); document.getElementById('game').classList.remove('hidden');
   CP.UI.panel = null; CP.UI.openCase = null;
   if (!CP.G.shift.prog) CP.Prog.startShift(CP.G.shift);
-  CP.UI.buildGame(); CP.R.camX = -0.5; CP.R.camFree = null; CP.R.parts = []; CP.R.fx = []; CP.R.zoom = 1; CP.R.camY = 0;
+  CP.UI.buildGame(); if (CP.Staff) CP.Staff.reset(); CP.R.camX = -0.5; CP.R.camFree = null; CP.R.parts = []; CP.R.fx = []; CP.R.zoom = 1; CP.R.camY = 0;
   M.saveT = 0; M.start(); M.tutorial(true);
 };
 M.endShift = function () {
@@ -136,7 +133,7 @@ M.tutorial = function (force) {
 
 /* ---------------- boot ---------------- */
 /* every script stamps its version; a missing or mismatched stamp means an old or failed file on the server */
-M.EXPECTED = ["00_util", "01_strings", "02_content", "03_assets", "04_state", "05_cases", "06_dialogue", "07_tasks", "08_traffic", "09_actors", "10_actions", "11_events", "12_inspection", "13_screening", "14_render", "15_audio", "16_ui", "17_panels", "18_screens", "19_main", "20_progress", "21_features", "22_brand"];
+M.EXPECTED = ["00_util", "01_strings", "02_content", "03_assets", "04_state", "05_cases", "06_dialogue", "07_tasks", "08_traffic", "09_actors", "10_actions", "11_events", "12_inspection", "13_screening", "14_render", "15_audio", "16_ui", "17_panels", "18_screens", "19_main", "20_progress", "21_features", "22_brand", "23_staff", "24_pulse"];
 M.checkFiles = function (silent) {
   const F = window.CP_FILES || {}; const bad = M.EXPECTED.filter(n => F[n] !== CP.VERSION);
   if (!bad.length) return true;
@@ -174,4 +171,4 @@ M.bootLoad = function () {
 window.addEventListener('DOMContentLoaded', M.boot);
 
 CP.bus.on('caseClosed', () => { const s = CP.G && CP.G.shift; if (s) s.officer.returnAt = s.t + 1.6; });
-;(window.CP_FILES = window.CP_FILES || {})['19_main'] = '1.4.1';
+;(window.CP_FILES = window.CP_FILES || {})['19_main'] = '1.5.0';

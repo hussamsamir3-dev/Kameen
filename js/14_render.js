@@ -94,17 +94,30 @@ CP.R.night = function () {
 /* background: supplied day/night pair cross-faded by the clock, aligned so the image's road meets ours */
 CP.R.background = function (s, W, H, ppm, Y, night) {
   const A = CP.A, ctx = this.ctx, L = CP.LOCS[s.loc] || CP.LOCS.cairo, B = L.bg;
-  const par = (this.camX + 0.8) * ppm * 0.22;
+  /* v1.5: the backdrop lives in WORLD space, like the road and the props. Its width is a fixed number of metres
+     (a little wider than the checkpoint), its road/pavement line (frac) sits exactly on the anchor height, and it
+     pans at 80% of the camera so it still reads as distant. It therefore scales with every zoom level and stays
+     aligned with the structures on every screen size, instead of being sized from the screen width. */
+  const BG_M = 46, PAR = 0.8, cam0 = 19 - 19.2 - 0.1;   // world width in metres, parallax factor, reference camera
   const place = (im, frac, anchorY) => {
-    let bh = Math.max(anchorY / frac, (W * 1.18) * im.height / im.width); const bw = bh * im.width / im.height;
-    const top = anchorY - frac * bh; const left = (W - bw) / 2 - par + (W < bw ? (bw - W) * 0.1 : 0);
+    const bw = BG_M * ppm, bh = bw * im.height / im.width;
+    const top = anchorY - frac * bh;
+    const xl = 19 - BG_M / 2 + (this.camX - cam0) * (1 - PAR);
+    const left = (xl - this.camX) * ppm;
     return { left, top, bw, bh };
+  };
+  const cover = (im, g) => { // stretch the edge rows/columns so the world never shows bare canvas around the backdrop
+    if (g.top > 0) ctx.drawImage(im, 0, 0, im.width, 1, g.left, 0, g.bw, g.top + 1);
+    if (g.left > 0) ctx.drawImage(im, 0, 0, 1, im.height, 0, g.top, g.left + 1, g.bh);
+    if (g.left + g.bw < W) ctx.drawImage(im, im.width - 1, 0, 1, im.height, g.left + g.bw - 1, g.top, W - g.left - g.bw + 1, g.bh);
+    if (g.top > 0 && g.left > 0) ctx.drawImage(im, 0, 0, 1, 1, 0, 0, g.left + 1, g.top + 1);
+    if (g.top > 0 && g.left + g.bw < W) ctx.drawImage(im, im.width - 1, 0, 1, 1, g.left + g.bw - 1, 0, W - g.left - g.bw + 1, g.top + 1);
   };
   if (B.day) {
     const d = CP.Env.gradedImg(B.day, B.frac), nImg = CP.Env.gradedImg(B.night, B.frac); if (!d) { ctx.fillStyle = '#1b1c22'; ctx.fillRect(0, 0, W, H); return; }
     const g = place(d, B.frac, this.sy(Y.mainFar));
-    if (night < 0.999) ctx.drawImage(d, g.left, g.top, g.bw, g.bh);
-    if (nImg && night > 0.001) { ctx.globalAlpha = night; ctx.drawImage(nImg, g.left, g.top, g.bw, g.bh); ctx.globalAlpha = 1; }
+    if (night < 0.999) { cover(d, g); ctx.drawImage(d, g.left, g.top, g.bw, g.bh); }
+    if (nImg && night > 0.001) { ctx.globalAlpha = night; cover(nImg, g); ctx.drawImage(nImg, g.left, g.top, g.bw, g.bh); ctx.globalAlpha = 1; }
     // twilight tint during sunrise/sunset
     const tw = 1 - Math.abs(night - 0.5) * 2; if (tw > 0.01) { ctx.fillStyle = `rgba(255,120,60,${0.18 * tw})`; ctx.fillRect(0, 0, W, this.sy(Y.mainFar)); }
     if (g.top + g.bh < H) { ctx.fillStyle = '#222'; ctx.fillRect(0, g.top + g.bh, W, H - g.top - g.bh); }
@@ -113,7 +126,7 @@ CP.R.background = function (s, W, H, ppm, Y, night) {
   const bim = CP.Env.gradedImg(B.single, B.frac);
   if (!bim) { ctx.fillStyle = '#1b1c22'; ctx.fillRect(0, 0, W, H); return; }
   const g = place(bim, B.frac, this.sy(Y.bgRoad));
-  ctx.drawImage(bim, g.left, g.top, g.bw, g.bh);
+  cover(bim, g); ctx.drawImage(bim, g.left, g.top, g.bw, g.bh);
   // single-image scenes: grade towards daylight when the sun is up
   const day = 1 - night;
   if (day > 0.01) { ctx.save(); ctx.globalCompositeOperation = 'screen'; ctx.fillStyle = s.loc === 'desert' ? `rgba(200,175,140,${0.55 * day})` : `rgba(150,160,175,${0.35 * day})`; ctx.fillRect(0, 0, W, this.sy(Y.mainFar)); ctx.restore(); }
@@ -155,6 +168,7 @@ CP.R.frame = function (alpha, dt) {
   const ents = [];
   for (const v of s.vehicles) { const row = CP.lerp(v.prow, v.row, alpha); ents.push({ y: CP.R.rowY(row), k: 'v', v, row }); }
   if (CP.Props) CP.Props.ents(this, s, ents);
+  if (CP.Staff) CP.Staff.ents(this, s, ents, alpha);
   const o = s.officer, p = s.partner;
   ents.push({ y: CP.R.actorY(CP.lerp(o.prow ?? o.row, o.row, alpha)), k: 'a', a: o, who: 'officer' });
   ents.push({ y: CP.R.actorY(CP.lerp(p.prow ?? p.row, p.row, alpha)) + 0.01, k: 'a', a: p, who: 'partner' });
@@ -499,10 +513,6 @@ CP.R.worldUI = function (s, alpha) {
   if (this.partnerScr && CP.S.textSize !== 'small') { ctx.font = `600 ${Math.max(9, 0.22 * ppm)}px ${font}`; ctx.fillStyle = 'rgba(245,240,230,.75)'; ctx.textAlign = 'center'; ctx.fillText(CP.t('h_partner'), this.partnerScr.x, this.partnerScr.y - (pt ? 0.8 * ppm : 6)); }
   // walk target marker
   const o = s.officer; if (o.target) { const x = this.sx(o.target.x), y = this.sy(CP.R.actorY(o.target.row || 0)); ctx.strokeStyle = 'rgba(240,184,64,.8)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(x, y, 0.3 * ppm, 0.08 * ppm, 0, 0, 7); ctx.stroke(); }
-  // render AI officers (after world objects, before UI)
-  if (CP.Officers) CP.Officers.renderAI(ctx, this, ppm);
-  // repair UI - premium repair interaction feedback
-  if (CP.RepairUI) CP.RepairUI.render(ctx, this, ppm, CP.G.shift.location);
   // speech bubble: the driver's latest reply is shown above the car (handy on phones where the log sits lower in the sheet)
   if (CP.UI && CP.UI.panel && CP.UI.panel.kind === 'dialogue' && CP.UI.isMob) {
     const c = s.cases[CP.UI.panel.caseId]; const v = c && CP.vehOfCase(c); const L = c && c.dlg.log[c.dlg.log.length - 1];
@@ -576,4 +586,4 @@ CP.R.pick = function (px, py) {
 CP.R.popup = function (text, x, yup, color) { this.fx.push({ kind: 'xp', text, x, yup, color, t0: this.t, dur: 1.6 }); };
 CP.R.stamp = function (text, color, x, yup) { this.fx.push({ kind: 'stamp', text, color, x, yup, t0: this.t, dur: 1.8 }); };
 CP.R.confetti = function (n, x, y) { for (let i = 0; i < (n || 60); i++) { this.emit('confetti', x ?? this.W / 2, y ?? this.H * 0.35); } };
-;(window.CP_FILES = window.CP_FILES || {})['14_render'] = '1.4.1';
+;(window.CP_FILES = window.CP_FILES || {})['14_render'] = '1.5.0';

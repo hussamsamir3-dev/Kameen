@@ -322,4 +322,4 @@ CP.T.far = function (dt) {
   for (const f of s.far) { f.px = f.x; f.pw = f.w; f.x += f.v * dt * 2.1; f.w += (f.v * dt) / CP.A.M.vehicles[f.type].wheelRadiusMetres; }
   s.far = s.far.filter(f => f.x < 95);
 };
-;(window.CP_FILES = window.CP_FILES || {})['08_traffic'] = '1.7.0';
+;(window.CP_FILES = window.CP_FILES || {})['08_traffic'] = '1.8.0';

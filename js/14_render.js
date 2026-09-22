@@ -92,13 +92,24 @@ CP.R.night = function () {
   return n;
 };
 /* background: supplied day/night pair cross-faded by the clock, aligned so the image's road meets ours */
+/* v1.8: cinematic depth of field — the distant backdrop softens as the camera zooms into the lane, like a long lens */
+CP.R.dof = function () { if (CP.S.reducedFx || !('filter' in this.ctx)) return 'none'; const z = this.zoom || 1; const px = CP.clamp((z - 0.9) * 2.6, 0.6, 4.2) * (this.ppm / 60); return `blur(${px.toFixed(2)}px) saturate(1.04)`; };
+/* soft cast shadow: the sprite itself, flattened and skewed along the ground, blurred — sun by day, floodlights by night */
+CP.R.castShadow = function (fr, cx, gy, k, flip, hM) {
+  const ctx = this.ctx, ppm = this.ppm, night = this.nightLvl || 0;
+  this.shadow(cx, gy, 0.34 * ppm, 0.075 * ppm, 0.32);
+  if (CP.S.reducedFx || !('filter' in ctx)) return;
+  const dir = night > 0.5 ? (cx < this.W * 0.5 ? 1 : -1) : -0.85, len = night > 0.5 ? 0.42 : 0.55;
+  ctx.save(); ctx.translate(cx, gy); ctx.transform(1, 0, dir * len, -len * 0.75, 0, 0); ctx.filter = `brightness(0) opacity(${night > 0.5 ? 0.22 : 0.3}) blur(${(1.6 * ppm / 60).toFixed(1)}px)`;
+  CP.A.drawGroundedScale(ctx, fr, 0, 0, k, flip); ctx.restore();
+};
 CP.R.background = function (s, W, H, ppm, Y, night) {
   const A = CP.A, ctx = this.ctx, L = CP.LOCS[s.loc] || CP.LOCS.cairo, B = L.bg;
   /* v1.5: the backdrop lives in WORLD space, like the road and the props. Its width is a fixed number of metres
      (a little wider than the checkpoint), its road/pavement line (frac) sits exactly on the anchor height, and it
      pans at 80% of the camera so it still reads as distant. It therefore scales with every zoom level and stays
      aligned with the structures on every screen size, instead of being sized from the screen width. */
-  const BG_M = 46, PAR = 0.8, cam0 = 19 - 19.2 - 0.1;   // world width in metres, parallax factor, reference camera
+  const BG_M = 50, PAR = 0.8, cam0 = 19 - 19.2 - 0.1;   // world width in metres, parallax factor, reference camera
   const place = (im, frac, anchorY) => {
     const bw = BG_M * ppm, bh = bw * im.height / im.width;
     const top = anchorY - frac * bh;
@@ -114,19 +125,21 @@ CP.R.background = function (s, W, H, ppm, Y, night) {
     if (g.top > 0 && g.left + g.bw < W) ctx.drawImage(im, im.width - 1, 0, 1, 1, g.left + g.bw - 1, 0, W - g.left - g.bw + 1, g.top + 1);
   };
   if (B.day) {
-    const crisp = this.zoom > 1.18; const d = crisp ? A.img[B.day] : CP.Env.gradedImg(B.day, B.frac), nImg = crisp ? A.img[B.night] : CP.Env.gradedImg(B.night, B.frac); if (!d) { ctx.fillStyle = '#1b1c22'; ctx.fillRect(0, 0, W, H); return; }
+    const d = A.img[B.day], nImg = A.img[B.night]; if (!d) { ctx.fillStyle = '#1b1c22'; ctx.fillRect(0, 0, W, H); return; }
     const g = place(d, B.frac, this.sy(Y.mainFar));
+    ctx.save(); ctx.filter = this.dof();
     if (night < 0.999) { cover(d, g); ctx.drawImage(d, g.left, g.top, g.bw, g.bh); }
     if (nImg && night > 0.001) { ctx.globalAlpha = night; cover(nImg, g); ctx.drawImage(nImg, g.left, g.top, g.bw, g.bh); ctx.globalAlpha = 1; }
+    ctx.restore();
     // twilight tint during sunrise/sunset
     const tw = 1 - Math.abs(night - 0.5) * 2; if (tw > 0.01) { ctx.fillStyle = `rgba(255,120,60,${0.18 * tw})`; ctx.fillRect(0, 0, W, this.sy(Y.mainFar)); }
     if (g.top + g.bh < H) { ctx.fillStyle = '#222'; ctx.fillRect(0, g.top + g.bh, W, H - g.top - g.bh); }
     return;
   }
-  const bim = this.zoom > 1.18 ? A.img[B.single] : CP.Env.gradedImg(B.single, B.frac);
+  const bim = A.img[B.single];
   if (!bim) { ctx.fillStyle = '#1b1c22'; ctx.fillRect(0, 0, W, H); return; }
   const g = place(bim, B.frac, this.sy(Y.bgRoad));
-  cover(bim, g); ctx.drawImage(bim, g.left, g.top, g.bw, g.bh);
+  ctx.save(); ctx.filter = this.dof(); cover(bim, g); ctx.drawImage(bim, g.left, g.top, g.bw, g.bh); ctx.restore();
   // single-image scenes: grade towards daylight when the sun is up
   const day = 1 - night;
   if (day > 0.01) { ctx.save(); ctx.globalCompositeOperation = 'screen'; ctx.fillStyle = s.loc === 'desert' ? `rgba(200,175,140,${0.55 * day})` : `rgba(150,160,175,${0.35 * day})`; ctx.fillRect(0, 0, W, this.sy(Y.mainFar)); ctx.restore(); }
@@ -315,7 +328,7 @@ CP.R.drawActor = function (a, who, alpha) {
   const cx = this.sx(x), gy = this.sy(CP.R.actorY(row));
   let fr = CP.Actors.frameOf(a); if (!A.M.sprites[fr]) { if (!this._warned) { this._warned = 1; console.warn('missing frame', fr); } fr = 'ofi_00'; } const r = A.rect(fr);
   const hM = who === 'partner' ? 1.76 : 1.8; const k = hM * ppm / (A.M.sprites[fr].hRef || r[3]);
-  this.shadow(cx, gy, 0.32 * ppm, 0.07 * ppm, .45);
+  this.castShadow(fr, cx, gy, k, a.dir < 0);
   (this.occluders = this.occluders || []).push({ x0: cx - 0.28 * ppm, x1: cx + 0.28 * ppm, y0: gy - hM * ppm, y1: gy, h: hM * ppm });
   A.drawGroundedScale(ctx, fr, cx, gy, k, a.dir < 0);
   if (who === 'officer') { this.hitsOfficer = { x: cx, y: gy }; if (a.pose === 'flashlight' || (a.torchT > 0)) { this.torch = { x: cx + a.dir * 0.45 * ppm, y: gy - 1.15 * ppm, dir: a.dir }; } }
@@ -586,4 +599,4 @@ CP.R.pick = function (px, py) {
 CP.R.popup = function (text, x, yup, color) { this.fx.push({ kind: 'xp', text, x, yup, color, t0: this.t, dur: 1.6 }); };
 CP.R.stamp = function (text, color, x, yup) { this.fx.push({ kind: 'stamp', text, color, x, yup, t0: this.t, dur: 1.8 }); };
 CP.R.confetti = function (n, x, y) { for (let i = 0; i < (n || 60); i++) { this.emit('confetti', x ?? this.W / 2, y ?? this.H * 0.35); } };
-;(window.CP_FILES = window.CP_FILES || {})['14_render'] = '1.7.0';
+;(window.CP_FILES = window.CP_FILES || {})['14_render'] = '1.8.0';

@@ -95,7 +95,9 @@ CP.Actors.frameFor = function (ch, pose, moving, walkT, t, calm) {
 };
 CP.Actors.frameOf = function (a) {
   const t = (CP.R && CP.R.t || 0) + (a.animOff || (CP.G && CP.G.shift && a === CP.G.shift.partner ? 0.9 : 0));
-  return CP.Actors.frameFor(CP.Actors.charOf(a), a.pose, a.moving, a.walkT || 0, t, a.calm);
+  const s = CP.G && CP.G.shift; const far = a.target != null && Math.abs(a.target - a.x) > 5.5;
+  const calm = a.calm != null ? a.calm : (s && a === s.partner) ? true : !(far || a.hurry || (s && (s.events.rushUntil > s.t)));
+  return CP.Actors.frameFor(CP.Actors.charOf(a), a.pose, a.moving, a.walkT || 0, t, calm);
 };
 
 /* ---------------- partner tasks ---------------- */
@@ -165,4 +167,4 @@ CP.Actors.partnerTraffic = function (dt) {
   s.flowT = (s.flowT || 0) + dt;
   if (s.flowT > 3.2) { s.flowT = 0; CP.Act.doWave(v, 'partner'); CP.Actors.seq('partner', ['lower', 'wave', 'idle'], 0.22); }
 };
-;(window.CP_FILES = window.CP_FILES || {})['09_actors'] = '1.7.0';
+;(window.CP_FILES = window.CP_FILES || {})['09_actors'] = '1.8.0';

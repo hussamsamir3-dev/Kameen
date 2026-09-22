@@ -662,3 +662,39 @@ html[dir=rtl] .mcard .mgo { transform: scaleX(-1); }
 @keyframes coachPop { from { transform: translateY(6px); opacity: 0; } to { transform: none; opacity: 1; } }
 .choicecard.bet b { font-size: 1.1em; }
 @media (max-width: 720px) { .rv-stats { grid-template-columns: repeat(4, 1fr); } .rv-playT b { font-size: 1.15em; } #coach { font-size: .88em; } }
+
+/* ===== v1.8: futuristic glass menu, centered static logo, chest, repair bar, responsive scale ===== */
+:root { --ui: 1; }
+html.wide #dock { max-width: 1500px; margin: 0 auto; width: 100%; }
+#hud, #dock, #panel, .mc { font-size: calc(1em * var(--ui)); }
+.rv-menu { position: relative; padding: 22px 22px 16px; border-radius: 26px; background: linear-gradient(160deg, rgba(20,22,30,.78), rgba(10,11,16,.86)); border: 1px solid rgba(255,255,255,.1); box-shadow: 0 30px 90px rgba(0,0,0,.6), 0 0 0 1px rgba(240,184,64,.12) inset, 0 0 60px rgba(240,184,64,.08); backdrop-filter: blur(18px) saturate(1.2); overflow: hidden; }
+.rv-menu::before { content: ''; position: absolute; inset: -40% -20% auto; height: 60%; background: radial-gradient(60% 60% at 50% 40%, rgba(240,184,64,.16), transparent 70%); pointer-events: none; }
+.rv-menu::after { content: ''; position: absolute; left: 12%; right: 12%; top: 0; height: 1px; background: linear-gradient(90deg, transparent, rgba(255,214,110,.9), transparent); }
+.rv-menu .logo3d, .rv-menu .brandimg { margin: 0 auto 6px; display: block; transform: none !important; align-self: center; }
+.rv-menu .logo3d { --rx: 0deg !important; --ry: 0deg !important; }
+.rv-fx { pointer-events: none; z-index: 1; }
+.rv-rank { background: linear-gradient(90deg, rgba(240,184,64,.08), rgba(255,255,255,.03)); }
+.rv-play { position: relative; overflow: hidden; }
+.rv-play::after { content: ''; position: absolute; top: -50%; left: -30%; width: 40%; height: 200%; background: linear-gradient(120deg, transparent, rgba(255,255,255,.35), transparent); transform: skewX(-20deg); animation: rvShine 3.6s ease-in-out infinite; }
+@keyframes rvShine { 0%, 60% { left: -40%; } 100% { left: 130%; } }
+.rv-chest { display: flex; align-items: center; gap: 12px; width: 100%; padding: 11px 14px; border-radius: 14px; border: 1px solid rgba(120,220,160,.45); background: linear-gradient(90deg, rgba(60,160,110,.22), rgba(255,255,255,.04)); color: var(--ink); cursor: pointer; text-align: start; box-shadow: 0 0 24px rgba(80,200,140,.15); }
+.rv-chest .rv-ci { animation: chestWob 2.2s ease-in-out infinite; }
+@keyframes chestWob { 0%, 100% { transform: rotate(-6deg) scale(1); } 50% { transform: rotate(6deg) scale(1.12); } }
+.rv-chest.got { opacity: .55; box-shadow: none; } .rv-chest.got .rv-ci { animation: none; }
+.rv-spark { position: fixed; width: 8px; height: 8px; border-radius: 50%; background: #ffd35a; box-shadow: 0 0 10px #ffd35a; pointer-events: none; z-index: 99; animation: rvSpark 1s ease-out forwards; }
+@keyframes rvSpark { to { transform: translate(var(--dx), var(--dy)) scale(.2); opacity: 0; } }
+.rv-card, .rv-ico, .rv-stat { backdrop-filter: blur(6px); }
+#fixbar { position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%); width: min(420px, 86vw); padding: 16px 18px 14px; border-radius: 18px; background: rgba(14,15,20,.94); border: 1px solid rgba(240,184,64,.5); box-shadow: 0 20px 60px rgba(0,0,0,.6); z-index: 40; cursor: pointer; user-select: none; }
+#fixbar .lbl { text-align: center; font-weight: 700; margin-bottom: 12px; color: #ffe4a3; }
+#fixbar .track { position: relative; height: 22px; border-radius: 11px; background: linear-gradient(90deg, #5a1d1d, #3a2a1a 30%, #3a2a1a 70%, #5a1d1d); overflow: hidden; }
+#fixbar .zone { position: absolute; top: 0; bottom: 0; background: linear-gradient(90deg, rgba(120,230,150,.55), rgba(120,230,150,.95), rgba(120,230,150,.55)); box-shadow: 0 0 14px rgba(120,230,150,.6); }
+#fixbar .needle { position: absolute; top: -3px; bottom: -3px; width: 5px; margin-left: -2px; background: #fff; border-radius: 3px; box-shadow: 0 0 10px #fff; }
+#fixbar .dots { display: flex; gap: 8px; justify-content: center; margin-top: 12px; }
+#fixbar .dots i { width: 12px; height: 12px; border-radius: 50%; background: rgba(255,255,255,.15); }
+#fixbar .dots i.on { background: #8fe3a8; box-shadow: 0 0 10px #8fe3a8; }
+#fixbar.shake { animation: fixShake .25s ease; }
+@keyframes fixShake { 25% { transform: translate(-50%, -50%) translateX(-6px); } 75% { transform: translate(-50%, -50%) translateX(6px); } }
+.opts .po-hid { display: none !important; }
+.opts .po-more { grid-column: 1 / -1; opacity: .75; }
+html.short .rv-stats, html.short .rv-more { display: none; }
+@media (max-width: 720px) { .rv-menu { padding: 16px 14px 12px; border-radius: 20px; } }

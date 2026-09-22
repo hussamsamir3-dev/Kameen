@@ -70,7 +70,7 @@ CP.Screens.menu = function () {
   const more = rh('details', { class: 'more rv-more' }, rh('summary', null, CP.t('m_more')), rh('div', { class: 'col' },
     rh('button', { class: 'btn mb', onclick: () => CP.UI.confirm(CP.t('m_newConfirm'), () => CP.Main.newCareer()) }, CP.t('m_new')),
     rh('button', { class: 'btn mb', 'aria-disabled': done ? 'false' : 'true', onclick: () => done ? CP.Main.free(false) : CP.UI.toast(CP.t('m_freeLocked'), 'warn') }, CP.t('m_free'))));
-  const mc = rh('div', { class: 'mc glass rv-menu' }, CP.Brand.logo({ size: 1, tag: false }), ring, stats, hero, cards, icons, more,
+  const mc = rh('div', { class: 'mc glass rv-menu' }, CP.Brand.logo({ size: 1.05, tag: false, static: true }), ring, stats, hero, cards, icons, more,
     rh('div', { class: 'foot' }, rh('div', null, CP.t('credit')), rh('div', null, 'v' + CP.VERSION)));
   e.append(cv, rh('div', { class: 'shade' }), mc);
   this.menuScene(cv);
@@ -176,4 +176,4 @@ CP.bus.on('stepEnd', () => {
   if (RV.hum) { const target = v ? 0.035 : 0; const gg = RV.hum.g.gain; gg.setTargetAtTime(target, A.ctx.currentTime, 0.4); RV.hum.o.frequency.setTargetAtTime(v ? 44 + Math.sin(CP.R.t * 3) * 1.5 : 30, A.ctx.currentTime, 0.2); if (!v && gg.value < 0.002) { RV.hum.o.stop(); RV.hum = null; } }
 });
 CP.bus.on('shiftStart', () => { if (RV.hum) { try { RV.hum.o.stop(); } catch (e) { } RV.hum = null; } });
-;(window.CP_FILES = window.CP_FILES || {})['25_revamp'] = '1.7.0';
+;(window.CP_FILES = window.CP_FILES || {})['25_revamp'] = '1.8.0';

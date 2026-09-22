@@ -41,11 +41,13 @@ CP.Audio = {
   out(pan) { if (!pan || !this.ctx.createStereoPanner) return this.sfx; const p = this.ctx.createStereoPanner(); p.pan.value = pan; p.connect(this.sfx); return p; },
   env(node, t0, a, peak, dur, dest) { const g = this.ctx.createGain(); g.gain.setValueAtTime(0.0001, t0); g.gain.exponentialRampToValueAtTime(Math.max(0.0002, peak), t0 + a); g.gain.exponentialRampToValueAtTime(0.0001, t0 + dur); node.connect(g); g.connect(dest || this.sfx); return g; },
   tone(type, f, dur, peak, t0, f2, pan) {
+    peak = peak * 0.78; dur = dur * 1.12;
     if (!this.ok) return; const c = this.ctx; t0 = t0 ?? c.currentTime;
     const o = c.createOscillator(); o.type = type; o.frequency.setValueAtTime(f, t0); if (f2) o.frequency.exponentialRampToValueAtTime(f2, t0 + dur);
     this.env(o, t0, 0.01, peak, dur, this.out(pan)); o.start(t0); o.stop(t0 + dur + 0.05);
   },
   burst(dur, peak, freq, q, t0, type, pan, buf) {
+    peak = peak * 0.8;
     if (!this.ok) return; const c = this.ctx; t0 = t0 ?? c.currentTime;
     const s = c.createBufferSource(); s.buffer = buf || this.white; s.playbackRate.value = 0.8 + Math.random() * 0.4; const f = c.createBiquadFilter(); f.type = type || 'bandpass'; f.frequency.value = freq; f.Q.value = q || 1;
     s.connect(f); this.env(f, t0, 0.005, peak, dur, this.out(pan)); s.start(t0, Math.random()); s.stop(t0 + dur + 0.05);
@@ -67,7 +69,7 @@ CP.Audio = {
       this.cur = i; if (!quiet || el.ended) el.currentTime = 0; el.volume = 0;
       const p = el.play(); if (p && p.catch) p.catch(() => { this.started = false; });
       if (prev && prev !== el) { const pv = prev; const f = setInterval(() => { pv.volume = Math.max(0, pv.volume - 0.04); if (pv.volume <= 0) { pv.pause(); clearInterval(f); } }, 80); }
-      if (!quiet && CP.UI && CP.UI.toast && CP.G && CP.G.shift) CP.UI.toast(CP.t('mus_now', { n: CP.t('mus_name_' + i) }));
+      
     },
     next() { if (!this.els.length) return; let n = this.cur; if (this.els.length > 1) while (n === this.cur) n = Math.floor(Math.random() * this.els.length); this.play(n); },
     tick() {
@@ -224,4 +226,4 @@ CP.Audio = {
   },
   stopAll() { if (this.sirenNode) { try { this.sirenNode.o.stop(); this.sirenNode.lfo.stop(); } catch (e) { } this.sirenNode = null; } }
 };
-;(window.CP_FILES = window.CP_FILES || {})['15_audio'] = '1.8.0';
+;(window.CP_FILES = window.CP_FILES || {})['15_audio'] = '1.9.0';

@@ -698,3 +698,20 @@ html.wide #dock { max-width: 1500px; margin: 0 auto; width: 100%; }
 .opts .po-more { grid-column: 1 / -1; opacity: .75; }
 html.short .rv-stats, html.short .rv-more { display: none; }
 @media (max-width: 720px) { .rv-menu { padding: 16px 14px 12px; border-radius: 20px; } }
+
+/* ===== v1.9: repair popover, guided dialogue, black file pips ===== */
+#fixpop { position: absolute; z-index: 41; width: 240px; display: flex; flex-direction: column; gap: 8px; padding: 12px; border-radius: 16px; background: rgba(14,15,20,.96); border: 1px solid rgba(255,140,80,.55); box-shadow: 0 16px 50px rgba(0,0,0,.6), 0 0 30px rgba(255,120,60,.18); animation: coachPop .2s ease; }
+#fixpop b { text-align: center; color: #ffd0b0; margin-bottom: 2px; }
+.dp-steps { display: flex; gap: 6px; margin: 0 0 8px; }
+.dp-step { flex: 1; text-align: center; padding: 6px 4px; border-radius: 10px; font-size: .82em; font-weight: 700; background: rgba(255,255,255,.05); color: rgba(255,255,255,.45); border: 1px solid var(--line); }
+.dp-step.on { background: rgba(240,184,64,.18); color: #ffe4a3; border-color: var(--amber); box-shadow: 0 0 14px rgba(240,184,64,.25); }
+.dp-step.done { color: #8fe3a8; border-color: rgba(143,227,168,.4); }
+.dp-tone { display: none !important; } .dp-tone.open { display: flex !important; }
+.dp-toneT { align-self: flex-end; opacity: .6; }
+.dlg .opts .btn { min-height: 48px; font-size: 1.02em; }
+.dp-next { background: var(--amber) !important; color: var(--amberInk) !important; border-color: var(--amber) !important; box-shadow: 0 0 0 3px rgba(240,184,64,.25), 0 8px 22px rgba(240,184,64,.3); animation: nextPulse 1.6s ease-in-out infinite; }
+@keyframes nextPulse { 50% { box-shadow: 0 0 0 6px rgba(240,184,64,.12), 0 8px 26px rgba(240,184,64,.4); } }
+.dlg .meter { opacity: .8; }
+@media (max-width: 1400px) { .dlg .side { display: none; } }
+.dp-pips { display: flex; gap: 4px; } .dp-pips i { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,.12); } .dp-pips i.on { background: #ffd35a; box-shadow: 0 0 8px #ffd35a; }
+.rv-card.static { cursor: default; } .rv-card.locked { opacity: .55; }

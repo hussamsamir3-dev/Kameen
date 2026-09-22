@@ -109,7 +109,7 @@ CP.R.background = function (s, W, H, ppm, Y, night) {
      (a little wider than the checkpoint), its road/pavement line (frac) sits exactly on the anchor height, and it
      pans at 80% of the camera so it still reads as distant. It therefore scales with every zoom level and stays
      aligned with the structures on every screen size, instead of being sized from the screen width. */
-  const BG_M = 50, PAR = 0.8, cam0 = 19 - 19.2 - 0.1;   // world width in metres, parallax factor, reference camera
+  const BG_M = 41, PAR = 0.8, cam0 = 19 - 19.2 - 0.1;   // world width in metres, parallax factor, reference camera
   const place = (im, frac, anchorY) => {
     const bw = BG_M * ppm, bh = bw * im.height / im.width;
     const top = anchorY - frac * bh;
@@ -316,7 +316,7 @@ CP.R.drawVeh = function (v, row, alpha, s) {
   // soft exhaust from the tailpipe: a gentle puff when idling, more under acceleration
   // only vehicles in the main lane near the checkpoint puff, and only occasionally
   const idling = v.v < 0.4 && !v.stall && v.caseId && v.row === 0;
-  if ((v.a > 0.6 && v.v < 6 && Math.random() < 0.1) || (idling && Math.random() < 0.012)) this.emit('exhaust', left + 2, ground - 0.28 * ppm, idling ? { vy: -6, size: 0.22 * ppm, a: 0.18 } : null);
+  if ((v.a > 0.6 && v.v < 6 && Math.random() < 0.14) || (idling && Math.random() < 0.03)) this.emit('exhaust', left + 2, ground - 0.28 * ppm, idling ? { vy: -3, size: 0.12 * ppm, a: 0.06 } : null);
   if (v.a > 1.2 && v.v > 1 && (CP.locBase(s.loc) === 'desert' || (s.weather && s.weather.kind === 'dust')) && Math.random() < 0.08) this.emit('dustkick', left + 4, ground - 0.1 * ppm);
   if (v.a < -3.2 && v.v > 3 && Math.random() < 0.25) { this.decal('fx_skid', x - v.len * 0.5, CP.R.rowY(row) - 0.02, v.len * 0.9, 0.5); if (Math.random() < 0.3) this.emit('spark', left + g.width * 0.2, ground - 2); }
   if (s.weather && s.weather.kind === 'rain' && v.v > 4 && Math.random() < 0.08) this.emit('splash', left + g.width * (Math.random() < 0.5 ? 0.15 : 0.85), ground - 2);
@@ -438,7 +438,7 @@ CP.R.emit = function (kind, x, y, opt) {
   const p = { kind, x, y, vx: 0, vy: 0, life: 0, max: 1.6, size: 0.6 * ppm, grow: 0.6, rot: Math.random() * 6.28, rotV: (Math.random() - .5) * 1.2, a: 0.6, tex: this.FX[kind] || null, g: 0 };
   const wind = (CP.G.shift.weather && CP.G.shift.weather.wind) || 0;
   switch (kind) {
-    case 'exhaust': p.vx = -6 - Math.random() * 10 + wind * 6; p.vy = -10 - Math.random() * 10; p.max = 1.4 + Math.random() * 0.6; p.size = 0.24 * ppm; p.grow = 1.0; p.a = 0.16; break;
+    case 'exhaust': p.vx = -3 - Math.random() * 5 + wind * 5; p.vy = -4 - Math.random() * 5; p.max = 2.4 + Math.random() * 0.8; p.size = 0.14 * ppm; p.grow = 1.9; p.a = 0.07; p.rotV *= 0.4; break;
     case 'smoke': p.vx = -4 + wind * 8; p.vy = -22 - Math.random() * 16; p.max = 2.0; p.size = 0.4 * ppm; p.grow = 1.3; p.a = 0.32; break;
     case 'steam': p.vx = (Math.random() - .5) * 10 + wind * 6; p.vy = -26 - Math.random() * 18; p.max = 1.8; p.size = 0.36 * ppm; p.grow = 1.4; p.a = 0.3; break;
     case 'dust': p.vx = 25 + Math.random() * 55 + wind * 20; p.vy = (Math.random() - .5) * 10; p.max = 2.6; p.size = 0.4 * ppm; p.grow = 0.8; p.a = 0.16; break;
@@ -599,4 +599,4 @@ CP.R.pick = function (px, py) {
 CP.R.popup = function (text, x, yup, color) { this.fx.push({ kind: 'xp', text, x, yup, color, t0: this.t, dur: 1.6 }); };
 CP.R.stamp = function (text, color, x, yup) { this.fx.push({ kind: 'stamp', text, color, x, yup, t0: this.t, dur: 1.8 }); };
 CP.R.confetti = function (n, x, y) { for (let i = 0; i < (n || 60); i++) { this.emit('confetti', x ?? this.W / 2, y ?? this.H * 0.35); } };
-;(window.CP_FILES = window.CP_FILES || {})['14_render'] = '1.8.0';
+;(window.CP_FILES = window.CP_FILES || {})['14_render'] = '1.9.0';

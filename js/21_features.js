@@ -536,4 +536,100 @@ CP.Props = {
   }
 };
 CP.Police.parked = () => null;
+
+/* ======================= v1.8: friendlier menu, small talk, choice events ======================= */
+CP.addStrings({
+  mm_continue: ['كمّل الوردية', 'Continue shift'], mm_newshift: ['وردية جديدة — اختار الكمين', 'New shift — choose checkpoint'], mm_daily: ['تحدي اليوم', 'Daily challenge'],
+  mm_active: ['عندك وردية شغالة. تسيبها وتفتح الخريطة؟ (الوردية الحالية هتتلغي)', 'You have a shift in progress. Leave it and open the map? (the current shift is discarded)'],
+  mm_first: ['ابدأ أول وردية', 'Start your first shift'], mm_today: ['النهارده: {l}', 'Today: {l}'], mm_tools: ['السجل • الإعدادات • طريقة اللعب', 'Record • Settings • How to play'],
+  i_chat: ['دردشة خفيفة', 'Small talk'], ev_choice: ['موقف', 'Situation'], ev_ok: ['تمام', 'OK']
+});
+{ const sh = CP.h;
+  CP.Screens.menu = function () {
+    CP.Main.stop(); CP.Audio.stopAll(); this.from = 'menu';
+    const e = this.show('menu'); e.innerHTML = '';
+    const cv = sh('canvas', { class: 'bg', 'aria-hidden': 'true' });
+    const saved = (() => { CP.SAVE_KEY = 'cpns_save_v1'; return CP.loadSaved(); })();
+    const done = saved && saved.career.tutorialDone; const db = CP.Daily.best(); const today = db.date === CP.Daily.today(); const sp = CP.Daily.spec();
+    const active = saved && saved.shift && !saved.shift.ended;
+    const openMap = () => { if (!saved) { CP.Main.newCareer(); return; } const go = () => { CP.Main.useKey('career'); CP.G = saved; if (CP.G.shift && !CP.G.shift.ended) { CP.G.shift = null; CP.save(); } CP.Screens.briefing(); };
+      if (active) CP.UI.confirm(CP.t('mm_active'), go); else go(); };
+    const card = (cls, icon, title, sub, fn, dis) => sh('button', { class: 'mcard ' + cls, 'aria-disabled': dis ? 'true' : 'false', onclick: () => { if (dis) { CP.UI.toast(dis, 'warn'); return; } fn(); } }, sh('span', { class: 'mi' }, icon), sh('span', { class: 'mt' }, sh('b', null, title), sub ? sh('small', null, sub) : null), sh('span', { class: 'mgo' }, '›'));
+    const mc = sh('div', { class: 'mc glass menu2' },
+      CP.Brand.logo({ size: 1, tag: false }),
+      saved ? this.rankCard(saved.career) : sh('div', { class: 'muted' }, CP.t('subtitle')),
+      active ? card('pri', '▶', CP.t('mm_continue'), CP.t('loc_' + saved.shift.loc) + ' • ' + CP.t('br_shift', { n: CP.num(saved.shift.no) }), () => CP.Main.continueCareer(saved)) : null,
+      card(active ? '' : 'pri', '🗺️', saved ? CP.t('mm_newshift') : CP.t('mm_first'), saved ? CP.t('br_shift', { n: CP.num(saved.career.shiftNo) }) : CP.t('subtitle'), openMap),
+      card('', '📅', CP.t('mm_daily'), (today ? CP.t('daily_best', { n: CP.num(db.best) }) + ' • ' : '') + CP.t('mm_today', { l: CP.t('loc_' + sp.loc).split(' — ')[0] }), () => CP.Daily.start(), done ? null : CP.t('m_freeLocked')),
+      sh('div', { class: 'mrow' },
+        sh('button', { class: 'mini', 'aria-disabled': saved ? 'false' : 'true', onclick: () => saved ? this.record(saved.career) : CP.UI.toast(CP.t('m_freeLocked'), 'warn') }, '🏆', sh('span', null, CP.t('m_record2'))),
+        sh('button', { class: 'mini', onclick: () => this.settings('menu') }, '⚙️', sh('span', null, CP.t('m_settings'))),
+        sh('button', { class: 'mini', onclick: () => this.how('menu') }, '📘', sh('span', null, CP.t('m_how'))),
+        sh('button', { class: 'mini', onclick: () => CP.UI.quickMenu() }, '🔊', sh('span', null, CP.t('qm_music'))),
+        sh('button', { class: 'mini', onclick: () => { CP.S.lang = CP.S.lang === 'ar' ? 'en' : 'ar'; CP.saveSettings(); CP.UI.applyLang(); this.menu(); } }, '🌐', sh('span', null, CP.lang === 'ar' ? 'English' : 'العربية'))),
+      sh('details', { class: 'more' }, sh('summary', null, CP.t('m_more')), sh('div', { class: 'col' },
+        sh('button', { class: 'btn mb', onclick: () => CP.UI.confirm(CP.t('m_newConfirm'), () => CP.Main.newCareer()) }, CP.t('m_new')),
+        sh('button', { class: 'btn mb', 'aria-disabled': done ? 'false' : 'true', onclick: () => done ? CP.Main.free(false) : CP.UI.toast(CP.t('m_freeLocked'), 'warn') }, CP.t('m_free')))),
+      sh('div', { class: 'foot' }, sh('div', null, CP.t('credit')), sh('div', null, 'v' + CP.VERSION)));
+    e.append(cv, sh('div', { class: 'shade' }), mc);
+    this.menuScene(cv);
+  };
+}
+
+/* small talk: personality- and situation-aware lines (gendered automatically for women drivers) */
+CP.C.intentLabel.chat = CP.STR.ar.i_chat ? [CP.STR.ar.i_chat, CP.STR.en.i_chat] : ['دردشة خفيفة', 'Small talk'];
+CP.CHAT = {
+  officer: [['الجو عامل إيه معاك النهارده؟', 'How is the road treating you today?'], ['الطريق زحمة ولا ماشي؟', 'Heavy traffic today?'], ['منين وإلى أين كده عالسريع؟', 'Long drive tonight?'], ['ربنا يسهّل، خلّي بالك من السرعة.', 'Take it easy on the speed.']],
+  patient: [['الحمد لله يا باشا، ربنا يعينكم على السهر.', 'Thank God, officer — God help you through the night shift.'], ['زحمة شوية بس ماشيين.', 'A bit busy, but we are moving.'], ['أنا مش مستعجل، خد وقتك.', "I'm in no hurry, take your time."]],
+  chatty: [['ده أنا لسه جاي من فرح ابن أختي، الدنيا كانت مولعة!', 'I just came from my nephew’s wedding — what a party!'], ['تعرف يا باشا، الطريق ده أنا ماشي فيه من عشرين سنة.', 'You know, officer, I have driven this road for twenty years.'], ['الأهلي كسب امبارح؟ ماشفتش الماتش والله.', 'Did Al Ahly win last night? I missed the match.']],
+  anxious: [['هو في حاجة يا باشا؟ أنا بس متوتر شوية من الكماين.', 'Is something wrong, officer? Checkpoints make me nervous.'], ['معلش إيدي بتترعش، شربت قهوة كتير.', 'Sorry, my hands are shaking — too much coffee.']],
+  impatient: [['يا باشا معلش أنا متأخر، ممكن نخلص؟', 'Sorry officer, I am late — can we finish?'], ['الطابور ده كل يوم كده؟', 'Is the queue like this every day?']],
+  defensive: [['أنا ماعملتش حاجة يا باشا.', 'I have not done anything, officer.'], ['كل شوية كمين… خلاص اسأل.', 'Checkpoint after checkpoint… fine, ask.']]
+};
+{ const intents = CP.Dlg.intents; CP.Dlg.intents = function (c) { const l = intents.apply(this, arguments); if (c && c.k.greeted && !c.k.chatted && l.indexOf('chat') < 0) { const i = l.indexOf('close'); if (i >= 0) l.splice(i, 0, 'chat'); else l.push('chat'); } return l; }; }
+{ const ask = CP.Dlg.ask; CP.Dlg.ask = function (c, intent, tone) {
+    if (intent !== 'chat') return ask.apply(this, arguments);
+    const r = CP.makeRng(c.seed + 77); const o = r.pick(CP.CHAT.officer); const pool = CP.CHAT[c.driver.pers] || CP.CHAT.patient; const d = r.pick(pool);
+    const ol = CP.Gender.isF(c) ? [o[0].replace('معاك', 'معاكي').replace('خلّي بالك', 'خلّي بالك'), o[1]] : o;
+    CP.Dlg.say(c, 'officer', { ar: ol[0], en: ol[1] }); CP.Dlg.say(c, 'driver', { ar: d[0], en: d[1] });
+    c.k.chatted = true; c.patience = Math.min(100, c.patience + 8); c.coop = Math.min(100, c.coop + 6); c.k.explained = true; CP.Audio.ack(c.driver.g);
+    CP.bus.emit('dialogue'); return true; }; }
+
+/* choice events: short situations with a decision and consequences (trust, XP, time) */
+CP.FUN = [
+  { t: ['راديو العمليات: مطلوب عربية نصر ١٢٨ حمرا — لو شفتها بلّغ.', 'Dispatch: be on the lookout for a red Nasr 128 — report if seen.'], o: [[['تمام، هنراقب', 'Copy, we will watch'], { xp: 20, trust: 1 }], [['مش فاضيين دلوقتي', 'Busy right now'], { trust: -1 }]] },
+  { t: ['بياع شاي معدّي بيعرض عليكم شاي ببلاش "علشان الكمين".', 'A tea seller offers free tea "for the checkpoint".'], o: [[['شكراً، هندفع تمنه', 'Thanks — we will pay for it'], { trust: 2, xp: 25 }], [['خده ببلاش', 'Take it for free'], { trust: -3 }]] },
+  { t: ['صحفي بيسأل: "الكمين ده بيوقف كل العربيات ليه؟"', 'A journalist asks: "why does this checkpoint stop every car?"'], o: [[['نشرح له بهدوء الإجراء', 'Calmly explain the procedure'], { trust: 3, xp: 30 }], [['نقوله ممنوع الكلام', 'Tell him no comment'], { trust: -1 }]] },
+  { t: ['المشرف معدّي من غير ميعاد وبيراقب الأداء.', 'The supervisor drops by unannounced to watch your work.'], o: [[['نكمل الشغل بنفس الإجراءات', 'Carry on by the book'], { xp: 40 }], [['نسرّع الطابور ونعدّي الكل', 'Rush the queue, wave everyone'], { trust: -2 }]] },
+  { t: ['طفل تايه بيعيط جنب الكشك ومش لاقي أهله.', 'A lost child is crying by the booth, separated from family.'], o: [[['نطمنه ونبلغ العمليات', 'Comfort them and radio dispatch'], { trust: 4, xp: 40 }], [['نقوله يستنى هنا', 'Tell them to wait there'], { trust: -2 }]] },
+  { t: ['سواق ميكروباص بيشتكي إن زميله بيقف في الممنوع جنب الكمين.', 'A microbus driver complains a colleague is parking illegally by the checkpoint.'], o: [[['نبعت الزميل ينظّم الوقوف', 'Send the partner to sort the parking'], { xp: 25, trust: 1 }], [['نتجاهل', 'Ignore it'], { trust: -1 }]] },
+  { t: ['الكهربا بترعش في الكشك… المولد صوته غريب.', 'The booth lights flicker… the generator sounds odd.'], o: [[['نكشف على المولد بدري', 'Check the generator early'], { xp: 20, fixGen: true }], [['نسيبه', 'Leave it'], { breakGen: true }]] },
+  { t: ['فرح معدّي ناحية الكمين والناس عايزة تحتفل.', 'A wedding party is heading for the checkpoint, eager to celebrate.'], o: [[['نهنيهم وننظم المرور بسرعة', 'Congratulate them and keep traffic moving'], { trust: 3, xp: 25 }], [['نوقفهم كلهم', 'Stop them all'], { trust: -2 }]] }
+];
+CP.Fun = {
+  show(ev) {
+    if (document.querySelector('.choicecard') || CP.UI.panel) return false;
+    CP.FX.hold = true; CP.Audio.radioClick(true);
+    const box = CP.h('div', { class: 'choicecard', role: 'dialog' }, CP.h('div', { class: 'lbl' }, '📻 ' + CP.t('ev_choice')), CP.h('b', null, CP.L({ ar: ev.t[0], en: ev.t[1] })),
+      CP.h('div', { class: 'col' }, ...ev.o.map(([lab, fx]) => CP.h('button', { class: 'btn', onclick: () => { box.remove(); CP.FX.hold = false; CP.Fun.apply(fx); } }, CP.L({ ar: lab[0], en: lab[1] })))));
+    document.getElementById('stage').appendChild(box); return true;
+  },
+  apply(fx) {
+    const G = CP.G, s = G.shift;
+    if (fx.trust) G.career.trust = CP.clamp(G.career.trust + fx.trust, 0, 100);
+    if (fx.xp && CP.Prog) CP.Prog.gain(fx.xp, null, null, '#8fe3a8');
+    if (fx.breakGen && s.equipment.generator === 'ok') CP.Events.start('generator');
+    CP.Audio.chime(fx.trust < 0 || fx.breakGen ? 'bad' : 'good');
+    CP.UI.toast((fx.trust > 0 ? '👍 ' : fx.trust < 0 ? '👎 ' : '') + CP.t('ev_ok'), fx.trust < 0 ? 'warn' : 'ok');
+  },
+  tick(s) {
+    if (!s || s.tutorial.step < 99 || s.ended) return;
+    s.funT = (s.funT == null ? 100 + Math.random() * 60 : s.funT) - 1 / 60;
+    if (s.funT > 0) return;
+    s.funT = 120 + Math.random() * 90; s.funDone = s.funDone || [];
+    const pool = CP.FUN.map((e, i) => i).filter(i => s.funDone.indexOf(i) < 0); if (!pool.length) return;
+    const i = pool[Math.floor(Math.random() * pool.length)]; if (this.show(CP.FUN[i])) s.funDone.push(i); else s.funT = 8;
+  }
+};
+CP.bus.on('stepEnd', () => CP.Fun.tick(CP.G && CP.G.shift));
 ;(window.CP_FILES = window.CP_FILES || {})['21_features'] = '1.4.1';

@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="theme-color" content="#121317">
+<link rel="icon" href="data:,">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<title>كمين: وردية ليل — CHECKPOINT: NIGHT SHIFT [SAFE MODE]</title>
+<link rel="stylesheet" href="css/game.css?v=1.4.1.09220232">
+</head>
+<body>
+<div id="app"><div id="game" class="hidden"></div></div>
+<noscript>This game needs JavaScript. / اللعبة محتاجة JavaScript.</noscript>
+<script src="manifest.js?v=1.4.1.09220232"></script>
+<script src="assets/audio/ambience.js?v=1.4.1.09220232"></script>
+<script src="js/00_util.js?v=1.4.1.09220232"></script>
+<script src="js/01_strings.js?v=1.4.1.09220232"></script>
+<script src="js/02_content.js?v=1.4.1.09220232"></script>
+<script src="js/03_assets.js?v=1.4.1.09220232"></script>
+<script src="js/04_state.js?v=1.4.1.09220232"></script>
+<script src="js/05_cases.js?v=1.4.1.09220232"></script>
+<script src="js/06_dialogue.js?v=1.4.1.09220232"></script>
+<script src="js/07_tasks.js?v=1.4.1.09220232"></script>
+<script src="js/08_traffic.js?v=1.4.1.09220232"></script>
+<script src="js/09_actors.js?v=1.4.1.09220232"></script>
+<script src="js/10_actions.js?v=1.4.1.09220232"></script>
+<script src="js/11_events.js?v=1.4.1.09220232"></script>
+<script src="js/12_inspection.js?v=1.4.1.09220232"></script>
+<script src="js/13_screening.js?v=1.4.1.09220232"></script>
+<script src="js/14_render.js?v=1.4.1.09220232"></script>
+<script src="js/15_audio.js?v=1.4.1.09220232"></script>
+<script src="js/16_ui.js?v=1.4.1.09220232"></script>
+<script src="js/17_panels.js?v=1.4.1.09220232"></script>
+<script src="js/18_screens.js?v=1.4.1.09220232"></script>
+<script src="js/20_progress.js?v=1.4.1.09220232"></script>
+<script src="js/21_features.js?v=1.4.1.09220232"></script>
+<script src="js/22_brand.js?v=1.4.1.09220232"></script>
+<script src="js/19_main.js?v=1.4.1.09220232"></script>
+
+<!-- ================================================================================ -->
+<!-- KAMEEN ENHANCED v2.0 - SAFE MODE (No initialization, syntax check only) -->
+<!-- ================================================================================ -->
+
+<!-- These are loaded but NOT initialized - just syntax checking -->
+<script>
+console.log('[SAFE MODE] Loading enhanced systems (syntax check only)...');
+var SAFEMODE_LOADED = [];
+window.addEventListener('error', function(e) {
+  if (e.target && e.target.tagName === 'SCRIPT') {
+    console.error('Script load failed: ' + e.target.src);
+  }
+});
+</script>
+
+<script src="js/23_officer_ai.js"></script>
+<script>SAFEMODE_LOADED.push('officer_ai'); console.log('✓ officer_ai.js loaded');</script>
+
+<script src="js/24_daily_system.js"></script>
+<script>SAFEMODE_LOADED.push('daily_system'); console.log('✓ daily_system.js loaded');</script>
+
+<script src="js/25_repair_ui.js"></script>
+<script>SAFEMODE_LOADED.push('repair_ui'); console.log('✓ repair_ui.js loaded');</script>
+
+<script src="js/25_enhanced_audio.js"></script>
+<script>SAFEMODE_LOADED.push('enhanced_audio'); console.log('✓ enhanced_audio.js loaded');</script>
+
+<script src="js/26_props_alignment.js"></script>
+<script>SAFEMODE_LOADED.push('props_alignment'); console.log('✓ props_alignment.js loaded');</script>
+
+<script src="js/27_dialogue_cleanup.js"></script>
+<script>SAFEMODE_LOADED.push('dialogue_cleanup'); console.log('✓ dialogue_cleanup.js loaded');</script>
+
+<script src="js/28_integration.js"></script>
+<script>SAFEMODE_LOADED.push('integration'); console.log('✓ integration.js loaded');</script>
+
+<script>
+console.log('[SAFE MODE] All systems loaded. Integration.init() is NOT being called.');
+console.log('[SAFE MODE] If game now displays: the problem is in integration or initialization.');
+console.log('[SAFE MODE] Systems ready:', SAFEMODE_LOADED.join(', '));
+</script>
+
+<!-- ================================================================================ -->
+
+</body>
+</html>

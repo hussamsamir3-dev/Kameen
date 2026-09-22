@@ -4652,4 +4652,10 @@
   "coordinates": "Normalized to the trimmed microbus_cutaway sprite."
  },
  "gateFrames": 16
-}
+},
+  "officer_new_sprites": {
+    "file": "assets/officer_new_sprites.png",
+    "size": [1536, 256],
+    "hasAlpha": true,
+    "kind": "character"
+  }

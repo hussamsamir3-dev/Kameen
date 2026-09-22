@@ -392,8 +392,12 @@ CP.Input.bindCanvas = function (cv) {
   // strategy-game camera: wheel zoom, screen-edge pan, pinch zoom and drag pan on touch
   cv.addEventListener('wheel', e => { e.preventDefault(); CP.R.userZoom = CP.clamp((CP.R.userZoom || 1) * Math.exp(-e.deltaY * 0.0012), 0.55, 2.4); }, { passive: false });
   cv.addEventListener('pointermove', e => {
-    const r = cv.getBoundingClientRect(); const x = e.clientX - r.left;
+    const r = cv.getBoundingClientRect(); const x = e.clientX - r.left; const y = e.clientY - r.top;
     CP.R.edge = (e.pointerType === 'mouse' && !CP.UI.panel) ? (x < 45 ? -(1 - x / 45) : x > r.width - 45 ? (1 - (r.width - x) / 45) : 0) : 0;
+    // Repair UI hover detection
+    if (CP.RepairUI && CP.G && CP.G.shift) {
+      CP.RepairUI.checkHover(x, y, CP.R, CP.R.ppm, CP.G.shift.location);
+    }
   });
   cv.addEventListener('pointerleave', () => { CP.R.edge = 0; });
   cv.addEventListener('dblclick', () => { CP.R.userZoom = 1; CP.R.camFree = null; CP.R.panY = 0; });
@@ -412,7 +416,9 @@ CP.Input.bindCanvas = function (cv) {
     if (!down) return; const moved = down.moved; down = null;
     if (moved) { clearTimeout(CP.Input._camT); CP.Input._camT = setTimeout(() => { CP.R.camFree = null; }, 3500); return; }
     if (!CP.G || !CP.G.shift || CP.G.shift.ended) return;
-    const r = cv.getBoundingClientRect(); const p = CP.R.pick(e.clientX - r.left, e.clientY - r.top);
+    const r = cv.getBoundingClientRect(); const px = e.clientX - r.left; const py = e.clientY - r.top; const p = CP.R.pick(px, py);
+    // Repair UI click handling
+    if (CP.RepairUI && CP.RepairUI.hovering) { CP.RepairUI.startRepair(CP.RepairUI.hovering); return; }
     if (p.fix) { // repair straight from the flashing icon: short remote repair, no walking needed
       if (CP.UI._fixing) return; CP.UI._fixing = true; CP.Audio.click(); CP.Audio.tone('sine', 520, 0.25, 0.03);
       CP.UI.toast(CP.t(p.fix === 'generator' ? 'fix_gen_now' : 'fix_gate_now'), 'info');

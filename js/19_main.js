@@ -18,8 +18,9 @@ M.step = function (dt) {
   const s = CP.G.shift;
   s.t += dt;
   CP.Actors.update(dt);
+  if (CP.Officers) CP.Officers.update(dt, s); // OFFICER AI
   if (CP.Actors.smartAI) CP.Actors.smartAI(dt); // SMART OFFICER AI
-  if (CP.RepairUI) CP.RepairUI.update(dt); // REPAIR UI
+  if (CP.RepairUI) CP.RepairUI.update(dt, CP.G.career); // REPAIR UI + PROGRESSION
   CP.T.step(dt);
   CP.Gate.update(dt);
   CP.Tasks.update(dt);

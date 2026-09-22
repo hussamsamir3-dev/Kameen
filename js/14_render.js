@@ -500,9 +500,9 @@ CP.R.worldUI = function (s, alpha) {
   // walk target marker
   const o = s.officer; if (o.target) { const x = this.sx(o.target.x), y = this.sy(CP.R.actorY(o.target.row || 0)); ctx.strokeStyle = 'rgba(240,184,64,.8)'; ctx.lineWidth = 2; ctx.beginPath(); ctx.ellipse(x, y, 0.3 * ppm, 0.08 * ppm, 0, 0, 7); ctx.stroke(); }
   // render AI officers (after world objects, before UI)
-  if (CP.OfficerSystem) CP.OfficerSystem.renderAI(ctx, this, ppm);
+  if (CP.Officers) CP.Officers.renderAI(ctx, this, ppm);
   // repair UI - premium repair interaction feedback
-  if (CP.RepairUI) CP.RepairUI.render(ctx, ppm);
+  if (CP.RepairUI) CP.RepairUI.render(ctx, this, ppm, CP.G.shift.location);
   // speech bubble: the driver's latest reply is shown above the car (handy on phones where the log sits lower in the sheet)
   if (CP.UI && CP.UI.panel && CP.UI.panel.kind === 'dialogue' && CP.UI.isMob) {
     const c = s.cases[CP.UI.panel.caseId]; const v = c && CP.vehOfCase(c); const L = c && c.dlg.log[c.dlg.log.length - 1];

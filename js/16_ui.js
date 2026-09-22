@@ -83,7 +83,7 @@ CP.UI.confirm = function (text, yes, no) {
 CP.UI.buildGame = function () {
   const g = $('#game'); g.innerHTML = '';
   const hud = h('header', { id: 'hud' },
-    h('div', { class: 'brand' }, CP.lang === 'ar' ? 'كمين: وردية ليل' : 'CHECKPOINT: NIGHT SHIFT'),
+    (CP.A.img.logo_checkpoint ? h('img', { class: 'brandimg', src: CP.A.img.logo_checkpoint.src, alt: 'كمين' }) : h('div', { class: 'brand' }, CP.lang === 'ar' ? 'كمين: وردية ليل' : 'CHECKPOINT: NIGHT SHIFT')),
     h('div', { class: 'rankchip', id: 'hRank', title: CP.t('pr_rank') }),
     h('div', { class: 'combo', id: 'hCombo' }),
     h('div', { class: 'hi' }, h('b', { id: 'hShift' }), h('span', null, CP.t('h_shift'))),

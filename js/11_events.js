@@ -1,6 +1,7 @@
 /* Event director: paced incidents with prerequisites, cooldowns and a budget (≤1 major, ≤2 minor active).
    Also: civilian spawning, ambulance / supervisor pickup flows, shift end and career scoring. */
 CP.addStrings({
+  ev_towCalled: ['ونش الشرطة جاي يسحب العربية العطلانة', 'Police tow truck on its way for the broken-down car'], ev_towDone: ['الونش سحب العربية وفتح الطريق', 'The tow truck cleared the broken-down car'],
   ev_leaveGiveUp: ['السواق زق البوابة — الموتور علّق', 'The driver forced the barrier — the gate motor jammed'],
   ev_calmed: ['السواق هدي ورجع مكانه', 'The driver calmed down and stayed put'],
   ev_medicsDone: ['المسعفين استلموا الحالة', 'Paramedics have taken over'],
@@ -243,7 +244,9 @@ Ev.medicsDone = function (e) {
 Ev.schedulePickup = function (c, v, delay) { CP.G.shift.events.pickups.push({ caseId: c.id, vid: v.id, at: CP.G.shift.t + delay }); };
 Ev.spawnPickup = function (p) {
   const v = CP.T.get(p.vid); if (!v) return;
-  const pk = CP.T.spawnService('police_pickup', { special: 'pickup', beacon: true, stopAt: v.x + 1.0, dwell: 7, forCase: p.caseId, forVid: p.vid, maxV: 11 });
+  const c0 = CP.G.shift.cases[p.caseId]; const loc = CP.G.shift.loc;
+  const htype = p.tow ? 'pol_tow' : (c0 && c0.pax > 2) ? 'pol_hiace' : (CP.locBase(loc) === 'desert') ? 'pol_4x4' : (Math.random() < 0.5 ? 'pol_pickup' : 'pol_suv');
+  const pk = CP.T.spawnService(CP.C.veh[htype] ? htype : 'police_pickup', { tow: !!p.tow, special: 'pickup', beacon: true, stopAt: v.x + 1.0, dwell: 7, forCase: p.caseId, forVid: p.vid, maxV: 11 });
   CP.G.shift.events.active.push({ type: 'pickup', t0: CP.G.shift.t, vid: pk.id });
   Ev.log('pickup', 'ev_supervisor', 'info');
 };
@@ -259,8 +262,9 @@ CP.bus.on('stepEnd', () => {
       if (pk.dwell <= 0) {
         pk.stopAt = null; const v = CP.T.get(pk.forVid); const c = s.cases[pk.forCase];
         if (c) CP.note(c, 'incident', { ar: 'تم التسليم للدورية تحت الإشراف', en: 'Handed over to the patrol under supervision' }, 'verified');
-        if (v) { v.hold = false; CP.T.release(v); }
-        Ev.log('pickup', 'ev_handoverDone', 'ok');
+        if (pk.tow && v) { CP.Events.fixVehicle(v); v.hold = false; CP.T.release(v); Ev.log('pickup', 'ev_towDone', 'ok'); }
+        else { if (v) { v.hold = false; CP.T.release(v); }
+        Ev.log('pickup', 'ev_handoverDone', 'ok'); }
       }
     }
   }

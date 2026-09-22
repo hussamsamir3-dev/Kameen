@@ -78,7 +78,7 @@ CP.Actors.frameOf = function (a) {
 /* ---------------- partner tasks ---------------- */
 CP.PT = {
   lvl: { traffic: 0, verify: 0, cones: 0, supplies: 0, visitor: 0, vehicle: 0, medical: 1, assist: 1, repair: 2, generator: 2 },
-  dur: { verify: 1, cones: 4, supplies: 7, visitor: 8, vehicle: 12, medical: 14, assist: 1e9, repair: 16, generator: 9, traffic: 1e9 }
+  dur: { verify: 1, cones: 4, supplies: 7, visitor: 8, vehicle: 6, medical: 14, assist: 1e9, repair: 6, generator: 4, traffic: 1e9 }
 };
 CP.Actors.partnerTask = () => { const p = CP.G.shift.partner; return p.task ? CP.Tasks.get(p.task) : null; };
 CP.Actors.partnerCan = function (kind) {

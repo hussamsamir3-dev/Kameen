@@ -316,7 +316,7 @@ CP.T.far = function (dt) {
   if (s.farT <= 0) {
     if (!(CP.LOCS[s.loc] || {}).far) { s.farT = 999; return; }
     s.farT = (s.loc === 'desert' ? 9 : 4) + Math.random() * (s.loc === 'desert' ? 14 : 7);
-    const types = s.loc === 'desert' ? ['cargo_truck', 'silver_sedan', 'coach', 'charcoal_suv', 'green_pickup', 'estate_wagon', 'box_truck'] : ['cairo_taxi', 'microbus', 'classic_sedan', 'silver_sedan', 'city_bus', 'red_classic', 'blue_hatch', 'maroon_hatch', 'white_luxury', 'alex_taxi'];
+    const types = s.loc === 'desert' ? ['cargo_truck', 'silver_sedan', 'coach', 'charcoal_suv', 'green_pickup', 'estate_wagon', 'box_truck'].concat(Math.random() < 0.1 ? ['pol_4x4', 'pol_suv', 'pol_armored'] : []) : ['cairo_taxi', 'microbus', 'classic_sedan', 'silver_sedan', 'city_bus', 'red_classic', 'blue_hatch', 'maroon_hatch', 'white_luxury', 'alex_taxi'].concat(Math.random() < 0.12 ? ['pol_traffic_sedan', 'pol_sedan', 'pol_hatch'] : []);
     s.far.push({ type: types[Math.floor(Math.random() * types.length)], x: -8, px: -8, v: 9 + Math.random() * 6, w: 0, pw: 0 });
   }
   for (const f of s.far) { f.px = f.x; f.pw = f.w; f.x += f.v * dt * 2.1; f.w += (f.v * dt) / CP.A.M.vehicles[f.type].wheelRadiusMetres; }

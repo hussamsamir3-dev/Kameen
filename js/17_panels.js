@@ -7,7 +7,7 @@ CP.addStrings({
   s_grounds: ['الأسباب المسجلة لحد دلوقتي', 'Grounds recorded so far'], s_equipment: ['العهدة', 'Equipment'], s_assistBtn: ['الزميل يساعد في التفتيش', 'Partner assists search'],
   g_disc: ['تعارض في الأوراق', 'Document discrepancy'], g_alert: ['سجل عليه ملاحظة', 'Flagged record'], g_statement: ['أقوال متعارضة', 'Contradicting statements'], g_consent: ['موافقة السواق', 'Driver consent'], g_obs: ['ملاحظة مباشرة', 'Direct observation'],
   nb_evidence_log: ['سجل الأحراز', 'Evidence log'], nb_filter: ['عرض', 'Show'], nb_case: ['الحالة', 'Case'],
-  res_open_none: ['مفيش أسئلة مفتوحة', 'No open questions'], res_pick: ['اختار قرار', 'Choose a decision'], res_confirmBtn: ['سجّل القرار ورجّع الأوراق', 'Record decision & return documents'],
+  res_open_none: ['مفيش أسئلة مفتوحة', 'No open questions'], res_reason_hint: ['اختار السبب اللي لقيته فعلاً وسجّلته — لازم يطابق القرار والملاحظات اللي علّمتها.', 'Pick the reason you actually found and recorded — it must match the decision and the notes you ticked.'], res_pick: ['اختار قرار', 'Choose a decision'], res_confirmBtn: ['سجّل القرار ورجّع الأوراق', 'Record decision & return documents'],
   res_support_hint: ['علّم الملاحظات اللي بتسند القرار', 'Tick the notes that support the decision'], res_unsearched: ['لسه ماتفتشتش', 'Not searched'],
   res_scrPending: ['كشف لسه مستني تأكيد', 'A screening result is still pending'],
   pt_current: ['المهمة الحالية', 'Current task'], pt_none: ['الزميل فاضي في مكانه', 'Partner is at post'], pt_recall: ['ارجع لمكانك', 'Return to post'], pt_needCase: ['اختار حالة الأول', 'Select a case first'], pt_notNeeded: ['مش مطلوبة دلوقتي', 'Not needed right now'],
@@ -275,7 +275,7 @@ CP.Panels.resolve = function (body, foot, c) {
   const sel = hh('select', { class: 'sel', 'aria-label': CP.t('res_reason'), onchange: e => { CP.UI.resReason = e.target.value || null; CP.UI.resReasonUser = !!e.target.value; } }, hh('option', { value: '' }, '— ' + CP.t('res_reason') + ' —'), ...reasons.map(r => { const o = hh('option', { value: r }, CP.t('rr_' + r)); if (CP.UI.resReason === r) o.selected = true; return o; }));
   const left = hh('div', { class: 'col' }, hh('div', { class: 'lbl' }, CP.t('res_known')), hh('div', { class: 'small muted' }, CP.t('res_support_hint')), facts,
     hh('div', { class: 'lbl' }, CP.t('res_open')), hh('div', { class: 'small' }, open.length ? open.map(x => '• ' + x).join('\n') : CP.t('res_open_none')));
-  const right = hh('div', { class: 'col' }, hh('div', { class: 'lbl' }, CP.t('res_pick')), dgrid, hh('div', { class: 'lbl' }, CP.t('res_reason')), sel);
+  const right = hh('div', { class: 'col' }, hh('div', { class: 'lbl' }, CP.t('res_pick')), dgrid, hh('div', { class: 'lbl' }, CP.t('res_reason')), hh('div', { class: 'small muted' }, CP.t('res_reason_hint')), sel);
   const confirmBtn =     hh('button', { class: 'btn pri', onclick: () => {
       if (!CP.UI.resDec) { CP.UI.toast(CP.t('res_pick'), 'warn'); return; }
       const e = CP.Act.resolve(c, CP.UI.resDec, CP.UI.resReason, [...sup]);

@@ -37,6 +37,13 @@ CP.Brand.emblem = function (size) {
 /* ---------- the game logo (3D extruded wordmark + emblem) ---------- */
 CP.Brand.logo = function (opts) {
   opts = opts || {}; const size = opts.size || 1;
+  const LI = CP.A && CP.A.img && CP.A.img.logo_checkpoint;
+  if (LI && LI.src) {
+    const d = document.createElement('div'); d.className = 'logoimg'; d.style.setProperty('--ls', size);
+    d.innerHTML = `<img src="${LI.src}" alt="كمين — Checkpoint"><i class="lshine"></i>`;
+    if (!opts.static) { const mv = e => { const r = d.getBoundingClientRect(); d.style.setProperty('--rx', (-((e.clientY - r.top) / r.height - .5) * 10).toFixed(2) + 'deg'); d.style.setProperty('--ry', (((e.clientX - r.left) / r.width - .5) * 14).toFixed(2) + 'deg'); }; window.addEventListener('pointermove', mv); }
+    return d;
+  }
   const el = document.createElement('div');
   el.className = 'logo3d' + (opts.compact ? ' compact' : '');
   el.style.setProperty('--ls', size);
@@ -76,10 +83,11 @@ CP.Brand.seal = function () {
 CP.Brand.intro = function (done) {
   if (CP.S.reducedFx) { done(); return; }
   const w = document.createElement('div'); w.className = 'intro';
+  const EI = CP.A && CP.A.img && CP.A.img.logo_egyseal;
   w.innerHTML = `<div class="istage">
       <div class="glow"></div>
-      <div class="sealwrap">${CP.Brand.seal()}</div>
-      <div class="studio"><span>E</span><span>G</span><span>Y</span><span class="sp"></span><span>S</span><span>E</span><span>A</span><span>L</span></div>
+      <div class="sealwrap${EI && EI.src ? ' img' : ''}">${EI && EI.src ? `<img src="${EI.src}" alt="EGY SEAL">` : CP.Brand.seal()}</div>
+      ${EI && EI.src ? '' : '<div class="studio"><span>E</span><span>G</span><span>Y</span><span class="sp"></span><span>S</span><span>E</span><span>A</span><span>L</span></div>'}
       <div class="byline">${CP.t('brand_by')}</div>
       <div class="substudio">${CP.t('brand_sub')}</div>
       <div class="lightbar"></div>

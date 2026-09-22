@@ -575,3 +575,6 @@ svg.ico { filter: drop-shadow(0 1px 0 rgba(0,0,0,.55)) drop-shadow(0 0 6px rgba(
 .act.hot svg.ico { filter: drop-shadow(0 0 8px rgba(243,194,79,.7)); animation: icoPulse 1.6s ease-in-out infinite; }
 .act[aria-disabled=true] svg.ico { filter: grayscale(1) opacity(.55); }
 @keyframes icoPulse { 50% { transform: scale(1.08); } }
+.brandimg { height: 40px; width: auto; filter: drop-shadow(0 2px 6px rgba(0,0,0,.6)); }
+.brandimg.big { height: 72px; }
+@media (max-height: 520px) { .brandimg { display: none; } }

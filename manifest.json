@@ -263,6 +263,42 @@
    "hasAlpha": false,
    "kind": "background",
    "note": "User-supplied aswan night scene (v1.3)"
+  },
+  "fx_particles": {
+   "file": "assets/fx_particles.png",
+   "hasAlpha": true,
+   "kind": "effects",
+   "note": "User-supplied particle art (v1.5)"
+  },
+  "driver_portraits_3": {
+   "file": "assets/driver_portraits_3.png",
+   "hasAlpha": true,
+   "kind": "portraits",
+   "note": "User-supplied portraits (v1.5)"
+  },
+  "police_vehicles": {
+   "file": "assets/police_vehicles.png",
+   "hasAlpha": true,
+   "kind": "vehicles",
+   "note": "User-supplied Egyptian police vehicles (v1.5), wheels separated"
+  },
+  "checkpoint_props2": {
+   "file": "assets/checkpoint_props2.png",
+   "hasAlpha": true,
+   "kind": "props",
+   "note": "User-supplied police car (2-frame flash) and checkpoint props (v1.6)"
+  },
+  "logo_checkpoint": {
+   "file": "assets/logo_checkpoint.png",
+   "hasAlpha": true,
+   "kind": "brand",
+   "note": "User-supplied logo (v1.6)"
+  },
+  "logo_egyseal": {
+   "file": "assets/logo_egyseal.png",
+   "hasAlpha": true,
+   "kind": "brand",
+   "note": "User-supplied logo (v1.6)"
   }
  },
  "sprites": {
@@ -3019,6 +3055,930 @@
    ],
    "ax": 0.464,
    "hRef": 324
+  },
+  "fx_smoke": {
+   "sheet": "fx_particles",
+   "rect": [
+    0,
+    0,
+    132,
+    90
+   ],
+   "category": "effect",
+   "anchor": [
+    0.5,
+    0.5
+   ]
+  },
+  "fx_dust": {
+   "sheet": "fx_particles",
+   "rect": [
+    136,
+    0,
+    136,
+    110
+   ],
+   "category": "effect",
+   "anchor": [
+    0.5,
+    0.5
+   ]
+  },
+  "fx_steam": {
+   "sheet": "fx_particles",
+   "rect": [
+    276,
+    0,
+    124,
+    106
+   ],
+   "category": "effect",
+   "anchor": [
+    0.5,
+    0.5
+   ]
+  },
+  "fx_smoke_dark": {
+   "sheet": "fx_particles",
+   "rect": [
+    404,
+    0,
+    120,
+    117
+   ],
+   "category": "effect",
+   "anchor": [
+    0.5,
+    0.5
+   ]
+  },
+  "fx_dustkick": {
+   "sheet": "fx_particles",
+   "rect": [
+    528,
+    0,
+    127,
+    113
+   ],
+   "category": "effect",
+   "anchor": [
+    0.5,
+    0.5
+   ]
+  },
+  "fx_splash": {
+   "sheet": "fx_particles",
+   "rect": [
+    659,
+    0,
+    131,
+    125
+   ],
+   "category": "effect",
+   "anchor": [
+    0.5,
+    0.5
+   ]
+  },
+  "fx_spark": {
+   "sheet": "fx_particles",
+   "rect": [
+    794,
+    0,
+    119,
+    80
+   ],
+   "category": "effect",
+   "anchor": [
+    0.5,
+    0.5
+   ]
+  },
+  "fx_fire": {
+   "sheet": "fx_particles",
+   "rect": [
+    917,
+    0,
+    113,
+    94
+   ],
+   "category": "effect",
+   "anchor": [
+    0.5,
+    0.5
+   ]
+  },
+  "fx_skid": {
+   "sheet": "fx_particles",
+   "rect": [
+    1034,
+    0,
+    446,
+    148
+   ],
+   "category": "effect",
+   "anchor": [
+    0.5,
+    0.5
+   ]
+  },
+  "fx_oil": {
+   "sheet": "fx_particles",
+   "rect": [
+    1484,
+    0,
+    288,
+    96
+   ],
+   "category": "effect",
+   "anchor": [
+    0.5,
+    0.5
+   ]
+  },
+  "portrait_25": {
+   "sheet": "driver_portraits_3",
+   "rect": [
+    13,
+    23,
+    340,
+    353
+   ],
+   "category": "portrait",
+   "anchor": [
+    0.5,
+    1
+   ]
+  },
+  "portrait_26": {
+   "sheet": "driver_portraits_3",
+   "rect": [
+    356,
+    23,
+    349,
+    353
+   ],
+   "category": "portrait",
+   "anchor": [
+    0.5,
+    1
+   ]
+  },
+  "portrait_27": {
+   "sheet": "driver_portraits_3",
+   "rect": [
+    724,
+    23,
+    382,
+    353
+   ],
+   "category": "portrait",
+   "anchor": [
+    0.5,
+    1
+   ]
+  },
+  "portrait_28": {
+   "sheet": "driver_portraits_3",
+   "rect": [
+    1108,
+    23,
+    330,
+    353
+   ],
+   "category": "portrait",
+   "anchor": [
+    0.5,
+    1
+   ]
+  },
+  "portrait_29": {
+   "sheet": "driver_portraits_3",
+   "rect": [
+    13,
+    380,
+    340,
+    337
+   ],
+   "category": "portrait",
+   "anchor": [
+    0.5,
+    1
+   ]
+  },
+  "portrait_30": {
+   "sheet": "driver_portraits_3",
+   "rect": [
+    356,
+    380,
+    349,
+    337
+   ],
+   "category": "portrait",
+   "anchor": [
+    0.5,
+    1
+   ]
+  },
+  "portrait_31": {
+   "sheet": "driver_portraits_3",
+   "rect": [
+    724,
+    380,
+    382,
+    337
+   ],
+   "category": "portrait",
+   "anchor": [
+    0.5,
+    1
+   ]
+  },
+  "portrait_32": {
+   "sheet": "driver_portraits_3",
+   "rect": [
+    1108,
+    380,
+    330,
+    337
+   ],
+   "category": "portrait",
+   "anchor": [
+    0.5,
+    1
+   ]
+  },
+  "portrait_33": {
+   "sheet": "driver_portraits_3",
+   "rect": [
+    13,
+    722,
+    340,
+    353
+   ],
+   "category": "portrait",
+   "anchor": [
+    0.5,
+    1
+   ]
+  },
+  "portrait_34": {
+   "sheet": "driver_portraits_3",
+   "rect": [
+    356,
+    722,
+    349,
+    353
+   ],
+   "category": "portrait",
+   "anchor": [
+    0.5,
+    1
+   ]
+  },
+  "portrait_35": {
+   "sheet": "driver_portraits_3",
+   "rect": [
+    724,
+    722,
+    382,
+    353
+   ],
+   "category": "portrait",
+   "anchor": [
+    0.5,
+    1
+   ]
+  },
+  "portrait_36": {
+   "sheet": "driver_portraits_3",
+   "rect": [
+    1108,
+    722,
+    330,
+    353
+   ],
+   "category": "portrait",
+   "anchor": [
+    0.5,
+    1
+   ]
+  },
+  "pol_traffic_sedan_body": {
+   "sheet": "police_vehicles",
+   "rect": [
+    0,
+    0,
+    420,
+    175
+   ],
+   "category": "vehicle_body",
+   "anchor": [
+    0,
+    1
+   ]
+  },
+  "pol_traffic_sedan_wheel": {
+   "sheet": "police_vehicles",
+   "rect": [
+    5376,
+    0,
+    64,
+    64
+   ],
+   "category": "wheel",
+   "anchor": [
+    0.5,
+    0.5
+   ]
+  },
+  "pol_sedan_body": {
+   "sheet": "police_vehicles",
+   "rect": [
+    424,
+    0,
+    462,
+    172
+   ],
+   "category": "vehicle_body",
+   "anchor": [
+    0,
+    1
+   ]
+  },
+  "pol_sedan_wheel": {
+   "sheet": "police_vehicles",
+   "rect": [
+    5444,
+    0,
+    67,
+    67
+   ],
+   "category": "wheel",
+   "anchor": [
+    0.5,
+    0.5
+   ]
+  },
+  "pol_hatch_body": {
+   "sheet": "police_vehicles",
+   "rect": [
+    890,
+    0,
+    423,
+    188
+   ],
+   "category": "vehicle_body",
+   "anchor": [
+    0,
+    1
+   ]
+  },
+  "pol_hatch_wheel": {
+   "sheet": "police_vehicles",
+   "rect": [
+    5515,
+    0,
+    70,
+    70
+   ],
+   "category": "wheel",
+   "anchor": [
+    0.5,
+    0.5
+   ]
+  },
+  "pol_suv_body": {
+   "sheet": "police_vehicles",
+   "rect": [
+    1317,
+    0,
+    466,
+    203
+   ],
+   "category": "vehicle_body",
+   "anchor": [
+    0,
+    1
+   ]
+  },
+  "pol_suv_wheel": {
+   "sheet": "police_vehicles",
+   "rect": [
+    5589,
+    0,
+    79,
+    79
+   ],
+   "category": "wheel",
+   "anchor": [
+    0.5,
+    0.5
+   ]
+  },
+  "pol_4x4_body": {
+   "sheet": "police_vehicles",
+   "rect": [
+    1787,
+    0,
+    484,
+    232
+   ],
+   "category": "vehicle_body",
+   "anchor": [
+    0,
+    1
+   ]
+  },
+  "pol_4x4_wheel": {
+   "sheet": "police_vehicles",
+   "rect": [
+    5672,
+    0,
+    85,
+    85
+   ],
+   "category": "wheel",
+   "anchor": [
+    0.5,
+    0.5
+   ]
+  },
+  "pol_pickup_body": {
+   "sheet": "police_vehicles",
+   "rect": [
+    2275,
+    0,
+    482,
+    206
+   ],
+   "category": "vehicle_body",
+   "anchor": [
+    0,
+    1
+   ]
+  },
+  "pol_pickup_wheel": {
+   "sheet": "police_vehicles",
+   "rect": [
+    5761,
+    0,
+    75,
+    75
+   ],
+   "category": "wheel",
+   "anchor": [
+    0.5,
+    0.5
+   ]
+  },
+  "pol_van_body": {
+   "sheet": "police_vehicles",
+   "rect": [
+    2761,
+    0,
+    493,
+    240
+   ],
+   "category": "vehicle_body",
+   "anchor": [
+    0,
+    1
+   ]
+  },
+  "pol_van_wheel": {
+   "sheet": "police_vehicles",
+   "rect": [
+    5840,
+    0,
+    67,
+    67
+   ],
+   "category": "wheel",
+   "anchor": [
+    0.5,
+    0.5
+   ]
+  },
+  "pol_hiace_body": {
+   "sheet": "police_vehicles",
+   "rect": [
+    3258,
+    0,
+    464,
+    232
+   ],
+   "category": "vehicle_body",
+   "anchor": [
+    0,
+    1
+   ]
+  },
+  "pol_hiace_wheel": {
+   "sheet": "police_vehicles",
+   "rect": [
+    5911,
+    0,
+    65,
+    65
+   ],
+   "category": "wheel",
+   "anchor": [
+    0.5,
+    0.5
+   ]
+  },
+  "pol_armored_body": {
+   "sheet": "police_vehicles",
+   "rect": [
+    4399,
+    0,
+    490,
+    261
+   ],
+   "category": "vehicle_body",
+   "anchor": [
+    0,
+    1
+   ]
+  },
+  "pol_armored_wheel": {
+   "sheet": "police_vehicles",
+   "rect": [
+    6187,
+    0,
+    73,
+    73
+   ],
+   "category": "wheel",
+   "anchor": [
+    0.5,
+    0.5
+   ]
+  },
+  "pol_tow_body": {
+   "sheet": "police_vehicles",
+   "rect": [
+    4893,
+    0,
+    479,
+    218
+   ],
+   "category": "vehicle_body",
+   "anchor": [
+    0,
+    1
+   ]
+  },
+  "pol_tow_wheel": {
+   "sheet": "police_vehicles",
+   "rect": [
+    6264,
+    0,
+    68,
+    68
+   ],
+   "category": "wheel",
+   "anchor": [
+    0.5,
+    0.5
+   ]
+  },
+  "polcar_f0": {
+   "sheet": "checkpoint_props2",
+   "rect": [
+    0,
+    25,
+    1007,
+    402
+   ],
+   "category": "prop",
+   "anchor": [
+    0.5,
+    1
+   ]
+  },
+  "polcar_f1": {
+   "sheet": "checkpoint_props2",
+   "rect": [
+    1011,
+    25,
+    1007,
+    402
+   ],
+   "category": "prop",
+   "anchor": [
+    0.5,
+    1
+   ]
+  },
+  "crowd_barrier": {
+   "sheet": "checkpoint_props2",
+   "rect": [
+    2022,
+    215,
+    414,
+    212
+   ],
+   "category": "prop",
+   "anchor": [
+    0.5,
+    1
+   ]
+  },
+  "cones3": {
+   "sheet": "checkpoint_props2",
+   "rect": [
+    2440,
+    246,
+    246,
+    181
+   ],
+   "category": "prop",
+   "anchor": [
+    0.5,
+    1
+   ]
+  },
+  "spike_strip": {
+   "sheet": "checkpoint_props2",
+   "rect": [
+    2690,
+    374,
+    350,
+    53
+   ],
+   "category": "prop",
+   "anchor": [
+    0.5,
+    1
+   ]
+  },
+  "mirror_trolley": {
+   "sheet": "checkpoint_props2",
+   "rect": [
+    3044,
+    155,
+    278,
+    272
+   ],
+   "category": "prop",
+   "anchor": [
+    0.5,
+    1
+   ]
+  },
+  "generator_small": {
+   "sheet": "checkpoint_props2",
+   "rect": [
+    3326,
+    248,
+    323,
+    179
+   ],
+   "category": "prop",
+   "anchor": [
+    0.5,
+    1
+   ]
+  },
+  "table_radio": {
+   "sheet": "checkpoint_props2",
+   "rect": [
+    3653,
+    147,
+    325,
+    280
+   ],
+   "category": "prop",
+   "anchor": [
+    0.5,
+    1
+   ]
+  },
+  "jersey_barrier": {
+   "sheet": "checkpoint_props2",
+   "rect": [
+    4208,
+    216,
+    381,
+    211
+   ],
+   "category": "prop",
+   "anchor": [
+    0.5,
+    1
+   ]
+  },
+  "flood_tripod": {
+   "sheet": "checkpoint_props2",
+   "rect": [
+    4593,
+    0,
+    255,
+    427
+   ],
+   "category": "prop",
+   "anchor": [
+    0.5,
+    1
+   ]
+  },
+  "sandbags2": {
+   "sheet": "checkpoint_props2",
+   "rect": [
+    4852,
+    243,
+    345,
+    184
+   ],
+   "category": "prop",
+   "anchor": [
+    0.5,
+    1
+   ]
+  },
+  "camera_tower": {
+   "sheet": "checkpoint_props2",
+   "rect": [
+    3982,
+    14,
+    222,
+    413
+   ],
+   "category": "prop",
+   "anchor": [
+    0.5,
+    1
+   ]
+  },
+  "weigh_plate": {
+   "sheet": "checkpoint_props2",
+   "rect": [
+    5201,
+    326,
+    426,
+    101
+   ],
+   "category": "prop",
+   "anchor": [
+    0.5,
+    1
+   ]
+  },
+  "wheel_clamp": {
+   "sheet": "checkpoint_props2",
+   "rect": [
+    5631,
+    246,
+    285,
+    181
+   ],
+   "category": "prop",
+   "anchor": [
+    0.5,
+    1
+   ]
+  },
+  "wheel_chocks": {
+   "sheet": "checkpoint_props2",
+   "rect": [
+    5920,
+    306,
+    345,
+    121
+   ],
+   "category": "prop",
+   "anchor": [
+    0.5,
+    1
+   ]
+  },
+  "podium": {
+   "sheet": "checkpoint_props2",
+   "rect": [
+    6269,
+    132,
+    195,
+    295
+   ],
+   "category": "prop",
+   "anchor": [
+    0.5,
+    1
+   ]
+  },
+  "metal_detector": {
+   "sheet": "checkpoint_props2",
+   "rect": [
+    6468,
+    181,
+    147,
+    246
+   ],
+   "category": "prop",
+   "anchor": [
+    0.5,
+    1
+   ]
+  },
+  "tool_case": {
+   "sheet": "checkpoint_props2",
+   "rect": [
+    6619,
+    186,
+    254,
+    241
+   ],
+   "category": "prop",
+   "anchor": [
+    0.5,
+    1
+   ]
+  },
+  "stanchions": {
+   "sheet": "checkpoint_props2",
+   "rect": [
+    6877,
+    229,
+    372,
+    198
+   ],
+   "category": "prop",
+   "anchor": [
+    0.5,
+    1
+   ]
+  },
+  "beacon_stand": {
+   "sheet": "checkpoint_props2",
+   "rect": [
+    7253,
+    161,
+    166,
+    266
+   ],
+   "category": "prop",
+   "anchor": [
+    0.5,
+    1
+   ]
+  },
+  "extinguisher_trolley": {
+   "sheet": "checkpoint_props2",
+   "rect": [
+    7423,
+    156,
+    195,
+    271
+   ],
+   "category": "prop",
+   "anchor": [
+    0.5,
+    1
+   ]
+  },
+  "first_aid_cabinet": {
+   "sheet": "checkpoint_props2",
+   "rect": [
+    7622,
+    150,
+    158,
+    277
+   ],
+   "category": "prop",
+   "anchor": [
+    0.5,
+    1
+   ]
+  },
+  "stop_sign_led": {
+   "sheet": "checkpoint_props2",
+   "rect": [
+    7784,
+    155,
+    138,
+    272
+   ],
+   "category": "prop",
+   "anchor": [
+    0.5,
+    1
+   ]
+  },
+  "cable_ramp": {
+   "sheet": "checkpoint_props2",
+   "rect": [
+    7926,
+    358,
+    395,
+    69
+   ],
+   "category": "prop",
+   "anchor": [
+    0.5,
+    1
+   ]
   }
  },
  "vehicles": {
@@ -3420,6 +4380,206 @@
    ],
    "facing": "right",
    "calibration": "Arches measured from alpha (v1.2), tyres +10%.",
+   "wheelsBoosted": true
+  },
+  "pol_traffic_sedan": {
+   "body": "pol_traffic_sedan_body",
+   "wheel": "pol_traffic_sedan_wheel",
+   "lengthMetres": 4.5,
+   "wheelRadiusMetres": 0.315,
+   "wheelRadiusSource": 29.4,
+   "axles": [
+    [
+     84,
+     143
+    ],
+    [
+     340,
+     143
+    ]
+   ],
+   "facing": "right",
+   "calibration": "Wheels cut from the art at their ground contacts; tyre size from real class dimensions (v1.5).",
+   "wheelsBoosted": true
+  },
+  "pol_sedan": {
+   "body": "pol_sedan_body",
+   "wheel": "pol_sedan_wheel",
+   "lengthMetres": 4.7,
+   "wheelRadiusMetres": 0.315,
+   "wheelRadiusSource": 31.0,
+   "axles": [
+    [
+     96,
+     138
+    ],
+    [
+     369,
+     138
+    ]
+   ],
+   "facing": "right",
+   "calibration": "Wheels cut from the art at their ground contacts; tyre size from real class dimensions (v1.5).",
+   "wheelsBoosted": true
+  },
+  "pol_hatch": {
+   "body": "pol_hatch_body",
+   "wheel": "pol_hatch_wheel",
+   "lengthMetres": 4.1,
+   "wheelRadiusMetres": 0.315,
+   "wheelRadiusSource": 32.5,
+   "axles": [
+    [
+     71,
+     152
+    ],
+    [
+     340,
+     152
+    ]
+   ],
+   "facing": "right",
+   "calibration": "Wheels cut from the art at their ground contacts; tyre size from real class dimensions (v1.5).",
+   "wheelsBoosted": true
+  },
+  "pol_suv": {
+   "body": "pol_suv_body",
+   "wheel": "pol_suv_wheel",
+   "lengthMetres": 4.6,
+   "wheelRadiusMetres": 0.36,
+   "wheelRadiusSource": 36.5,
+   "axles": [
+    [
+     98,
+     164
+    ],
+    [
+     374,
+     164
+    ]
+   ],
+   "facing": "right",
+   "calibration": "Wheels cut from the art at their ground contacts; tyre size from real class dimensions (v1.5).",
+   "wheelsBoosted": true
+  },
+  "pol_4x4": {
+   "body": "pol_4x4_body",
+   "wheel": "pol_4x4_wheel",
+   "lengthMetres": 4.9,
+   "wheelRadiusMetres": 0.4,
+   "wheelRadiusSource": 39.5,
+   "axles": [
+    [
+     130,
+     189
+    ],
+    [
+     397,
+     189
+    ]
+   ],
+   "facing": "right",
+   "calibration": "Wheels cut from the art at their ground contacts; tyre size from real class dimensions (v1.5).",
+   "wheelsBoosted": true
+  },
+  "pol_pickup": {
+   "body": "pol_pickup_body",
+   "wheel": "pol_pickup_wheel",
+   "lengthMetres": 5.3,
+   "wheelRadiusMetres": 0.38,
+   "wheelRadiusSource": 34.6,
+   "axles": [
+    [
+     112,
+     168
+    ],
+    [
+     404,
+     168
+    ]
+   ],
+   "facing": "right",
+   "calibration": "Wheels cut from the art at their ground contacts; tyre size from real class dimensions (v1.5).",
+   "wheelsBoosted": true
+  },
+  "pol_van": {
+   "body": "pol_van_body",
+   "wheel": "pol_van_wheel",
+   "lengthMetres": 5.9,
+   "wheelRadiusMetres": 0.37,
+   "wheelRadiusSource": 30.9,
+   "axles": [
+    [
+     108,
+     206
+    ],
+    [
+     416,
+     206
+    ]
+   ],
+   "facing": "right",
+   "calibration": "Wheels cut from the art at their ground contacts; tyre size from real class dimensions (v1.5).",
+   "wheelsBoosted": true
+  },
+  "pol_hiace": {
+   "body": "pol_hiace_body",
+   "wheel": "pol_hiace_wheel",
+   "lengthMetres": 5.4,
+   "wheelRadiusMetres": 0.35,
+   "wheelRadiusSource": 30.1,
+   "axles": [
+    [
+     99,
+     199
+    ],
+    [
+     357,
+     199
+    ]
+   ],
+   "facing": "right",
+   "calibration": "Wheels cut from the art at their ground contacts; tyre size from real class dimensions (v1.5).",
+   "wheelsBoosted": true
+  },
+  "pol_armored": {
+   "body": "pol_armored_body",
+   "wheel": "pol_armored_wheel",
+   "lengthMetres": 7.5,
+   "wheelRadiusMetres": 0.52,
+   "wheelRadiusSource": 34.0,
+   "axles": [
+    [
+     101,
+     224
+    ],
+    [
+     389,
+     224
+    ]
+   ],
+   "facing": "right",
+   "calibration": "Wheels cut from the art at their ground contacts; tyre size from real class dimensions (v1.5).",
+   "wheelsBoosted": true
+  },
+  "pol_tow": {
+   "body": "pol_tow_body",
+   "wheel": "pol_tow_wheel",
+   "lengthMetres": 7.0,
+   "wheelRadiusMetres": 0.46,
+   "wheelRadiusSource": 31.5,
+   "axles": [
+    [
+     102,
+     184
+    ],
+    [
+     376,
+     184
+    ]
+   ],
+   "facing": "right",
+   "calibration": "Wheels cut from the art at their ground contacts; tyre size from real class dimensions (v1.5).",
    "wheelsBoosted": true
   }
  },

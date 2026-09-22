@@ -161,7 +161,9 @@ M.boot = function () {
 };
 M.bootLoad = function () {
   CP.A.load((p, f) => CP.Screens.loadProgress(p, f)).then(errs => {
-    if (errs.length) { CP.Screens.loadErrors(errs); if (errs.length > 3) return; }
+    const core = errs.filter(f => !/logo_|fx_particles|checkpoint_props2|police_vehicles|driver_portraits_3|vehicles_extra|driver_portraits_2|loc_/.test(f));
+    if (core.length) { CP.Screens.loadErrors(core); if (core.length > 3) return; }
+    errs = core;
     const go = () => CP.Screens.menu();
     setTimeout(() => { if (errs.length || sessionStorage.getItem('cp_intro')) return go(); try { sessionStorage.setItem('cp_intro', '1'); } catch (e) { } CP.Screens.hideAll(); CP.Brand.intro(go); }, errs.length ? 1500 : 120);
   }).catch(e => { CP.Screens.loadErrors([e.message]); });

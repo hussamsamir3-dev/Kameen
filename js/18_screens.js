@@ -27,10 +27,13 @@ CP.Screens.back = function () { if (this.cur === 'settings' || this.cur === 'how
 /* ---------- loading ---------- */
 CP.Screens.loading = function () {
   const e = this.show('loading'); e.innerHTML = '';
-  e.append(CP.Brand.logo({ size: 0.85, static: true }), sh('div', { class: 'muted', id: 'ldTxt' }, CP.t('loading')), sh('div', { class: 'bar' }, sh('i', { id: 'ldBar' })), sh('div', { class: 'errs', id: 'ldErr' }));
+  const lsrc = (window.CP_EMBED && window.CP_EMBED.logo_checkpoint) || 'assets/logo_checkpoint.png';
+  const limg = sh('div', { class: 'logoimg', style: '--ls:.9' }); const im = new Image(); im.alt = 'كمين — Checkpoint'; im.src = lsrc; im.onerror = () => { limg.replaceWith(CP.Brand.logo({ size: 0.85, static: true })); }; limg.append(im, sh('i', { class: 'lshine' }));
+  e.append(limg, sh('div', { class: 'muted', id: 'ldTxt' }, CP.t('loading')), sh('div', { class: 'bar' }, sh('i', { id: 'ldBar' })), sh('div', { class: 'errs', id: 'ldErr' }));
 };
-CP.Screens.loadProgress = function (p, file) { const b = document.getElementById('ldBar'); if (b) b.style.width = (p * 100) + '%'; const t = document.getElementById('ldTxt'); if (t) t.textContent = CP.t('loading') + ' ' + file; };
+CP.Screens.loadProgress = function (p, file) { const b = document.getElementById('ldBar'); if (b) b.style.width = (p * 100) + '%'; const t = document.getElementById('ldTxt'); if (t) t.textContent = CP.t('loading'); };
 CP.Screens.loadErrors = function (errs) {
+  errs = errs.filter(f => !/logo_|fx_particles|checkpoint_props2|police_vehicles|driver_portraits_3|vehicles_extra|driver_portraits_2|gate_barrier|officer_(walk|idle)_seq|loc_/.test(f)); if (!errs.length) return;
   const e = document.getElementById('ldErr'); if (!e) return;
   e.innerHTML = ''; for (const f of errs) e.appendChild(sh('div', null, CP.t('loadFail', { f })));
   e.appendChild(sh('p', { class: 'muted' }, CP.t('loadFailHelp')));

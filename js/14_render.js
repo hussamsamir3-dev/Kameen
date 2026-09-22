@@ -250,7 +250,7 @@ CP.R.gateFront = function (s) {
   if (A.img.gate_barrier) { drawF(i0, 1); drawF(i0 + 1, fr); }
   // status lamp on the cabinet: red closed / green open / amber moving / flashing when jammed
   const lx = x - 0.03 * ppm, ly = y - 1.3 * ppm;
-  const col = g.jam ? (Math.sin(this.t * 8) > 0 ? '255,160,20' : '80,40,0') : g.state === 'open' ? '60,255,120' : g.state === 'closed' ? '255,60,50' : '255,190,40';
+  const col = s.equipment.generator !== 'ok' ? '40,40,40' : g.jam ? (Math.sin(this.t * 8) > 0 ? '255,160,20' : '80,40,0') : g.state === 'open' ? '60,255,120' : g.state === 'closed' ? '255,60,50' : '255,190,40';
   const gr = ctx.createRadialGradient(lx, ly, 0, lx, ly, 0.35 * ppm); gr.addColorStop(0, `rgba(${col},.95)`); gr.addColorStop(1, `rgba(${col},0)`);
   ctx.fillStyle = gr; ctx.fillRect(lx - 0.35 * ppm, ly - 0.35 * ppm, 0.7 * ppm, 0.7 * ppm);
   this.glows.push({ x: lx, y: ly, r: 0.35 * ppm, c: col, a: 0.8 });
@@ -334,9 +334,9 @@ CP.R.lighting = function (s, night, alpha) {
     lights.push({ x: this.sx(fx + 0.1 + i * 0.85), y: this.sy(Y.mainFar + 4.1), r: 9.5 * ppm, ry: 5.2 * ppm, c: '255,236,190', a: fl / 3, shadow: 0.8 });
   if (fl > 0.02) for (let i = -1; i <= 1; i++) lights.push({ x: this.sx(13.9 + i * 1.6), y: this.sy(Y.mainFar + 2.6), r: 5.4 * ppm, ry: 3.4 * ppm, c: '255,240,210', a: fl * 0.28, shadow: 0.55 });
   // booth window (small area light) and the gate lamp
-  lights.push({ x: this.sx(RW.boothX - 0.6), y: this.sy(Y.mainFar + 1.5), r: 1.9 * ppm, ry: 1.4 * ppm, c: '255,220,150', a: 0.6 * night, shadow: 0.35 });
+  if (genOk) lights.push({ x: this.sx(RW.boothX - 0.6), y: this.sy(Y.mainFar + 1.5), r: 1.9 * ppm, ry: 1.4 * ppm, c: '255,220,150', a: 0.6 * night, shadow: 0.35 });
   const gcol = s.gate.jam ? '255,170,40' : s.gate.state === 'open' ? '90,255,140' : s.gate.state === 'closed' ? '255,70,60' : '255,190,50';
-  lights.push({ x: this.sx(RW.gateX + 0.12), y: this.sy(Y.mainFar + 1.3), r: 1.5 * ppm, ry: 1.1 * ppm, c: gcol, a: 0.5 * night, shadow: 0 });
+  if (genOk) lights.push({ x: this.sx(RW.gateX + 0.12), y: this.sy(Y.mainFar + 1.3), r: 1.5 * ppm, ry: 1.1 * ppm, c: gcol, a: 0.5 * night, shadow: 0 });
   for (const g0 of this.glows) lights.push({ x: g0.x, y: g0.y, r: g0.r * (g0.big ? 3 : 1.6), ry: g0.r * (g0.big ? 2.2 : 1.2), c: g0.c, a: g0.a * night, shadow: 0 });
 
   const occ = this.occluders || [];
@@ -537,12 +537,14 @@ CP.R.worldUI = function (s, alpha) {
   // attention markers: broken vehicles, a jammed gate, a dead generator, a waiting visitor, an ambulance
   const alerts = [];
   for (const v of s.vehicles) { if (v.stall || v.leaving) alerts.push({ x: v.x - v.len / 2, y: CP.R.rowY(v.row) + 2.2, c: v.leaving ? '255,90,70' : '255,170,40', t: v.leaving ? '⚠' : '🔧' }); if (v.special === 'ambulance') alerts.push({ x: v.x - v.len / 2, y: CP.R.rowY(v.row) + 2.6, c: '90,160,255', t: '🚑' }); }
-  if (s.gate.jam) alerts.push({ x: RW.gateX, y: this.Y.mainFar + 2.2, c: '255,170,40', t: '🔧' });
-  if (s.equipment.generator !== 'ok') alerts.push({ x: RW.genX, y: this.Y.mainFar + 2.0, c: '255,120,60', t: '⚡' });
+  if (s.gate.jam) alerts.push({ x: RW.gateX, y: this.Y.mainFar + 2.2, c: '255,170,40', t: '🔧', fix: 'repair' });
+  if (s.equipment.generator !== 'ok') alerts.push({ x: RW.genX, y: this.Y.mainFar + 2.0, c: '255,120,60', t: '⚡', fix: 'generator' });
   if (s.visitor && !s.visitor.done) alerts.push({ x: RW.visitorX, y: this.Y.walkFeet + 2.2, c: '140,220,255', t: '?' });
   const pulse = 0.5 + 0.5 * Math.sin(this.t * 5);
+  this.alertHits = [];
   for (const al of alerts) {
     const x = this.sx(al.x), y = this.sy(al.y);
+    if (al.fix) this.alertHits.push({ x, y, r: Math.max(26, 0.8 * ppm), fix: al.fix });
     if (x < 10 || x > this.W - 10) { // off screen: flashing chevron at the edge
       const ex = x < 10 ? 16 : this.W - 16; ctx.save(); ctx.globalAlpha = 0.5 + 0.5 * pulse; ctx.fillStyle = `rgb(${al.c})`;
       ctx.beginPath(); const d = x < 10 ? -1 : 1; ctx.moveTo(ex + d * 10, this.H * 0.45); ctx.lineTo(ex - d * 8, this.H * 0.45 - 12); ctx.lineTo(ex - d * 8, this.H * 0.45 + 12); ctx.fill();
@@ -560,6 +562,7 @@ CP.R.worldUI = function (s, alpha) {
 
 /* hit testing for clicks/taps */
 CP.R.pick = function (px, py) {
+  for (const h of (this.alertHits || [])) if (Math.hypot(px - h.x, py - h.y) < h.r) return { fix: h.fix };
   const hits = (this.hits || []).filter(h => px >= h.x0 && px <= h.x1 && py >= h.y0 - 10 && py <= h.y1 + 6);
   if (hits.length) return { veh: hits[hits.length - 1].id };
   const w = this.toWorld(px, py);

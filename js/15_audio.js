@@ -6,8 +6,8 @@ CP.addStrings({
   cap_rev: ['[موتور بيزمجر]', '[engine revving]'], cap_fault: ['[إنذار عطل]', '[fault alarm]'], cap_bump: ['[خبطة]', '[bump]'], cap_crank: ['[موتور مش راضي يدور]', '[engine cranking]'],
   cap_chatter: ['[لاسلكي بعيد]', '[distant radio chatter]'], mus_now: ['♪ {n}', '♪ {n}']
 });
-CP.MUSIC = ['assets/music/nile_serenity_1.mp3', 'assets/music/nile_serenity_2.mp3', 'assets/music/nile_patrol_1.mp3', 'assets/music/nile_patrol_2.mp3'];
-CP.addStrings({ mus_name_0: ['نيل سيرينيتي ١', 'Nile Serenity I'], mus_name_1: ['نيل سيرينيتي ٢', 'Nile Serenity II'], mus_name_2: ['نيل باترول ١', 'Nile Patrol I'], mus_name_3: ['نيل باترول ٢', 'Nile Patrol II'] });
+CP.MUSIC = ['assets/music/nile_serenity_1.mp3', 'assets/music/nile_serenity_2.mp3', 'assets/music/nile_patrol_1.mp3', 'assets/music/nile_patrol_2.mp3', 'assets/music/clearing_tension_1.mp3', 'assets/music/clearing_tension_2.mp3'];
+CP.addStrings({ mus_name_0: ['نيل سيرينيتي ١', 'Nile Serenity I'], mus_name_1: ['نيل سيرينيتي ٢', 'Nile Serenity II'], mus_name_2: ['نيل باترول ١', 'Nile Patrol I'], mus_name_3: ['نيل باترول ٢', 'Nile Patrol II'], mus_name_4: ['تهدئة التوتر ١', 'Clearing the Tension I'], mus_name_5: ['تهدئة التوتر ٢', 'Clearing the Tension II'] });
 CP.Audio = {
   ctx: null, ok: false, ducked: false, sirenNode: null, layers: {},
   unlock() {
@@ -141,11 +141,12 @@ CP.Audio = {
 
   /* ---------------- SFX ---------------- */
   radioClick(reply) { this.burst(0.06, 0.25, 2500, 2); if (reply && this.ok) { const t = this.ctx.currentTime; this.burst(0.35, 0.05, 1800, 0.8, t + 0.07); this.tone('sine', 1320, 0.07, 0.03, t + 0.45); this.cap('cap_radio'); } },
-  paper() { if (!this.ok) return; const t = this.ctx.currentTime; for (let i = 0; i < 3; i++) this.burst(0.08 + Math.random() * 0.08, 0.1, 3500 + Math.random() * 2500, 0.8, t + i * 0.07, 'highpass'); },
+  paper() { if (!this.ok) return; const t = this.ctx.currentTime; this.burst(0.22, 0.05, 2600, 0.5, t, 'bandpass'); this.burst(0.18, 0.035, 4200, 0.7, t + 0.12, 'bandpass'); },
+  paperOld() { if (!this.ok) return; const t = this.ctx.currentTime; for (let i = 0; i < 3; i++) this.burst(0.08 + Math.random() * 0.08, 0.1, 3500 + Math.random() * 2500, 0.8, t + i * 0.07, 'highpass'); },
   ack(g) { this.tone('sine', g === 'f' ? 330 : 190, 0.12, 0.05); },
-  click() { this.tone('sine', 1800, 0.03, 0.03); this.burst(0.02, 0.12, 3200, 3); },
+  click() { if (!this.ok) return; const t = this.ctx.currentTime; this.tone('sine', 880, 0.09, 0.022, t); this.tone('sine', 1320, 0.12, 0.012, t + 0.02); },
   hover() { this.tone('sine', 2400, 0.02, 0.006); },
-  deny() { this.tone('square', 170, 0.09, 0.04); if (this.ok) this.tone('square', 130, 0.12, 0.04, this.ctx.currentTime + 0.09); },
+  deny() { if (!this.ok) return; const t = this.ctx.currentTime; this.tone('sine', 330, 0.14, 0.03, t); this.tone('sine', 262, 0.18, 0.025, t + 0.1); },
   whistle(release) { if (!this.ok) return; const t = this.ctx.currentTime; this.tone('sine', 2600, release ? 0.12 : 0.3, 0.07, t, release ? 2400 : 2800); if (release) this.tone('sine', 2600, 0.14, 0.06, t + 0.18); this.burst(release ? 0.12 : 0.3, 0.02, 2700, 6, t); this.cap('cap_whistle'); },
   gate(open) { if (!this.ok) return; const t = this.ctx.currentTime; this.tone('sawtooth', open ? 70 : 90, 1.4, 0.03, t, open ? 110 : 60, 0.1); this.burst(1.3, 0.02, 400, 2, t, 'bandpass', 0.1); this.tone('sine', 900, 0.05, 0.03, t + 1.35); this.cap('cap_gate'); },
   horn(kind, x) {

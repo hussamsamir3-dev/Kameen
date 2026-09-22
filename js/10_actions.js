@@ -260,9 +260,9 @@ CP.Act.ctxRun = function (id, arrived) {
   if (!a.near) { if (arrived) return; CP.Actors.walkTo(a.x, a.row || 0, { ctx: id }); return; }
   const base = id.split(':')[0];
   if (base === 'cones') { CP.Tasks.add({ type: 'o_cones', owner: 'officer', dur: 2.5, key: 'o_cones', data: { x: a.x } }); CP.Actors.poseHold('stop', 2.5); return; }
-  if (base === 'repair') { CP.Tasks.add({ type: 'o_repair', owner: 'officer', dur: 20, key: 'o_repair', data: { x: a.x } }); return; }
+  if (base === 'repair') { CP.Tasks.add({ type: 'o_repair', owner: 'officer', dur: 6, key: 'o_repair', data: { x: a.x } }); return; }
   if (base === 'manual') { CP.Events.manualGate(); return; }
-  if (base === 'generator') { CP.Tasks.add({ type: 'o_generator', owner: 'officer', dur: 11, key: 'o_generator', data: { x: a.x } }); return; }
+  if (base === 'generator') { CP.Tasks.add({ type: 'o_generator', owner: 'officer', dur: 4, key: 'o_generator', data: { x: a.x } }); return; }
   if (base === 'visitor') { CP.UI.open('visitor'); return; }
   if (base === 'assist') { CP.Tasks.add({ type: 'o_vehicle', owner: 'officer', dur: 10, key: 'o_vehicle:' + a.vid, data: { x: a.x, row: a.row || 0, vid: a.vid } }); return; }
   if (base === 'calm') { CP.Events.calmLeaver(CP.T.get(a.vid)); return; }

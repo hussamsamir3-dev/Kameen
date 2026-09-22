@@ -73,6 +73,16 @@ CP.C.veh = {
   blue_hatch:     { cls: 'private', lic: 'private', maxV: 12, acc: 2.0, dec: 5.2, pax: [0, 3], win: 0.62, make: ['دايهاتسو شاريد','Daihatsu Charade'], colour: ['أزرق فاتح','Light blue'], w: { cairo: 7, desert: 3 }, zones: ['cabin', 'glovebox', 'seats', 'boot'] },
   alex_taxi:      { cls: 'taxi', lic: 'pro', maxV: 11, acc: 1.9, dec: 5.0, pax: [0, 3], win: 0.60, make: ['فيات ١٢٨','Fiat 128'], colour: ['أصفر وأسود','Yellow & black'], w: { cairo: 5, desert: 1 }, zones: ['cabin', 'glovebox', 'seats', 'boot'] },
   maroon_hatch:   { cls: 'private', lic: 'private', maxV: 13, acc: 2.6, dec: 6.0, pax: [0, 3], win: 0.62, make: ['كيا ريو','Kia Rio'], colour: ['نبيتي','Maroon'], w: { cairo: 8, desert: 4 }, zones: ['cabin', 'glovebox', 'seats', 'boot'] },
+  pol_traffic_sedan: { cls: 'service', lic: 'pro', maxV: 13, acc: 2.4, dec: 6.0, pax: [1, 2], win: 0.7, make: ['الشرطة','Police'], colour: ['أزرق وأبيض','Navy & white'], w: { cairo: 0, desert: 0 }, zones: ['cabin'] },
+  pol_sedan: { cls: 'service', lic: 'pro', maxV: 13, acc: 2.4, dec: 6.0, pax: [1, 2], win: 0.7, make: ['الشرطة','Police'], colour: ['أزرق وأبيض','Navy & white'], w: { cairo: 0, desert: 0 }, zones: ['cabin'] },
+  pol_hatch: { cls: 'service', lic: 'pro', maxV: 13, acc: 2.4, dec: 6.0, pax: [1, 2], win: 0.7, make: ['الشرطة','Police'], colour: ['أزرق وأبيض','Navy & white'], w: { cairo: 0, desert: 0 }, zones: ['cabin'] },
+  pol_suv: { cls: 'service', lic: 'pro', maxV: 13, acc: 2.4, dec: 6.0, pax: [1, 2], win: 0.7, make: ['الشرطة','Police'], colour: ['أزرق وأبيض','Navy & white'], w: { cairo: 0, desert: 0 }, zones: ['cabin'] },
+  pol_4x4: { cls: 'service', lic: 'pro', maxV: 13, acc: 2.4, dec: 6.0, pax: [1, 2], win: 0.7, make: ['الشرطة','Police'], colour: ['أزرق وأبيض','Navy & white'], w: { cairo: 0, desert: 0 }, zones: ['cabin'] },
+  pol_pickup: { cls: 'service', lic: 'pro', maxV: 13, acc: 2.4, dec: 6.0, pax: [1, 2], win: 0.7, make: ['الشرطة','Police'], colour: ['أزرق وأبيض','Navy & white'], w: { cairo: 0, desert: 0 }, zones: ['cabin'] },
+  pol_van: { cls: 'service', lic: 'pro', maxV: 13, acc: 2.4, dec: 6.0, pax: [1, 2], win: 0.7, make: ['الشرطة','Police'], colour: ['أزرق وأبيض','Navy & white'], w: { cairo: 0, desert: 0 }, zones: ['cabin'] },
+  pol_hiace: { cls: 'service', lic: 'pro', maxV: 13, acc: 2.4, dec: 6.0, pax: [1, 2], win: 0.7, make: ['الشرطة','Police'], colour: ['أزرق وأبيض','Navy & white'], w: { cairo: 0, desert: 0 }, zones: ['cabin'] },
+  pol_armored: { cls: 'service', lic: 'pro', maxV: 13, acc: 2.4, dec: 6.0, pax: [1, 2], win: 0.7, make: ['الشرطة','Police'], colour: ['أزرق وأبيض','Navy & white'], w: { cairo: 0, desert: 0 }, zones: ['cabin'] },
+  pol_tow: { cls: 'service', lic: 'pro', maxV: 13, acc: 2.4, dec: 6.0, pax: [1, 2], win: 0.7, make: ['الشرطة','Police'], colour: ['أزرق وأبيض','Navy & white'], w: { cairo: 0, desert: 0 }, zones: ['cabin'] },
   police_pickup:  { cls: 'service', lic: 'pro', maxV: 13, acc: 2.4, dec: 6.0, pax: [1, 2], win: 0.62, make: ['تويوتا هايلكس','Toyota Hilux'], colour: ['أسود','Black'], w: { cairo: 0, desert: 0 }, zones: [] }
 };
 

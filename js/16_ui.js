@@ -19,6 +19,110 @@ const h = (tag, attrs, ...kids) => {
 CP.h = h; CP.$ = $;
 CP.UI.font = () => CP.lang === 'ar' ? getComputedStyle(document.body).fontFamily || 'Tahoma' : 'Segoe UI, Arial, sans-serif';
 
+/* REPAIR UI - Premium repair interaction with hover/click feedback */
+CP.RepairUI = {
+  repairables: {
+    cairo: [
+      { id: 'gate_main', x: 5.8, y: 4.2, name: { ar: 'بوابة رئيسية', en: 'Main Gate' }, time: 6, cost: 2000 },
+      { id: 'barrier_left', x: 8.2, y: 4.3, name: { ar: 'حاجز يسار', en: 'Left Barrier' }, time: 5, cost: 1500 },
+      { id: 'floodlight_1', x: 12.5, y: 3.8, name: { ar: 'كشاف إضاءة', en: 'Floodlight' }, time: 3, cost: 800 }
+    ],
+    alex: [
+      { id: 'gate_main', x: 6.2, y: 4.15, name: { ar: 'بوابة رئيسية', en: 'Main Gate' }, time: 6, cost: 2000 },
+      { id: 'barrier_arm', x: 9.1, y: 4.25, name: { ar: 'ذراع حاجز', en: 'Barrier Arm' }, time: 5, cost: 1500 },
+      { id: 'booth_table', x: 3.5, y: 3.5, name: { ar: 'طاولة الكشك', en: 'Booth Table' }, time: 2, cost: 500 }
+    ]
+  },
+  hoveredItem: null,
+  activeRepair: null,
+  
+  checkHover(x, y, ppm, camX) {
+    const s = CP.G.shift; if (!s) return null;
+    const loc = s.loc;
+    const items = this.repairables[loc] || [];
+    
+    for (const item of items) {
+      const sx = CP.R.sx(item.x);
+      const sy = CP.R.sy(item.y);
+      const dist = Math.hypot(sx - x, sy - y);
+      if (dist < 40) return item;
+    }
+    return null;
+  },
+  
+  startRepair(itemId) {
+    const s = CP.G.shift; if (!s) return;
+    const items = this.repairables[s.loc] || [];
+    const item = items.find(i => i.id === itemId);
+    if (!item) return;
+    
+    this.activeRepair = {
+      itemId, startTime: s.t, duration: item.time,
+      item, progress: 0
+    };
+    CP.Audio.actionSound('confirm');
+    CP.UI.toast && CP.UI.toast(CP.L({ ar: `إصلاح ${item.name.ar}...`, en: `Repairing ${item.name.en}...` }), 'ok');
+  },
+  
+  update(dt) {
+    if (!this.activeRepair) return;
+    const s = CP.G.shift;
+    const elapsed = (s.t - this.activeRepair.startTime);
+    const progress = Math.min(1, elapsed / this.activeRepair.duration);
+    this.activeRepair.progress = progress;
+    
+    if (progress >= 1) {
+      CP.Audio.actionSound('success');
+      CP.UI.toast && CP.UI.toast(CP.L({ ar: `✓ تم الإصلاح`, en: `✓ Repaired` }), 'ok');
+      this.activeRepair = null;
+    }
+  },
+  
+  render(ctx, ppm) {
+    if (!this.hoveredItem) return;
+    const item = this.hoveredItem;
+    const sx = CP.R.sx(item.x);
+    const sy = CP.R.sy(item.y);
+    
+    // Hover glow
+    ctx.fillStyle = 'rgba(100, 200, 255, 0.15)';
+    ctx.beginPath();
+    ctx.arc(sx, sy, 50, 0, Math.PI * 2);
+    ctx.fill();
+    
+    // Repair indicator circle
+    ctx.strokeStyle = 'rgba(100, 200, 255, 0.8)';
+    ctx.lineWidth = 3;
+    ctx.beginPath();
+    ctx.arc(sx, sy, 45, 0, Math.PI * 2);
+    ctx.stroke();
+    
+    // Progress ring if repairing
+    if (this.activeRepair && this.activeRepair.itemId === item.id) {
+      const progress = this.activeRepair.progress;
+      ctx.strokeStyle = 'rgba(0, 255, 100, 0.9)';
+      ctx.lineWidth = 4;
+      ctx.beginPath();
+      ctx.arc(sx, sy, 40, -Math.PI/2, -Math.PI/2 + Math.PI * 2 * progress);
+      ctx.stroke();
+    }
+    
+    // Tooltip
+    ctx.fillStyle = 'rgba(20, 20, 30, 0.95)';
+    ctx.fillRect(sx - 80, sy - 65, 160, 50);
+    ctx.strokeStyle = 'rgba(100, 200, 255, 0.6)';
+    ctx.lineWidth = 1;
+    ctx.strokeRect(sx - 80, sy - 65, 160, 50);
+    
+    ctx.fillStyle = '#fff';
+    ctx.font = 'bold 12px ' + CP.UI.font();
+    ctx.textAlign = 'center';
+    ctx.fillText(item.name.en, sx, sy - 50);
+    ctx.font = '11px ' + CP.UI.font();
+    ctx.fillText(item.time + 's / $' + item.cost, sx, sy - 35);
+  }
+};
+
 /* ---------- icons (UI glyphs only; all game art comes from the asset pack) ---------- */
 const ICONS = {
   stop: 'M12 2.5 19 6.5v8.2c0 3.6-3 6.1-7 7.3-4-1.2-7-3.7-7-7.3V6.5Z|M9 9.5v5M12 9v6M15 9.5v5',

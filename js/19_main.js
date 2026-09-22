@@ -19,6 +19,8 @@ M.step = function (dt) {
   s.t += dt;
   CP.Actors.update(dt);
   if (CP.Actors.smartAI) CP.Actors.smartAI(dt); // SMART OFFICER AI
+  if (CP.RepairUI) CP.RepairUI.update(dt); // REPAIR UI
+  if (CP.Daily) CP.Daily.checkLogin(); // DAILY ENGAGEMENT
   CP.T.step(dt);
   CP.Gate.update(dt);
   CP.Tasks.update(dt);

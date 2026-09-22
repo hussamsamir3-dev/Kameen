@@ -1,0 +1,127 @@
+{
+  "game": {
+    "version": "2.1.0-enhanced",
+    "title": "Kameen | كمين",
+    "description": "Egyptian police checkpoint simulator"
+  },
+  
+  "performance": {
+    "targetFrameRate": 60,
+    "enableVSync": true,
+    "renderQuality": "high",
+    "particleIntensity": 1.0,
+    "shadowQuality": "medium",
+    "textureFiltering": "nearest",
+    "autoLowQualityThreshold": 0.75,
+    "memoryCleanupInterval": 300000
+  },
+  
+  "engagement": {
+    "dailyLoginReward": 50,
+    "streakBonusMultiplier": 0.1,
+    "streakMilestones": [7, 30, 100],
+    "streakMilestoneRewards": [500, 2000, 5000],
+    "dailyChallengesCount": 3,
+    "challengeResetTime": 86400
+  },
+  
+  "gameplay": {
+    "shiftDuration": 1800,
+    "vehicleSpawnRate": 3.5,
+    "difficultyProgression": 1.15,
+    "repairTime": {
+      "gate": 6,
+      "barrier": 5,
+      "light": 3,
+      "table": 2
+    },
+    "repairRewards": {
+      "gate": 2000,
+      "barrier": 1500,
+      "light": 800,
+      "table": 500
+    }
+  },
+  
+  "audio": {
+    "masterVolume": 0.8,
+    "musicVolume": 0.6,
+    "sfxVolume": 0.7,
+    "voiceVolume": 0.8,
+    "ambientVolume": 0.5,
+    "enableSpeech": true,
+    "realisticSounds": true
+  },
+  
+  "officers": {
+    "primaryAnimationFrames": 24,
+    "secondaryAnimationFrames": 16,
+    "patrolUpdateInterval": 12,
+    "patrolSpotVariance": 0.4,
+    "idleAnimationCycleTime": 5,
+    "realisticMovement": true
+  },
+  
+  "ui": {
+    "language": "ar",
+    "textSize": "medium",
+    "colorMode": "auto",
+    "showFPS": false,
+    "showDebug": false,
+    "enableTouch": true,
+    "hapticFeedback": true,
+    "readMode": "pause"
+  },
+  
+  "storage": {
+    "autoSaveInterval": 30000,
+    "maxSaveSlots": 10,
+    "oldSaveCleanupDays": 30,
+    "enableCloudSync": false
+  },
+  
+  "maps": {
+    "cairo": {
+      "name": "Cairo",
+      "difficulty": 1.0,
+      "enabled": true,
+      "propsAlignment": { "gate": 4.30, "booth": 3.5 }
+    },
+    "alex": {
+      "name": "Alexandria",
+      "difficulty": 1.1,
+      "enabled": true,
+      "propsAlignment": { "gate": 4.25, "booth": 3.5 }
+    },
+    "sinai": {
+      "name": "Sinai",
+      "difficulty": 1.2,
+      "enabled": true,
+      "propsAlignment": { "gate": 4.30, "booth": 3.5 }
+    },
+    "hurghada": {
+      "name": "Hurghada",
+      "difficulty": 0.9,
+      "enabled": true,
+      "propsAlignment": { "gate": 4.28, "booth": 3.5 }
+    },
+    "luxor": {
+      "name": "Luxor",
+      "difficulty": 1.0,
+      "enabled": true,
+      "propsAlignment": { "gate": 4.30, "booth": 3.5 }
+    },
+    "aswan": {
+      "name": "Aswan",
+      "difficulty": 0.95,
+      "enabled": true,
+      "propsAlignment": { "gate": 4.29, "booth": 3.5 }
+    },
+    "desert": {
+      "name": "Desert",
+      "difficulty": 1.3,
+      "enabled": true,
+      "propsAlignment": { "gate": 4.31, "booth": 3.5 }
+    }
+  }
+}

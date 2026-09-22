@@ -1,3 +1,60 @@
+/* DAILY ENGAGEMENT SYSTEM - Streaks, bonuses, challenges */
+CP.Daily = {
+  checkLogin() {
+    const k = CP.G.career;
+    const now = Math.floor(Date.now() / 1000);
+    const lastLogin = k.daily?.lastLogin || 0;
+    const daysSinceLogin = Math.floor((now - lastLogin) / 86400);
+    
+    if (daysSinceLogin > 1) {
+      k.daily.streak = 0; // Reset streak if more than 1 day
+    }
+    
+    if (daysSinceLogin >= 1) {
+      k.daily.lastLogin = now;
+      k.daily.streak = Math.min((k.daily.streak || 0) + 1, 365);
+      k.daily.level = Math.min((k.daily.level || 0) + 1, 100);
+      
+      const streakReward = Math.floor(50 * (1 + k.daily.streak * 0.1));
+      k.cash = (k.cash || 0) + streakReward;
+      
+      if (k.daily.streak === 7) { k.cash += 500; }
+      if (k.daily.streak === 30) { k.cash += 2000; }
+      if (k.daily.streak === 100) { k.cash += 5000; }
+      
+      this.generateDaily();
+      CP.save();
+    }
+  },
+  
+  generateDaily() {
+    const k = CP.G.career;
+    const challenges = [
+      { id: 'checks_10', name: { ar: 'فحص 10 سيارات', en: 'Check 10 vehicles' }, target: 10, reward: 500 },
+      { id: 'no_bribes', name: { ar: 'بدون رشوة اليوم', en: 'No bribes today' }, target: 1, reward: 1000 },
+      { id: 'perfect_shift', name: { ar: 'نوبة مثالية', en: 'Perfect shift' }, target: 1, reward: 800 },
+      { id: 'busted_5', name: { ar: 'اكتشف 5 خاطئين', en: 'Bust 5 offenders' }, target: 5, reward: 600 }
+    ];
+    
+    k.daily.challenges = {};
+    for (let i = 0; i < 3; i++) {
+      const c = challenges[Math.floor(Math.random() * challenges.length)];
+      k.daily.challenges[c.id] = { name: c.name, target: c.target, current: 0, reward: c.reward, done: false };
+    }
+  },
+  
+  updateChallenge(challengeId, amount = 1) {
+    const k = CP.G.career;
+    const ch = k.daily?.challenges?.[challengeId];
+    if (!ch || ch.done) return;
+    ch.current = Math.min(ch.current + amount, ch.target);
+    if (ch.current >= ch.target) {
+      ch.done = true;
+      k.cash = (k.cash || 0) + ch.reward;
+    }
+  }
+};
+
 /* Dialogue: authored intents with conditions. Answers derive from the case truth + previous statements; tone changes cooperation, never truth. */
 CP.Dlg = {};
 const DC = CP.C;

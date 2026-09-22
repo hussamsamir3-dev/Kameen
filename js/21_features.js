@@ -295,6 +295,36 @@ CP.Env.front = function (s, ctx, W, H, ppm, Y, night, dt) {
     const g2 = ctx.createLinearGradient(0, 0, 0, R.sy(Y.mainNear)); g2.addColorStop(0, `rgba(${col},${(w.kind === 'fog' ? 0.38 : 0.1) * w.i})`); g2.addColorStop(1, `rgba(${col},0)`);
     ctx.fillStyle = g2; ctx.fillRect(0, 0, W, R.sy(Y.mainNear)); ctx.restore();
   }
+  // lens optics: anamorphic flares on floodlight heads and headlights, road reflections under the lights
+  if (night > 0.3 && CP.S.quality !== 'low') {
+    const wet = w.kind === 'rain' ? 1.8 : 1;
+    ctx.save(); ctx.globalCompositeOperation = 'lighter';
+    const flare = (x, y, len, a, col) => {
+      const g = ctx.createLinearGradient(x - len, y, x + len, y); g.addColorStop(0, `rgba(${col},0)`); g.addColorStop(0.5, `rgba(${col},${a})`); g.addColorStop(1, `rgba(${col},0)`);
+      ctx.fillStyle = g; ctx.fillRect(x - len, y - 1.2, len * 2, 2.4);
+      const rg = ctx.createRadialGradient(x, y, 0, x, y, len * 0.18); rg.addColorStop(0, `rgba(255,255,255,${a})`); rg.addColorStop(1, `rgba(${col},0)`); ctx.fillStyle = rg; ctx.fillRect(x - len * 0.18, y - len * 0.18, len * 0.36, len * 0.36);
+    };
+    if (s.equipment.generator === 'ok') for (const fx of [8.4, 35.2]) {
+      const x = R.sx(fx - 0.1), y = R.sy(Y.mainFar + 0.12 + 4.0); if (x < -200 || x > W + 200) continue;
+      const fl = 0.35 + 0.05 * Math.sin(R.t * 17 + fx);
+      flare(x, y, 3.2 * ppm, fl * night, '190,215,255');
+      // reflection column on the road surface (longer and brighter when wet)
+      const ry = R.sy(Y.mainGround - 0.2), rh = 1.9 * ppm * wet; const g = ctx.createLinearGradient(0, ry - rh * 0.3, 0, ry + rh);
+      g.addColorStop(0, 'rgba(255,240,205,0)'); g.addColorStop(0.3, `rgba(255,240,205,${0.1 * night * wet})`); g.addColorStop(1, 'rgba(255,240,205,0)');
+      ctx.fillStyle = g; ctx.fillRect(x - 0.35 * ppm, ry - rh * 0.3, 0.7 * ppm, rh * 1.3);
+    }
+    for (const v of s.vehicles) { const sc = v._scr; if (!sc || v.special === 'ambulance') continue; const x = sc.left + sc.w * 0.985, y = sc.top + (sc.ground - sc.top) * 0.55; if (x < -50 || x > W + 50) continue;
+      flare(x, y, 1.1 * ppm, 0.28 * night, '255,235,200');
+      if (wet > 1) { const g2 = ctx.createLinearGradient(0, sc.ground, 0, sc.ground + 1.2 * ppm); g2.addColorStop(0, `rgba(255,235,200,${0.14 * night})`); g2.addColorStop(1, 'rgba(255,235,200,0)'); ctx.fillStyle = g2; ctx.fillRect(x - 0.2 * ppm, sc.ground, 0.4 * ppm, 1.2 * ppm); } }
+    ctx.restore();
+  }
+  // soft light wrap at night: a faint blurred copy of the brightest areas lifted over the frame
+  if (night > 0.45 && CP.S.quality !== 'low' && !CP.S.reducedFx) {
+    const bc = this.bloomC || (this.bloomC = document.createElement('canvas')); const bw = Math.max(1, W >> 3), bh = Math.max(1, H >> 3);
+    if (bc.width !== bw || bc.height !== bh) { bc.width = bw; bc.height = bh; }
+    const bx = bc.getContext('2d'); bx.globalCompositeOperation = 'source-over'; bx.clearRect(0, 0, bw, bh); bx.drawImage(ctx.canvas, 0, 0, bw, bh);
+    ctx.save(); ctx.globalCompositeOperation = 'screen'; ctx.globalAlpha = 0.16 * night; ctx.imageSmoothingEnabled = true; ctx.setTransform(1, 0, 0, 1, 0, 0); ctx.drawImage(bc, 0, 0, ctx.canvas.width, ctx.canvas.height); ctx.restore();
+  }
   // filmic grade: warm highlights / cool shadows, lens vignette, fine grain
   ctx.save(); ctx.globalCompositeOperation = 'soft-light';
   const gr = ctx.createLinearGradient(0, 0, 0, H); gr.addColorStop(0, night > 0.5 ? 'rgba(90,120,200,.35)' : 'rgba(255,200,140,.28)'); gr.addColorStop(1, night > 0.5 ? 'rgba(20,30,60,.4)' : 'rgba(60,70,110,.25)');
@@ -480,7 +510,7 @@ CP.Props = {
     this.put(R, 'first_aid_cabinet', 29.9, g);
     this.put(R, 'extinguisher_trolley', 30.85, g);
     // camera tower recording light
-    if (Math.sin(R.t * 3) > 0.6) R.glows.push({ x: cam.x + 0.12 * R.ppm, y: cam.top + 0.35 * R.ppm, r: 0.18 * R.ppm, c: '255,40,40', a: 0.9 });
+    if (s.equipment.generator === 'ok' && Math.sin(R.t * 3) > 0.6) R.glows.push({ x: cam.x + 0.12 * R.ppm, y: cam.top + 0.35 * R.ppm, r: 0.18 * R.ppm, c: '255,40,40', a: 0.9 });
   },
   flat(R, s) {
     const Y = R.Y;
@@ -494,9 +524,6 @@ CP.Props = {
     // officer post on the walkway: podium, LED stop sign before the line, warning beacon
     add('podium', 20.3, Y.walkFeet - 0.28);
     add('stanchions', 24.4, Y.walkFeet - 0.3);
-    ents.push({ y: Y.walkFeet - 0.32, k: 'fn', draw: () => { const o = self.put(R, 'stop_sign_led', 13.6, Y.walkFeet - 0.32); if (n > 0.2 && Math.sin(R.t * 4) > 0) R.glows.push({ x: o.x, y: o.top + o.h * 0.22, r: 0.45 * R.ppm, c: '255,40,30', a: 0.9 }); } });
-    ents.push({ y: Y.walkFeet - 0.3, k: 'fn', draw: () => { const o = self.put(R, 'beacon_stand', 14.8, Y.walkFeet - 0.3); const ph = Math.sin(R.t * (CP.S.reducedFlash ? 2 : 7)) > 0;
-      R.glows.push({ x: o.x - 0.16 * R.ppm, y: o.top + 0.1 * R.ppm, r: 0.5 * R.ppm, c: '255,40,40', a: ph ? 0.9 : 0.15 }); R.glows.push({ x: o.x + 0.16 * R.ppm, y: o.top + 0.1 * R.ppm, r: 0.5 * R.ppm, c: '60,120,255', a: ph ? 0.15 : 0.9 }); } });
     // inspection bay kit
     add('mirror_trolley', 21.7, Y.bayNear + 0.1);
     add('tool_case', 22.7, Y.bayNear + 0.08);

@@ -21,12 +21,33 @@ CP.UI.font = () => CP.lang === 'ar' ? getComputedStyle(document.body).fontFamily
 
 /* ---------- icons (UI glyphs only; all game art comes from the asset pack) ---------- */
 const ICONS = {
-  stop: 'M8 3h8l5 5v8l-5 5H8l-5-5V8zM9 9v6M12 9v6M15 9v6', wave: 'M4 12h11M11 7l5 5-5 5M19 5v14', approach: 'M13 4a2 2 0 1 1 0 .1M10 21l2-7 3 3v4M9 11l3-3 3 2 3 1M12 8l-3 6', talk: 'M4 5h16v10H9l-5 4z',
-  docs: 'M4 6h16v12H4zM7 10h4v5H7zM13 10h5M13 13h5', bay: 'M3 17h18M5 17V9l4-3h6l4 3v8M9 13h6', inspect: 'M10 10m-6 0a6 6 0 1 0 12 0a6 6 0 1 0-12 0M15 15l6 6', screen: 'M8 3h8v5H8zM7 8h10v13H7zM10 12h4',
-  radio: 'M8 7h8v14H8zM10 7V2M10 11h4M10 14h4', partner: 'M9 7a3 3 0 1 0 .1 0M3 21v-2a5 5 0 0 1 10 0v2M16 6a3 3 0 0 1 0 6M17 15a4 4 0 0 1 4 4v2', record: 'M5 3h11l3 3v15H5zM8 9h8M8 13h8M8 17h5', resolve: 'M4 12l5 5L20 6',
-  pause: 'M8 5v14M16 5v14', book: 'M4 4h7v16H4zM13 4h7v16h-7z', gear: 'M12 9a3 3 0 1 0 .1 0M12 2v3M12 19v3M2 12h3M19 12h3M5 5l2 2M17 17l2 2M5 19l2-2M17 7l2-2', cone: 'M9 20h6l-3-15zM6 20h12', wrench: 'M14 6a4 4 0 0 0 5 5l-9 9-3-3 9-9a4 4 0 0 1-2-2z', gate: 'M3 20V8h3v12M6 11h15', bolt: 'M13 2L5 14h6l-1 8 8-12h-6z', person: 'M12 7a3 3 0 1 0 .1 0M7 21v-5a5 5 0 0 1 10 0v5', alert: 'M12 3l10 18H2zM12 10v5M12 18v.5', left: 'M15 5l-7 7 7 7', right: 'M9 5l7 7-7 7'
+  stop: 'M12 2.5 19 6.5v8.2c0 3.6-3 6.1-7 7.3-4-1.2-7-3.7-7-7.3V6.5Z|M9 9.5v5M12 9v6M15 9.5v5',
+  wave: 'M3 12h13|M12 7l5 5-5 5|M20 5v14',
+  approach: 'M12 4.5a2 2 0 1 0 0 .1|M9 21l1.8-6.2 2.7 2.4V21|M8 11.5l3.4-3 3 2.2 2.6.8|M11.4 8.5l-2.4 5.8',
+  talk: 'M4 5h16a1 1 0 0 1 1 1v9a1 1 0 0 1-1 1H9.5L5 19.5V16H4a1 1 0 0 1-1-1V6a1 1 0 0 1 1-1Z|M7.5 9.5h9M7.5 12.5h6',
+  docs: 'M3.5 6h17v12h-17Z|M6.5 9.5h4.5v5.5H6.5Z|M13.5 10h4.5M13.5 12.5h4.5M13.5 15h3',
+  bay: 'M2.5 18h19|M4.5 18v-5.5l2.2-4.5h10.6l2.2 4.5V18|M4.5 13h15|M7.5 15.5h1.5M15 15.5h1.5',
+  inspect: 'M10.5 10.5m-6.5 0a6.5 6.5 0 1 0 13 0a6.5 6.5 0 1 0-13 0|M15.3 15.3 21 21|M8 10.5h5M10.5 8v5',
+  screen: 'M8.5 2.5h7v5h-7Z|M7 7.5h10v13.5H7Z|M10 12h4M10 15h4M10 18h2',
+  radio: 'M8 7h8v14H8Z|M10 7V2.5|M10.5 11h3M10.5 14h3|M18.5 9.5a4 4 0 0 1 0 5M20.5 7.5a7 7 0 0 1 0 9',
+  partner: 'M9 7.5a3 3 0 1 0 .1 0|M3 20.5v-1.5a5 5 0 0 1 10 0v1.5|M16 5.5a3 3 0 0 1 0 6|M17 14.5a4.5 4.5 0 0 1 4 4.5v1.5',
+  record: 'M6 3h9l4 4v14H6Z|M15 3v4h4|M9 11h7M9 14.5h7M9 18h4',
+  resolve: 'M12 2.5a9.5 9.5 0 1 0 .1 0|M7.5 12.5l3 3 6-6.5',
+  pause: 'M8.5 5v14M15.5 5v14', book: 'M4 4.5h7v15.5H4Z|M13 4.5h7v15.5h-7Z|M6 8h3M15 8h3',
+  gear: 'M12 9a3 3 0 1 0 .1 0|M12 2v3M12 19v3M2 12h3M19 12h3M4.9 4.9l2.1 2.1M17 17l2.1 2.1M4.9 19.1 7 17M17 7l2.1-2.1',
+  cone: 'M9.5 19.5h5l-2.5-15Z|M6 19.5h12|M10.4 14h3.2M11 10h2', wrench: 'M14.5 5.5a4 4 0 0 0 4.9 4.9l-9 9a2.1 2.1 0 0 1-3-3l9-9a4 4 0 0 1-1.9-1.9Z',
+  gate: 'M3.5 20.5V8h3v12.5|M6.5 11h14.5|M9 11l2 -0M12 11l2 0M17 11l2 0', bolt: 'M13.5 2 5 14h6l-1 8 8.5-12H12.5Z',
+  person: 'M12 7a3 3 0 1 0 .1 0|M6.5 21v-4a5.5 5.5 0 0 1 11 0v4', alert: 'M12 3 22 20.5H2Z|M12 10v5|M12 18v.3', left: 'M15 5l-7 7 7 7', right: 'M9 5l7 7-7 7'
 };
-CP.icon = (n) => { const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.setAttribute('viewBox', '0 0 24 24'); s.setAttribute('fill', 'none'); s.setAttribute('stroke', 'currentColor'); s.setAttribute('stroke-width', '1.9'); s.setAttribute('stroke-linecap', 'round'); s.setAttribute('stroke-linejoin', 'round'); const p = document.createElementNS('http://www.w3.org/2000/svg', 'path'); p.setAttribute('d', ICONS[n] || ICONS.alert); s.appendChild(p); return s; };
+CP.icon = (n) => {
+  // premium duotone icon: soft glass disc, gold gradient strokes, subtle inner highlight
+  const NS = 'http://www.w3.org/2000/svg'; const sv = document.createElementNS(NS, 'svg'); sv.setAttribute('viewBox', '0 0 24 24'); sv.setAttribute('class', 'ico'); sv.setAttribute('aria-hidden', 'true');
+  const gid = 'ig' + (CP._icoN = (CP._icoN || 0) + 1);
+  sv.innerHTML = `<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#fff3c4"/><stop offset=".55" stop-color="#f3c24f"/><stop offset="1" stop-color="#b47a16"/></linearGradient></defs>`;
+  const parts = (ICONS[n] || ICONS.alert).split('|');
+  parts.forEach((d, i) => { const p = document.createElementNS(NS, 'path'); p.setAttribute('d', d); p.setAttribute('fill', i === 0 && /Z$/.test(d.trim()) ? 'rgba(243,194,79,.14)' : 'none'); p.setAttribute('stroke', `url(#${gid})`); p.setAttribute('stroke-width', '1.8'); p.setAttribute('stroke-linecap', 'round'); p.setAttribute('stroke-linejoin', 'round'); sv.appendChild(p); });
+  return sv;
+};
 
 /* ---------- language / text size ---------- */
 CP.UI.applyLang = function () {
@@ -263,21 +284,36 @@ CP.Input.bindKeys = function () {
 };
 CP.Input.sync = function () { const k = this.keys; this.axis = (k.r ? 1 : 0) - (k.l ? 1 : 0); this.vert = (k.d ? 1 : 0) - (k.u ? 1 : 0); };
 CP.Input.bindCanvas = function (cv) {
-  let down = null;
-  cv.addEventListener('pointerdown', e => { CP.Audio.unlock(); down = { x: e.clientX, y: e.clientY, cam: CP.R.camX, moved: false }; cv.setPointerCapture(e.pointerId); });
+  let down = null; const pts = new Map(); let pinch = null;
+  // strategy-game camera: wheel zoom, screen-edge pan, pinch zoom and drag pan on touch
+  cv.addEventListener('wheel', e => { e.preventDefault(); CP.R.userZoom = CP.clamp((CP.R.userZoom || 1) * Math.exp(-e.deltaY * 0.0012), 0.55, 2.4); }, { passive: false });
   cv.addEventListener('pointermove', e => {
+    const r = cv.getBoundingClientRect(); const x = e.clientX - r.left;
+    CP.R.edge = (e.pointerType === 'mouse' && !CP.UI.panel) ? (x < 45 ? -(1 - x / 45) : x > r.width - 45 ? (1 - (r.width - x) / 45) : 0) : 0;
+  });
+  cv.addEventListener('pointerleave', () => { CP.R.edge = 0; });
+  cv.addEventListener('dblclick', () => { CP.R.userZoom = 1; CP.R.camFree = null; CP.R.panY = 0; });
+  cv.addEventListener('pointerdown', e => { CP.Audio.unlock(); pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pts.size === 2) { const [a1, b1] = [...pts.values()]; pinch = { d: Math.hypot(a1.x - b1.x, a1.y - b1.y), z: CP.R.userZoom || 1 }; down = null; return; }
+    down = { x: e.clientX, y: e.clientY, cam: CP.R.camX, py: CP.R.panY || 0, moved: false }; cv.setPointerCapture(e.pointerId); });
+  cv.addEventListener('pointermove', e => {
+    if (pts.has(e.pointerId)) pts.set(e.pointerId, { x: e.clientX, y: e.clientY });
+    if (pinch && pts.size === 2) { const [a1, b1] = [...pts.values()]; const d = Math.hypot(a1.x - b1.x, a1.y - b1.y); CP.R.userZoom = CP.clamp(pinch.z * (d / Math.max(20, pinch.d)), 0.55, 2.4); return; }
     if (!down) return; const dx = e.clientX - down.x;
-    if (Math.abs(dx) > 12 && CP.R.span < 38.4) { down.moved = true; CP.R.camFree = down.cam - dx / CP.R.ppm; }
+    const dy = e.clientY - down.y;
+    if (Math.abs(dx) > 10 || Math.abs(dy) > 10) { down.moved = true; if (CP.R.span < 38.4) CP.R.camFree = down.cam - dx / CP.R.ppm; CP.R.panY = CP.clamp((down.py || 0) + dy / CP.R.ppm, -2.5, 4); }
   });
   cv.addEventListener('pointerup', e => {
+    pts.delete(e.pointerId); if (pts.size < 2) pinch = null;
     if (!down) return; const moved = down.moved; down = null;
     if (moved) { clearTimeout(CP.Input._camT); CP.Input._camT = setTimeout(() => { CP.R.camFree = null; }, 3500); return; }
     if (!CP.G || !CP.G.shift || CP.G.shift.ended) return;
     const r = cv.getBoundingClientRect(); const p = CP.R.pick(e.clientX - r.left, e.clientY - r.top);
+    if (p.fix) { CP.Act.ctxRun(p.fix); CP.Audio.click(); return; }
     if (p.veh) { const s = CP.G.shift; if (s.selected === p.veh) { const v = CP.T.get(p.veh); const c = CP.Act.curC(); if (c && !c.res && (v.st === 'stopped' || v.st === 'bay') && !c.k.approached) CP.Act.run('approach'); } CP.Act.select(p.veh); CP.UI.refreshDock(true); }
     else if (p.ground) { CP.R.camFree = null; CP.Actors.walkTo(p.ground.x, p.ground.row); }
   });
-  cv.addEventListener('pointercancel', () => { down = null; });
+  cv.addEventListener('pointercancel', e => { pts.delete(e.pointerId); pinch = null; down = null; });
 };
 
 /* ---------- progression HUD ---------- */

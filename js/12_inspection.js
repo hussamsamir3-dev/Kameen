@@ -152,4 +152,4 @@ CP.Insp.bag = function (c, id) {
   CP.Audio.paper(); CP.autosave();
   return null;
 };
-;(window.CP_FILES = window.CP_FILES || {})['12_inspection'] = '1.9.0';
+;(window.CP_FILES = window.CP_FILES || {})['12_inspection'] = '1.9.1';

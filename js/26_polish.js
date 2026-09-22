@@ -32,8 +32,21 @@ PO.tickMotes = function (ctx, W, H, t, night, count) {
 // menu: an overlay canvas with a handful of drifting sparks
 { const ms = CP.Screens.menuScene; CP.Screens.menuScene = function (cv) { ms.call(this, cv);
     const ov = ph('canvas', { class: 'bg rv-fx', 'aria-hidden': 'true' }); cv.parentElement.insertBefore(ov, cv.nextSibling); const ctx = ov.getContext('2d'); let run = true; PO.menuMotes = [];
-    const loop = (ts) => { if (!document.body.contains(ov)) return; ov.width = ov.clientWidth; ov.height = ov.clientHeight; const sv = PO.motes; PO.motes = PO.menuMotes; PO.tickMotes(ctx, ov.width, ov.height, ts / 1000, true, 22); PO.menuMotes = PO.motes; PO.motes = sv; requestAnimationFrame(loop); };
+    const loop = (ts) => { if (!document.body.contains(ov)) return; ov.width = ov.clientWidth; ov.height = ov.clientHeight; const sv = PO.motes; PO.motes = PO.menuMotes; PO.tickMotes(ctx, ov.width, ov.height, ts / 1000, true, 22); PO.menuMotes = PO.motes; PO.motes = sv; PO.menuCine(ctx, ov.width, ov.height, ts / 1000); requestAnimationFrame(loop); };
     requestAnimationFrame(loop); }; }
+
+/* cinematic overlay for the menu diorama: drifting ground fog, a soft lens flare from the floodlight, film grain */
+PO.menuCine = function (ctx, W, H, t) {
+  if (CP.S.reducedFx) return; ctx.save();
+  const gx = CP.lang === 'ar' ? W * 0.34 : W * 0.66;
+  // ground fog
+  for (let i = 0; i < 3; i++) { const y = H * (0.62 + i * 0.09), a = 0.05 - i * 0.012; const g = ctx.createLinearGradient(0, y - 40, 0, y + 40); g.addColorStop(0, 'rgba(200,210,230,0)'); g.addColorStop(0.5, `rgba(200,210,230,${a + 0.02 * Math.sin(t * 0.3 + i)})`); g.addColorStop(1, 'rgba(200,210,230,0)'); ctx.fillStyle = g; ctx.fillRect(0, y - 40, W, 80); }
+  // lens flare anchored on the floodlight head (left of the scene)
+  const fx = gx - W * 0.235 + Math.sin(t * 0.2) * 3, fy = H * 0.19; ctx.globalCompositeOperation = 'lighter';
+  const halo = ctx.createRadialGradient(fx, fy, 0, fx, fy, W * 0.16); halo.addColorStop(0, 'rgba(255,240,200,.22)'); halo.addColorStop(0.35, 'rgba(255,220,150,.08)'); halo.addColorStop(1, 'rgba(255,220,150,0)'); ctx.fillStyle = halo; ctx.fillRect(fx - W * 0.16, fy - W * 0.16, W * 0.32, W * 0.32);
+  for (let i = 1; i <= 4; i++) { const k = i / 4, px = fx + (W * 0.5 - fx) * k * 1.3, py = fy + (H * 0.5 - fy) * k * 1.3, r = 8 + i * 9; const g = ctx.createRadialGradient(px, py, 0, px, py, r); g.addColorStop(0, `rgba(255,200,120,${0.10 - i * 0.015})`); g.addColorStop(1, 'rgba(255,200,120,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(px, py, r, 0, 6.283); ctx.fill(); }
+  ctx.restore();
+};
 
 /* ---------- repair skill-check ---------- */
 PO.fixTypes = { o_repair: 1, o_generator: 1, o_cones: 1 };
@@ -75,4 +88,4 @@ PO.burst = el => { const r = el.getBoundingClientRect(); for (let i = 0; i < 18;
 /* ---------- responsive type scale ---------- */
 PO.fit = () => { const w = window.innerWidth, h = window.innerHeight; const base = Math.min(w / 1440, h / 820); const s = CP.clamp(0.86 + base * 0.32, 0.86, 1.32); document.documentElement.style.setProperty('--ui', s.toFixed(3)); document.documentElement.classList.toggle('wide', w / h > 2); document.documentElement.classList.toggle('short', h < 620); };
 window.addEventListener('resize', PO.fit); PO.fit();
-;(window.CP_FILES = window.CP_FILES || {})['26_polish'] = '1.9.0';
+;(window.CP_FILES = window.CP_FILES || {})['26_polish'] = '1.9.1';

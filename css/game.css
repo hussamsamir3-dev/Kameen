@@ -715,3 +715,24 @@ html.short .rv-stats, html.short .rv-more { display: none; }
 @media (max-width: 1400px) { .dlg .side { display: none; } }
 .dp-pips { display: flex; gap: 4px; } .dp-pips i { width: 9px; height: 9px; border-radius: 50%; background: rgba(255,255,255,.12); } .dp-pips i.on { background: #ffd35a; box-shadow: 0 0 8px #ffd35a; }
 .rv-card.static { cursor: default; } .rv-card.locked { opacity: .55; }
+
+/* ===== v1.9.1: menu layout fix + cinematic showcase ===== */
+.rv-menu { overflow-y: auto; overflow-x: hidden; max-height: calc(100vh - 24px); scrollbar-width: thin; }
+.rv-menu > * { flex: none; }
+.rv-play { min-height: 86px; }
+.rv-stats { grid-template-columns: repeat(4, 1fr); }
+.rv-stat small { white-space: nowrap; }
+html.short .rv-menu .logo3d, html.short .rv-menu .brandimg { transform: scale(.78) !important; margin: -14px auto -18px; }
+/* cinematic diorama: slow Ken-Burns drift, film vignette, light rays, letterbox breathing */
+#menu canvas.bg:not(.rv-fx) { animation: kenBurns 34s ease-in-out infinite alternate; transform-origin: 45% 55%; will-change: transform; }
+@keyframes kenBurns { 0% { transform: scale(1.03) translate(0.6%, 0.4%); } 100% { transform: scale(1.09) translate(-1.2%, -0.8%); } }
+#menu .shade { background: radial-gradient(120% 90% at 40% 45%, transparent 55%, rgba(0,0,0,.55) 100%), linear-gradient(180deg, rgba(0,0,0,.35), transparent 22%, transparent 78%, rgba(0,0,0,.5)); }
+#menu::after { content: ''; position: absolute; inset: 0; pointer-events: none; z-index: 1; background: linear-gradient(115deg, transparent 30%, rgba(255,220,150,.08) 45%, transparent 60%); background-size: 300% 100%; animation: rays 12s linear infinite; mix-blend-mode: screen; }
+@keyframes rays { from { background-position: 100% 0; } to { background-position: -100% 0; } }
+.rv-menu { animation: menuIn .7s cubic-bezier(.2,.8,.2,1) both; }
+@keyframes menuIn { from { opacity: 0; transform: translateX(24px); } }
+.rv-menu > * { animation: itemIn .6s cubic-bezier(.2,.8,.2,1) both; }
+.rv-menu > :nth-child(2) { animation-delay: .08s } .rv-menu > :nth-child(3) { animation-delay: .14s } .rv-menu > :nth-child(4) { animation-delay: .2s } .rv-menu > :nth-child(5) { animation-delay: .26s } .rv-menu > :nth-child(6) { animation-delay: .32s } .rv-menu > :nth-child(7) { animation-delay: .38s }
+@keyframes itemIn { from { opacity: 0; transform: translateY(10px); } }
+.rv-menu .logo3d, .rv-menu .brandimg { filter: drop-shadow(0 12px 30px rgba(240,184,64,.35)); animation: logoFloat 6s ease-in-out infinite; }
+@keyframes logoFloat { 50% { transform: translateY(-5px); } }

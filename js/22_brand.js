@@ -40,7 +40,7 @@ CP.Brand.logo = function (opts) {
   const LI = CP.A && CP.A.img && CP.A.img.logo_checkpoint;
   if (LI && LI.src) {
     const d = document.createElement('div'); d.className = 'logoimg'; d.style.setProperty('--ls', size);
-    d.innerHTML = `<img src="${LI.src}" alt="كمين — Checkpoint"><i class="lshine"></i>`;
+    d.innerHTML = `<div class="lglow"></div><img src="${LI.src}" alt="كمين — Checkpoint"><i class="lshine" style="-webkit-mask-image:url(${LI.src});mask-image:url(${LI.src})"></i><img class="lrefl" src="${LI.src}" alt="">`;
     if (!opts.static) { const mv = e => { const r = d.getBoundingClientRect(); d.style.setProperty('--rx', (-((e.clientY - r.top) / r.height - .5) * 10).toFixed(2) + 'deg'); d.style.setProperty('--ry', (((e.clientX - r.left) / r.width - .5) * 14).toFixed(2) + 'deg'); }; window.addEventListener('pointermove', mv); }
     return d;
   }

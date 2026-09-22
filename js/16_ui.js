@@ -309,7 +309,14 @@ CP.Input.bindCanvas = function (cv) {
     if (moved) { clearTimeout(CP.Input._camT); CP.Input._camT = setTimeout(() => { CP.R.camFree = null; }, 3500); return; }
     if (!CP.G || !CP.G.shift || CP.G.shift.ended) return;
     const r = cv.getBoundingClientRect(); const p = CP.R.pick(e.clientX - r.left, e.clientY - r.top);
-    if (p.fix) { CP.Act.ctxRun(p.fix); CP.Audio.click(); return; }
+    if (p.fix) { // repair straight from the flashing icon: short remote repair, no walking needed
+      if (CP.UI._fixing) return; CP.UI._fixing = true; CP.Audio.click(); CP.Audio.tone('sine', 520, 0.25, 0.03);
+      CP.UI.toast(CP.t(p.fix === 'generator' ? 'fix_gen_now' : 'fix_gate_now'), 'info');
+      setTimeout(() => { CP.UI._fixing = false; const s2 = CP.G && CP.G.shift; if (!s2) return;
+        if (p.fix === 'generator' && s2.equipment.generator !== 'ok') CP.Events.generatorFixed();
+        if (p.fix === 'repair' && s2.gate.jam) CP.Events.gateRepaired();
+        CP.Audio.chime('good'); }, 1600);
+      return; }
     if (p.veh) { const s = CP.G.shift; if (s.selected === p.veh) { const v = CP.T.get(p.veh); const c = CP.Act.curC(); if (c && !c.res && (v.st === 'stopped' || v.st === 'bay') && !c.k.approached) CP.Act.run('approach'); } CP.Act.select(p.veh); CP.UI.refreshDock(true); }
     else if (p.ground) { CP.R.camFree = null; CP.Actors.walkTo(p.ground.x, p.ground.row); }
   });
@@ -317,7 +324,7 @@ CP.Input.bindCanvas = function (cv) {
 };
 
 /* ---------- progression HUD ---------- */
-CP.addStrings({ qm_title: ['الصوت والكاميرا', 'Sound & camera'], qm_music: ['الموسيقى', 'Music'], qm_next: ['المقطوعة الجاية ⏭', 'Next track ⏭'], qm_cam: ['الكاميرا', 'Camera'], cam_auto: ['زووم تلقائي', 'Auto zoom'], cam_close: ['قريب', 'Close'], cam_wide: ['واسع', 'Wide'] });
+CP.addStrings({ fix_gen_now: ['⚡ جاري تشغيل المولد…', '⚡ Restarting the generator…'], fix_gate_now: ['🔧 جاري إصلاح البوابة…', '🔧 Repairing the gate…'], qm_title: ['الصوت والكاميرا', 'Sound & camera'], qm_music: ['الموسيقى', 'Music'], qm_next: ['المقطوعة الجاية ⏭', 'Next track ⏭'], qm_cam: ['الكاميرا', 'Camera'], cam_auto: ['زووم تلقائي', 'Auto zoom'], cam_close: ['قريب', 'Close'], cam_wide: ['واسع', 'Wide'] });
 CP.UI.refreshProg = function () {
   const s = CP.G.shift, car = CP.G.career; if (!s.prog || !$('#hRank')) return;
   const xp = car.xp + s.prog.xp; const ri = CP.Prog.rankOf(xp); const R = CP.Prog.RANKS; const nx = R[ri + 1];

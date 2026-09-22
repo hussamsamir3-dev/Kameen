@@ -144,8 +144,8 @@ CP.Audio = {
   paper() { if (!this.ok) return; const t = this.ctx.currentTime; this.burst(0.22, 0.05, 2600, 0.5, t, 'bandpass'); this.burst(0.18, 0.035, 4200, 0.7, t + 0.12, 'bandpass'); },
   paperOld() { if (!this.ok) return; const t = this.ctx.currentTime; for (let i = 0; i < 3; i++) this.burst(0.08 + Math.random() * 0.08, 0.1, 3500 + Math.random() * 2500, 0.8, t + i * 0.07, 'highpass'); },
   ack(g) { this.tone('sine', g === 'f' ? 330 : 190, 0.12, 0.05); },
-  click() { if (!this.ok) return; const t = this.ctx.currentTime; this.tone('sine', 880, 0.09, 0.022, t); this.tone('sine', 1320, 0.12, 0.012, t + 0.02); },
-  hover() { this.tone('sine', 2400, 0.02, 0.006); },
+  click() { if (!this.ok) return; const t = this.ctx.currentTime; this.burst(0.035, 0.05, 1900, 1.4, t, 'bandpass'); this.tone('sine', 660, 0.14, 0.018, t + 0.005); this.tone('sine', 990, 0.2, 0.009, t + 0.03); },
+  hover() { if (!this.ok) return; this.tone('sine', 1760, 0.05, 0.004); },
   deny() { if (!this.ok) return; const t = this.ctx.currentTime; this.tone('sine', 330, 0.14, 0.03, t); this.tone('sine', 262, 0.18, 0.025, t + 0.1); },
   whistle(release) { if (!this.ok) return; const t = this.ctx.currentTime; this.tone('sine', 2600, release ? 0.12 : 0.3, 0.07, t, release ? 2400 : 2800); if (release) this.tone('sine', 2600, 0.14, 0.06, t + 0.18); this.burst(release ? 0.12 : 0.3, 0.02, 2700, 6, t); this.cap('cap_whistle'); },
   gate(open) { if (!this.ok) return; const t = this.ctx.currentTime; this.tone('sawtooth', open ? 70 : 90, 1.4, 0.03, t, open ? 110 : 60, 0.1); this.burst(1.3, 0.02, 400, 2, t, 'bandpass', 0.1); this.tone('sine', 900, 0.05, 0.03, t + 1.35); this.cap('cap_gate'); },
@@ -198,6 +198,22 @@ CP.Audio = {
     L.gen.g.gain.setTargetAtTime(genOn ? 0.03 * genNear : 0, t, 0.3);
     L.eng.g.gain.setTargetAtTime(inGame ? Math.min(0.08, load * 0.014) : 0, t, 0.3);
     L.eng.o.frequency.setTargetAtTime(38 + Math.min(40, load * 4), t, 0.4); L.eng.o2.frequency.setTargetAtTime(57 + Math.min(60, load * 6), t, 0.4);
+    if (inGame) {
+      this.vs = this.vs || {};
+      for (const v of s.vehicles) {
+        const st = this.vs[v.id] || (this.vs[v.id] = { a: 0, v: v.v, t: 0 }); st.t -= dt;
+        const scrX = CP.R.sx ? CP.R.sx(v.x - v.len / 2) : 0, onScr = scrX > -50 && scrX < CP.R.W + 50;
+        // pass-by: a moving vehicle crossing the middle of the view
+        const mid = CP.R.W / 2; if (onScr && v.v > 6 && st.side != null && Math.sign(scrX - mid) !== st.side && st.t <= 0) { this.swoosh(true); st.t = 2; }
+        st.side = Math.sign(scrX - mid);
+        // brake squeal on a hard stop, engine start when pulling away from rest
+        if (onScr && v.a < -3.4 && v.v > 3 && st.t <= 0 && Math.random() < 0.4) { this.tone('sine', 2600 + Math.random() * 500, 0.35, 0.006, undefined, 2200, this.pan(v.x)); st.t = 3; }
+        if (onScr && st.v < 0.2 && v.v > 0.6 && st.t <= 0) { this.tone('sawtooth', 55, 0.8, 0.02, undefined, 95, this.pan(v.x)); this.burst(0.5, 0.02, 220, 1, undefined, 'lowpass', this.pan(v.x)); st.t = 2; }
+        st.v = v.v;
+      }
+      // occasional wind gust and distant city life
+      this.gustT = (this.gustT || 6) - dt; if (this.gustT <= 0) { this.gustT = 8 + Math.random() * 14; const c = this.ctx, tt = c.currentTime; const src = c.createBufferSource(); src.buffer = this.pink; const f = c.createBiquadFilter(); f.type = 'bandpass'; f.frequency.value = 500; f.Q.value = 0.8; const g = c.createGain(); g.gain.setValueAtTime(0.0001, tt); g.gain.exponentialRampToValueAtTime(0.03, tt + 1.4); g.gain.exponentialRampToValueAtTime(0.0001, tt + 3.6); src.connect(f); f.connect(g); g.connect(this.amb); src.start(tt, Math.random()); src.stop(tt + 3.8); }
+    }
     if (this.sirenNode && this.sirenNode.p && inGame) { const a = s.vehicles.find(v => v.special === 'ambulance'); if (a) this.sirenNode.p.pan.setTargetAtTime(this.pan(a.x), t, 0.1); }
     if (inGame) { const o = s.officer; if (o.moving) { this.stepT = (this.stepT || 0) - dt * (o.pending ? 1.7 : 1); if (this.stepT <= 0) { this.stepT = 0.36; this.step(); } } }
   },

@@ -28,7 +28,7 @@ CP.Screens.back = function () { if (this.cur === 'settings' || this.cur === 'how
 CP.Screens.loading = function () {
   const e = this.show('loading'); e.innerHTML = '';
   const lsrc = (window.CP_EMBED && window.CP_EMBED.logo_checkpoint) || 'assets/logo_checkpoint.png';
-  const limg = sh('div', { class: 'logoimg', style: '--ls:.9' }); const im = new Image(); im.alt = 'كمين — Checkpoint'; im.src = lsrc; im.onerror = () => { limg.replaceWith(CP.Brand.logo({ size: 0.85, static: true })); }; limg.append(im, sh('i', { class: 'lshine' }));
+  const limg = sh('div', { class: 'logoimg', style: '--ls:.9' }); const im = new Image(); im.alt = 'كمين — Checkpoint'; im.src = lsrc; im.onerror = () => { limg.replaceWith(CP.Brand.logo({ size: 0.85, static: true })); }; limg.append(sh('div', { class: 'lglow' }), im, sh('i', { class: 'lshine', style: `-webkit-mask-image:url(${lsrc});mask-image:url(${lsrc})` }));
   e.append(limg, sh('div', { class: 'muted', id: 'ldTxt' }, CP.t('loading')), sh('div', { class: 'bar' }, sh('i', { id: 'ldBar' })), sh('div', { class: 'errs', id: 'ldErr' }));
 };
 CP.Screens.loadProgress = function (p, file) { const b = document.getElementById('ldBar'); if (b) b.style.width = (p * 100) + '%'; const t = document.getElementById('ldTxt'); if (t) t.textContent = CP.t('loading'); };

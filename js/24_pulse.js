@@ -100,4 +100,48 @@ CP.bus.on('caseClosed', c => {
     if (E.wanted && !E.wanted.done) { const w = E.wanted; pill('🚨 ' + CP.t('pl_wantedHud') + ': ' + CP.plateStr(w.plate, CP.lang) + (w.spawned ? '  ◄' : ''), w.spawned ? `rgba(255,70,60,${0.75 + 0.25 * Math.sin(this.t * 6)})` : 'rgba(255,90,80,.85)', '#fff'); }
     if (s.prog && s.prog.combo >= 2) { const m = (1 + 0.25 * Math.min(8, s.prog.combo - 1)) * (E.rushUntil > s.t ? 1.5 : 1); pill('🔥 ×' + m.toFixed(2).replace(/\.?0+$/, '') + ' ' + CP.t('pl_mult'), 'rgba(255,150,40,.9)', '#1a0c00'); }
   }; }
-;(window.CP_FILES = window.CP_FILES || {})['24_pulse'] = '1.5.0';
+
+
+/* ---------- v1.6: tension ---------- */
+CP.addStrings({
+  pl_heat: ['الكومبو هيتقطع', 'Combo fading'], pl_heatLost: ['الكومبو اتقطع — بطء', 'Combo lost — too slow'],
+  pl_insp: ['👔 المشرف واقف يتفرج: كل قرار سليم ×٢ خبرة، وأي غلطة −٦٠', '👔 The supervisor is watching: sound decisions ×2 XP, any mistake −60'], pl_inspHud: ['المشرف', 'INSPECTION'], pl_inspEnd: ['المشرف مشي — عاش', 'The supervisor left — well done'],
+  pl_inspFail: ['غلطة قدام المشرف', 'Mistake in front of the supervisor'],
+  pl_perfect: ['قرار مثالي!', 'PERFECT CALL!'], pl_streakDay: ['🔥 {n} يوم ورا بعض — خبرة اليوم +{p}٪', '🔥 {n}-day streak — today\'s XP +{p}%']
+});
+/* combo pressure: a combo fades after 55 s without a sound decision (warning pill in the last 15 s) */
+CP.bus.on('caseClosed', c => { const s = CP.G.shift; if (s && c.res && c.res.eval && c.res.eval.sound) s.events.lastSoundT = s.t; });
+CP.bus.on('stepEnd', () => {
+  const s = CP.G && CP.G.shift; if (!s || !s.prog || s.ended) return; const E = s.events;
+  if (s.prog.combo >= 2 && E.lastSoundT != null && s.t - E.lastSoundT > 55) { s.prog.combo = 0; CP.UI.toast(CP.t('pl_heatLost'), 'warn'); CP.Audio.chime('bad'); }
+  if (E.inspUntil && E.inspUntil <= s.t) { E.inspUntil = 0; E.active = E.active.filter(e => e.type !== 'inspect'); CP.UI.banner(CP.t('pl_inspEnd'), 'ok'); CP.Prog.gain(60, null, null, '#8fe3a8'); CP.Audio.chime('obj'); }
+});
+/* supervisor inspection: 80 s window, ×2 XP for sound decisions, −60 XP and a complaint for mistakes */
+PE.MINOR.push('inspect'); PE.tierOf.inspect = 2;
+{ const can = PE.can; PE.can = function (t) { const s = CP.G.shift; if (t === 'inspect') return !(s.events.inspUntil > s.t) && !(s.events.rushUntil > s.t) && s.t < s.dur - 120; return can.call(this, t); }; }
+{ const start = PE.start; PE.start = function (t) { const s = CP.G.shift, E = s.events;
+    if (t === 'inspect') { E.inspUntil = s.t + 80; E.active.push({ type: t, t0: s.t }); PE.log(t, 'pl_insp', 'warn'); CP.Audio.radioClick(true); CP.R.punch(); return true; }
+    return start.call(this, t); }; }
+{ const gain = CP.Prog.gain; CP.Prog.gain = function (xp, x, yup, color, label) { const s = CP.G.shift; if (s && s.events.inspUntil > s.t && x != null) xp = Math.round(xp * 2); return gain.call(this, xp, x, yup, color, label); }; }
+CP.bus.on('caseClosed', c => {
+  const s = CP.G.shift; if (!s || !s.prog || !c.res || !c.res.eval || !(s.events.inspUntil > s.t)) return;
+  if (!c.res.eval.sound) { s.prog.xp = Math.max(0, s.prog.xp - 60); CP.R.popup('−60 ' + CP.t('pr_xp'), null, null, '#ff6a6a'); CP.UI.banner(CP.t('pl_inspFail'), 'warn'); PL.flash('200,30,30', 0.35); CP.R.shake(6, 0.4); }
+  else if ((c.res.eval.dec ?? 0) >= 92) { CP.R.stamp(CP.t('pl_perfect'), '#ffd35a'); CP.R.confetti(40); }
+});
+{ const wui = CP.R.worldUI; CP.R.worldUI = function (s, alpha) { wui.call(this, s, alpha); const E = s.events, ctx = this.ctx, W = this.W, font = CP.UI ? CP.UI.font() : 'sans-serif';
+    const pill = (text, bg, fg, y) => { ctx.save(); ctx.font = `800 ${CP.UI.isMob ? 12 : 14}px ${font}`; const w = ctx.measureText(text).width + 22, h = 26, x = W / 2 - w / 2; ctx.fillStyle = bg; ctx.beginPath(); ctx.roundRect ? ctx.roundRect(x, y, w, h, 8) : ctx.rect(x, y, w, h); ctx.fill(); ctx.fillStyle = fg; ctx.textAlign = 'center'; ctx.textBaseline = 'middle'; ctx.fillText(text, W / 2, y + h / 2 + 1); ctx.restore(); };
+    let y = this.H * 0.16;
+    if (E.inspUntil > s.t) { pill('👔 ' + CP.t('pl_inspHud') + ' ×2  ' + CP.fmtTime(E.inspUntil - s.t), `rgba(150,120,255,${0.8 + 0.2 * Math.sin(this.t * 4)})`, '#fff', y); y += 34; }
+    if (s.prog && s.prog.combo >= 2 && E.lastSoundT != null) { const left = 55 - (s.t - E.lastSoundT); if (left < 15) pill('⏳ ' + CP.t('pl_heat') + ' ' + Math.ceil(left), `rgba(255,90,60,${0.6 + 0.4 * Math.sin(this.t * 8)})`, '#fff', y); }
+  }; }
+/* high-stakes situations added to the choice-event pool */
+CP.FUN.push(
+  { t: ['سواق بيمد إيده بورقة ٢٠٠ جنيه: "خلينا نخلص يا باشا".', 'A driver slides a 200-pound note: "let\'s just wrap this up, officer".'], o: [[['نرفض ونسجل محاولة رشوة', 'Refuse and log the bribe attempt'], { xp: 90, trust: 4 }], [['نتجاهل ونعدّيه', 'Ignore it and wave him on'], { trust: -6, xp: -40 }]] },
+  { t: ['راكب في عربية فخمة: "إنت عارف أنا مين؟ ابن اللوا."', 'A passenger in a luxury car: "do you know who I am? The general\'s son."'], o: [[['الإجراء واحد للكل', 'Same procedure for everyone'], { xp: 80, trust: 3 }], [['نعدّيه من غير فحص', 'Let him through unchecked'], { trust: -5 }]] },
+  { t: ['بلاغ من سواق تاكسي: "الميكروباص اللي وراي شايل حاجة غريبة".', 'A taxi driver tips you off: "the microbus behind me is carrying something odd".'], o: [[['نوقفه ونفتش بالأصول', 'Stop it and search properly'], { xp: 50, trust: 2, rush: false }], [['كلام سواقين', 'Just driver talk'], { trust: -1 }]] },
+  { t: ['العمليات: "الدورية جاية تاخد المحتجز خلال دقيقتين — جهّز الورق".', 'Dispatch: "the patrol is 2 minutes out for the detainee — get the paperwork ready".'], o: [[['نجهّز الملف دلوقتي', 'Prepare the file now'], { xp: 45, trust: 2 }], [['نسيبه لما يوصلوا', 'Leave it until they arrive'], { trust: -2 }]] }
+);
+{ const ap = CP.Fun.apply; CP.Fun.apply = function (fx) { if (fx.xp < 0 && CP.G.shift.prog) { CP.G.shift.prog.xp = Math.max(0, CP.G.shift.prog.xp + fx.xp); CP.R.popup(CP.num(fx.xp) + ' ' + CP.t('pr_xp'), null, null, '#ff6a6a'); fx = Object.assign({}, fx, { xp: 0 }); } return ap.call(this, fx); }; }
+CP.bus.on('stepEnd', () => { const s = CP.G && CP.G.shift; const ob = document.getElementById('objBox'); if (!s || !ob) return; const dim = s.t > 12 && !(s.t - (s.events.objPingT || -99) < 8); ob.classList.toggle('dim', dim); });
+{ const chk = CP.Prog.checkObjectives; CP.Prog.checkObjectives = function () { const s = CP.G.shift; const before = s && s.prog ? s.prog.objs.filter(o => o.done).length : 0; chk.apply(this, arguments); if (s && s.prog && s.prog.objs.filter(o => o.done).length !== before) s.events.objPingT = s.t; }; }
+;(window.CP_FILES = window.CP_FILES || {})['24_pulse'] = '1.7.0';

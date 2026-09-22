@@ -141,10 +141,12 @@ CP.Audio = {
 
   /* ---------------- SFX ---------------- */
   radioClick(reply) { this.burst(0.06, 0.25, 2500, 2); if (reply && this.ok) { const t = this.ctx.currentTime; this.burst(0.35, 0.05, 1800, 0.8, t + 0.07); this.tone('sine', 1320, 0.07, 0.03, t + 0.45); this.cap('cap_radio'); } },
-  paper() { if (!this.ok) return; const t = this.ctx.currentTime; this.burst(0.22, 0.05, 2600, 0.5, t, 'bandpass'); this.burst(0.18, 0.035, 4200, 0.7, t + 0.12, 'bandpass'); },
+  paper() { if (!this.ok) return; const t = this.ctx.currentTime; for (let i = 0; i < 4; i++) this.burst(0.09 + Math.random() * 0.06, 0.03 + Math.random() * 0.02, 2200 + Math.random() * 2400, 0.6, t + i * 0.055, 'bandpass'); this.burst(0.3, 0.02, 5200, 0.4, t + 0.1, 'bandpass'); },
   paperOld() { if (!this.ok) return; const t = this.ctx.currentTime; for (let i = 0; i < 3; i++) this.burst(0.08 + Math.random() * 0.08, 0.1, 3500 + Math.random() * 2500, 0.8, t + i * 0.07, 'highpass'); },
   ack(g) { this.tone('sine', g === 'f' ? 330 : 190, 0.12, 0.05); },
-  click() { if (!this.ok) return; const t = this.ctx.currentTime; this.burst(0.035, 0.05, 1900, 1.4, t, 'bandpass'); this.tone('sine', 660, 0.14, 0.018, t + 0.005); this.tone('sine', 990, 0.2, 0.009, t + 0.03); },
+  /* v1.6: calm, tactile UI clicks — a soft felt thud with a faint wooden tick, no bright bell */
+  click() { if (!this.ok) return; const t = this.ctx.currentTime; this.burst(0.05, 0.11, 240, 1.2, t, 'lowpass'); this.burst(0.018, 0.035, 3200, 2.2, t + 0.004, 'bandpass'); this.tone('sine', 210, 0.09, 0.02, t + 0.002, 150); },
+  clickSoft() { if (!this.ok) return; const t = this.ctx.currentTime; this.burst(0.03, 0.06, 300, 1.4, t, 'lowpass'); this.tone('sine', 260, 0.06, 0.01, t, 180); },
   hover() { if (!this.ok) return; this.tone('sine', 1760, 0.05, 0.004); },
   deny() { if (!this.ok) return; const t = this.ctx.currentTime; this.tone('sine', 330, 0.14, 0.03, t); this.tone('sine', 262, 0.18, 0.025, t + 0.1); },
   whistle(release) { if (!this.ok) return; const t = this.ctx.currentTime; this.tone('sine', 2600, release ? 0.12 : 0.3, 0.07, t, release ? 2400 : 2800); if (release) this.tone('sine', 2600, 0.14, 0.06, t + 0.18); this.burst(release ? 0.12 : 0.3, 0.02, 2700, 6, t); this.cap('cap_whistle'); },
@@ -172,12 +174,15 @@ CP.Audio = {
   zip() { this.tone('sawtooth', 900, 0.35, 0.015, undefined, 1800); },
   gen() { this.tone('sawtooth', 40, 1.6, 0.05, undefined, 100); },
   step() { this.burst(0.05, 0.03 + Math.random() * 0.02, 380 + Math.random() * 200, 1.2, undefined, 'lowpass', this.pan(CP.G && CP.G.shift ? CP.G.shift.officer.x : null)); },
-  stampSfx() { this.burst(0.12, 0.4, 180, 1, undefined, 'lowpass'); this.burst(0.05, 0.15, 1800, 1); },
+  stampSfx() { if (!this.ok) return; const t = this.ctx.currentTime; this.burst(0.09, 0.32, 160, 0.9, t, 'lowpass'); this.burst(0.04, 0.12, 1400, 1.2, t + 0.01, 'bandpass'); this.burst(0.25, 0.05, 900, 0.5, t + 0.05, 'bandpass'); this.tone('sine', 95, 0.2, 0.05, t, 60); },
   beep(n) { if (!this.ok) return; const t = this.ctx.currentTime; const cnt = n == null ? 1 : n + 1; for (let i = 0; i < cnt; i++) this.tone('sine', n === 0 ? 500 : 1200, 0.1, 0.05, t + i * 0.15); },
   chime(kind) {
     if (!this.ok) return; const t = this.ctx.currentTime;
-    const seq = { good: [659, 784, 988], great: [523, 659, 784, 1047], bad: [392, 311], xp: [1319, 1760], combo: [784, 988, 1175, 1568], obj: [587, 740, 880, 1175] }[kind] || [880];
-    seq.forEach((f, i) => { this.tone('triangle', f, 0.35, 0.05, t + i * 0.085); this.tone('sine', f * 2, 0.2, 0.012, t + i * 0.085); });
+    // v1.6: warmer chimes — layered sine + soft triangle with a gentle decay, quieter and rounder than before
+    const seq = { good: [659, 988], great: [523, 659, 784, 1047], bad: [330, 262], xp: [1319, 1760], combo: [784, 988, 1175, 1568], obj: [587, 740, 880, 1175] }[kind] || [880];
+    const g = kind === 'bad' ? 0.045 : 0.038;
+    seq.forEach((f, i) => { const d = t + i * (kind === 'bad' ? 0.16 : 0.09); this.tone('sine', f, 0.55, g, d); this.tone('triangle', f, 0.25, g * 0.35, d); this.tone('sine', f * 2, 0.18, g * 0.15, d); });
+    if (kind === 'great' || kind === 'combo') this.burst(0.8, 0.02, 7000, 0.6, t + 0.2, 'highpass');
   },
   fanfare() { if (!this.ok) return; const t = this.ctx.currentTime; [[523, 0], [659, .12], [784, .24], [1047, .4], [784, .62], [1047, .74]].forEach(([f, d]) => { this.tone('triangle', f, 0.45, 0.06, t + d); this.tone('sawtooth', f / 2, 0.4, 0.012, t + d); }); this.burst(1.2, 0.03, 6000, 0.6, t + 0.4, 'highpass'); },
 
@@ -219,4 +224,4 @@ CP.Audio = {
   },
   stopAll() { if (this.sirenNode) { try { this.sirenNode.o.stop(); this.sirenNode.lfo.stop(); } catch (e) { } this.sirenNode = null; } }
 };
-;(window.CP_FILES = window.CP_FILES || {})['15_audio'] = '1.5.0';
+;(window.CP_FILES = window.CP_FILES || {})['15_audio'] = '1.7.0';

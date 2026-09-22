@@ -4,6 +4,7 @@
    a second stop hand on approaching traffic, a wave when the barrier lifts, a radio call after a big case, walking to the gate
    cabinet or the generator when something breaks, a torch on the car in the bay at night. */
 CP.Staff = { list: [], SPEED: 1.35 };
+const staffSpeed = m => m.hurry ? 2.6 : CP.Staff.SPEED;
 const SW = CP.W;
 
 CP.Staff.reset = function () {
@@ -18,7 +19,7 @@ CP.Staff.reset = function () {
 function staffStep(m, dt) {
   m.px = m.x;
   if (m.target == null) { m.moving = false; return false; }
-  const dx = m.target - m.x, step = Math.min(Math.abs(dx), CP.Staff.SPEED * dt);
+  const dx = m.target - m.x, step = Math.min(Math.abs(dx), staffSpeed(m) * dt);
   if (Math.abs(dx) < 0.05) { m.x = m.target; m.target = null; m.moving = false; if (m.faceX != null) { m.dir = m.faceX >= m.x ? 1 : -1; m.faceX = null; } return false; }
   m.x += Math.sign(dx) * step; m.walkT += step; m.dir = Math.sign(dx); m.moving = true; m.hold = 0; return true;
 }
@@ -33,14 +34,14 @@ CP.Staff.update = function (dt) {
   const inBay = s.vehicles.find(v => v.st === 'bay' || (v.row >= 1.5 && v.x > 26 && v.x < 39));
   for (const m of this.list) {
     m.hold = Math.max(0, (m.hold || 0) - dt);
-    const walking = staffStep(m, dt);
+    const walking = staffStep(m, dt); if (!walking) m.hurry = false;
     if (walking) { m.pose = 'idle'; continue; }
     if (m.hold > 0) continue; // finishing a held pose
     m.pose = 'idle';
     if (m.id === 'sgt') {
       // breakdowns first: gate motor jammed → work at the cabinet; generator dead → work at the generator
-      if (g.jam) { const tx = SW.gateX + 1.1; if (Math.abs(m.x - tx) > 0.2) { m.target = tx; m.faceX = SW.gateX; } else { m.dir = -1; hold(m, 'lower', 1.5); } continue; }
-      if (s.equipment.generator !== 'ok') { const tx = SW.genX - 1.3; if (Math.abs(m.x - tx) > 0.2) { m.target = tx; m.faceX = SW.genX; } else { m.dir = 1; hold(m, 'radio', 1.2); } continue; }
+      if (g.jam) { const tx = SW.gateX + 1.1; if (Math.abs(m.x - tx) > 0.2) { m.target = tx; m.hurry = true; m.faceX = SW.gateX; } else { m.dir = -1; hold(m, 'lower', 1.5); } continue; }
+      if (s.equipment.generator !== 'ok') { const tx = SW.genX - 1.3; if (Math.abs(m.x - tx) > 0.2) { m.target = tx; m.hurry = true; m.faceX = SW.genX; } else { m.dir = 1; hold(m, 'radio', 1.2); } continue; }
       const atPost = Math.abs(m.x - m.home) < 0.6;
       if (approaching && atPost) { m.dir = -1; hold(m, 'stop', 0.6); continue; }
       if (passing && (g.state === 'open' || g.state === 'opening') && atPost) { m.dir = 1; hold(m, 'wave', 0.5); continue; }
@@ -76,7 +77,7 @@ CP.Staff.ents = function (R, s, ents, alpha) {
     ents.push({ y: m.yup, k: 'fn', draw: () => {
       const x = CP.lerp(m.px ?? m.x, m.x, alpha); const cx = R.sx(x), gy = R.sy(m.yup);
       if (cx < -60 || cx > R.W + 60) return;
-      const fr = CP.Actors.frameFor(m.char, m.pose, m.moving, m.walkT, R.t + m.animOff); const sp = A.M.sprites[fr]; if (!sp) return;
+      const fr = CP.Actors.frameFor(m.char, m.pose, m.moving, m.walkT, R.t + m.animOff, !m.hurry); const sp = A.M.sprites[fr]; if (!sp) return;
       const k = m.hM * ppm / (sp.hRef || sp.rect[3]);
       R.shadow(cx, gy, 0.3 * ppm, 0.07 * ppm, .42);
       (R.occluders = R.occluders || []).push({ x0: cx - 0.26 * ppm, x1: cx + 0.26 * ppm, y0: gy - m.hM * ppm, y1: gy, h: m.hM * ppm });
@@ -98,4 +99,4 @@ CP.bus.on('stepEnd', () => {
 });
 CP.bus.on('caseClosed', c => { const sgt = CP.Staff.list.find(m => m.id === 'sgt'); if (sgt && c.res && ['hold', 'handover', 'medical'].indexOf(c.res.decision) >= 0) sgt.bigCase = true; });
 CP.bus.on('shiftStart', () => CP.Staff.reset());
-;(window.CP_FILES = window.CP_FILES || {})['23_staff'] = '1.5.0';
+;(window.CP_FILES = window.CP_FILES || {})['23_staff'] = '1.7.0';

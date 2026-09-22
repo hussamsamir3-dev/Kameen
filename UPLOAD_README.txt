@@ -1,16 +1,11 @@
-Kameen v1.5.0 — upload-only package (files that changed vs your last version)
+Kameen v1.7.0 — upload-only package (changes since v1.5.0, the version currently on your server)
 
 UPLOAD (overwrite):
-  index.html
-  manifest.js
-  js/  (all 25 files — every file carries the 1.5.0 version stamp, the game refuses to boot if any file has an old stamp)
-  assets/officer_new_sprites.png   (new)
+  index.html, manifest.js, css/game.css
+  js/ (all 26 files — every file is stamped 1.7.0; the boot check refuses mixed versions)
+  assets/officer_c0.png, officer_c1.png, officer_c2.png, officer_c3.png  (new)
 
-DELETE on the server (no longer used, saves 6 MB):
-  assets/officer_walk.png
-  assets/officer_actions.png
-  assets/officer_walk_seq.png
-  assets/officer_idle_seq.png
+DELETE on the server:
+  assets/officer_new_sprites.png
 
-Everything else (backgrounds, vehicles, props, audio, css) is unchanged — keep it.
-Then hard-refresh (Ctrl+Shift+R).
+Then hard-refresh (Ctrl+Shift+R) or open in a private window. The menu footer MUST read v1.7.0 — if it shows 1.5.0 the browser is still serving cached files.

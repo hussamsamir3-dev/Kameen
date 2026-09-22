@@ -42,4 +42,4 @@ CP.Tasks = {
   }
 };
 CP.Tasks.on('radio', t => CP.Cases.radioComplete(t));
-;(window.CP_FILES = window.CP_FILES || {})['07_tasks'] = '1.5.0';
+;(window.CP_FILES = window.CP_FILES || {})['07_tasks'] = '1.7.0';

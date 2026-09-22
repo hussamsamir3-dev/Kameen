@@ -114,7 +114,7 @@ CP.R.background = function (s, W, H, ppm, Y, night) {
     if (g.top > 0 && g.left + g.bw < W) ctx.drawImage(im, im.width - 1, 0, 1, 1, g.left + g.bw - 1, 0, W - g.left - g.bw + 1, g.top + 1);
   };
   if (B.day) {
-    const d = CP.Env.gradedImg(B.day, B.frac), nImg = CP.Env.gradedImg(B.night, B.frac); if (!d) { ctx.fillStyle = '#1b1c22'; ctx.fillRect(0, 0, W, H); return; }
+    const crisp = this.zoom > 1.18; const d = crisp ? A.img[B.day] : CP.Env.gradedImg(B.day, B.frac), nImg = crisp ? A.img[B.night] : CP.Env.gradedImg(B.night, B.frac); if (!d) { ctx.fillStyle = '#1b1c22'; ctx.fillRect(0, 0, W, H); return; }
     const g = place(d, B.frac, this.sy(Y.mainFar));
     if (night < 0.999) { cover(d, g); ctx.drawImage(d, g.left, g.top, g.bw, g.bh); }
     if (nImg && night > 0.001) { ctx.globalAlpha = night; cover(nImg, g); ctx.drawImage(nImg, g.left, g.top, g.bw, g.bh); ctx.globalAlpha = 1; }
@@ -123,7 +123,7 @@ CP.R.background = function (s, W, H, ppm, Y, night) {
     if (g.top + g.bh < H) { ctx.fillStyle = '#222'; ctx.fillRect(0, g.top + g.bh, W, H - g.top - g.bh); }
     return;
   }
-  const bim = CP.Env.gradedImg(B.single, B.frac);
+  const bim = this.zoom > 1.18 ? A.img[B.single] : CP.Env.gradedImg(B.single, B.frac);
   if (!bim) { ctx.fillStyle = '#1b1c22'; ctx.fillRect(0, 0, W, H); return; }
   const g = place(bim, B.frac, this.sy(Y.bgRoad));
   cover(bim, g); ctx.drawImage(bim, g.left, g.top, g.bw, g.bh);
@@ -586,4 +586,4 @@ CP.R.pick = function (px, py) {
 CP.R.popup = function (text, x, yup, color) { this.fx.push({ kind: 'xp', text, x, yup, color, t0: this.t, dur: 1.6 }); };
 CP.R.stamp = function (text, color, x, yup) { this.fx.push({ kind: 'stamp', text, color, x, yup, t0: this.t, dur: 1.8 }); };
 CP.R.confetti = function (n, x, y) { for (let i = 0; i < (n || 60); i++) { this.emit('confetti', x ?? this.W / 2, y ?? this.H * 0.35); } };
-;(window.CP_FILES = window.CP_FILES || {})['14_render'] = '1.5.0';
+;(window.CP_FILES = window.CP_FILES || {})['14_render'] = '1.7.0';

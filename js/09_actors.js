@@ -68,27 +68,34 @@ CP.Actors.update = function (dt) {
   if (task && !p.moving) { p.basePose = task.data.pose || 'idle'; if (task.data.faceX != null) CP.Actors.face(task.data.faceX, 'partner'); }
   else if (!task) { p.basePose = 'idle'; if (!p.moving) p.dir = -1; }
 };
-/* v1.5 officer sheet: 4 characters (0 navy, 1 white, 2 navy senior, 3 white senior), each with run / stop / wave / idle / radio frames.
-   The player is character 0, the partner character 1; extra checkpoint staff (23_staff.js) use 2 and 3. */
-CP.Actors.POSE = { idle: 'idle', raise: 'stop_1', stop: 'stop_3', lower: 'stop_2', wave: 'wave', radio: 'radio_2', documents: 'radio_1', flashlight: 'radio_3' };
-CP.Actors.IDLE_SEQ = [0, 0, 0, 1, 1, 2, 2, 2, 3, 3, 3, 2, 2, 1, 1, 0];
+/* v1.6 officer sheets: 4 characters (0 navy, 1 white, 2 navy senior, 3 white senior), each with 8-frame rows:
+   idle (breathing), hand (fidget), stop (raise → hold → lower), pass (wave-through), radio (walk + talk), run.
+   The player is character 0, the partner character 1; checkpoint staff (23_staff.js) use 2 and 3. */
 CP.Actors.charOf = a => a.char != null ? a.char : (CP.G && CP.G.shift && a === CP.G.shift.partner ? 1 : 0);
-CP.Actors.frameFor = function (ch, pose, moving, walkT, t) {
-  const S = CP.A.M.sprites; const has = id => !!S[id];
-  if (moving) return 'o' + ch + '_run_' + (((Math.floor(walkT / 0.24) % 4) + 4) % 4);
-  pose = pose || 'idle';
-  if (pose === 'idle') {
-    if (has('o' + ch + '_idle_0')) return 'o' + ch + '_idle_' + CP.Actors.IDLE_SEQ[((Math.floor(t * 6) % 16) + 16) % 16];
-    // senior characters have no dedicated idle row: breathe between the two standing frames
-    return 'o' + ch + (Math.floor(t * 1.3) % 2 ? '_wave_0' : '_stop_0');
+const PP = (t, fps, n) => { const k = ((Math.floor(t * fps) % (2 * n - 2)) + 2 * n - 2) % (2 * n - 2); return k < n ? k : 2 * n - 2 - k; }; // ping-pong index
+CP.Actors.frameFor = function (ch, pose, moving, walkT, t, calm) {
+  const S = CP.A.M.sprites, o = 'o' + ch + '_'; const has = id => !!S[id];
+  if (moving) {
+    if (calm) return o + 'radio_' + [2, 3, 4, 5, 4, 3][((Math.floor(walkT / 0.22) % 6) + 6) % 6]; // relaxed walk holding the radio
+    return o + 'run_' + (((Math.floor(walkT / (1.45 / 8)) % 8) + 8) % 8);
   }
-  if (pose === 'wave') return 'o' + ch + '_wave_' + [1, 2, 3, 2][((Math.floor(t * 8) % 4) + 4) % 4];
-  const m = CP.Actors.POSE[pose]; const id = 'o' + ch + '_' + (m || pose);
-  return has(id) ? id : 'o' + ch + '_stop_0';
+  pose = pose || 'idle'; let id;
+  switch (pose) {
+    case 'idle': { const ph = t % 13; id = ph > 10.2 && ph < 11.6 ? o + 'hand_' + Math.min(7, Math.floor((ph - 10.2) / 1.4 * 8)) : o + 'idle_' + PP(t, 5, 8); break; }
+    case 'raise': id = o + 'stop_2'; break;
+    case 'stop': id = o + 'stop_' + (Math.floor(t * 1.2) % 2 ? 4 : 3); break;
+    case 'lower': id = o + 'stop_6'; break;
+    case 'wave': id = o + 'pass_' + [1, 2, 3, 4, 5, 4, 3, 2][((Math.floor(t * 11) % 8) + 8) % 8]; break;
+    case 'radio': id = o + 'radio_' + (Math.floor(t * 2.5) % 2 ? 4 : 3); break;
+    case 'documents': id = o + 'hand_' + (Math.floor(t * 0.9) % 2 ? 3 : 2); break;
+    case 'flashlight': id = o + 'radio_5'; break;
+    default: id = o + pose;
+  }
+  return has(id) ? id : o + 'idle_0';
 };
 CP.Actors.frameOf = function (a) {
   const t = (CP.R && CP.R.t || 0) + (a.animOff || (CP.G && CP.G.shift && a === CP.G.shift.partner ? 0.9 : 0));
-  return CP.Actors.frameFor(CP.Actors.charOf(a), a.pose, a.moving, a.walkT || 0, t);
+  return CP.Actors.frameFor(CP.Actors.charOf(a), a.pose, a.moving, a.walkT || 0, t, a.calm);
 };
 
 /* ---------------- partner tasks ---------------- */
@@ -158,4 +165,4 @@ CP.Actors.partnerTraffic = function (dt) {
   s.flowT = (s.flowT || 0) + dt;
   if (s.flowT > 3.2) { s.flowT = 0; CP.Act.doWave(v, 'partner'); CP.Actors.seq('partner', ['lower', 'wave', 'idle'], 0.22); }
 };
-;(window.CP_FILES = window.CP_FILES || {})['09_actors'] = '1.5.0';
+;(window.CP_FILES = window.CP_FILES || {})['09_actors'] = '1.7.0';

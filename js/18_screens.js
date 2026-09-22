@@ -107,7 +107,7 @@ CP.Screens.menuScene = function (cv) {
     // the partner (white) beside him ready with the papers
     const F = CP.Actors.frameFor, dr = (fr, x, y, h, flip) => { const sp = A.M.sprites[fr]; if (!sp) return; A.drawGroundedScale(ctx, fr, x, y, h * ppm / (sp.hRef || sp.rect[3]), flip); };
     const incoming = st.cars.some(c => c.v > 0.5 && c.x < -1 && c.x > -9);
-    dr(F(2, Math.floor(st.t / 6) % 2 ? 'radio' : 'idle', false, 0, st.t + 2), X(-5.4) + px * 1.2, gy - rhFar(ppm) - 0.25 * ppm, 1.55, false);
+    dr(F(2, Math.floor(st.t / 7) % 3 === 1 ? 'radio' : 'idle', false, 0, st.t + 2), X(-5.4) + px * 1.2, gy - rhFar(ppm) - 0.25 * ppm, 1.55, false);
     dr(F(0, st.ang > 0.5 ? 'wave' : incoming ? 'stop' : 'idle', false, 0, st.t), X(1.6), gy + 0.4 * ppm, 1.8, true);
     dr(F(1, st.ang > 0.5 ? 'idle' : incoming ? 'documents' : 'idle', false, 0, st.t + 0.9), X(3.0), gy + 0.42 * ppm, 1.76, true);
     // lamp + floodlight glows
@@ -129,7 +129,7 @@ CP.Screens.menuScene = function (cv) {
 CP.Screens.rankCard = function (car) {
   CP.Prog.ensure(car); const ri = CP.Prog.rankOf(car.xp), R = CP.Prog.RANKS, nx = R[ri + 1];
   const pct = nx ? (car.xp - R[ri].xp) / (nx.xp - R[ri].xp) * 100 : 100; const pos = CP.Prog.board(car).find(e => e.me).pos;
-  return sh('div', { class: 'rankcard', html: CP.Prog.badge(ri, 58) + `<div class="rc"><div class="lbl">${CP.t('pr_rank')}</div><b>${CP.Prog.rankName(ri)}</b><div class="xpbar big"><i style="width:${pct.toFixed(1)}%"></i></div><div class="small muted">${CP.num(car.xp)} ${CP.t('pr_xp')} • ${nx ? CP.t('pr_next', { n: CP.num(nx.xp) }) : CP.t('pr_max')}</div><div class="small"><span class="tag am">#${CP.num(pos)}</span> ${car.streak > 1 ? '🔥 ' + CP.t('pr_streak', { n: CP.num(car.streak) }) : ''}</div></div>` });
+  return sh('div', { class: 'rankcard', html: CP.Prog.badge(ri, 58) + `<div class="rc"><div class="lbl">${CP.t('pr_rank')}</div><b>${CP.Prog.rankName(ri)}</b><div class="xpbar big"><i style="width:${pct.toFixed(1)}%"></i></div><div class="small muted">${CP.num(car.xp)} ${CP.t('pr_xp')} • ${nx ? CP.t('pr_next', { n: CP.num(nx.xp) }) : CP.t('pr_max')}</div><div class="small"><span class="tag am">#${CP.num(pos)}</span> ${car.streak > 1 ? CP.t('pl_streakDay', { n: CP.num(car.streak), p: CP.num(Math.round((CP.Prog.streakMult(car) - 1) * 100)) }) : ''}</div></div>` });
 };
 CP.Screens.menu = function () {
   CP.Main.stop(); CP.Audio.stopAll(); this.from = 'menu';
@@ -329,4 +329,4 @@ CP.Screens.pause = function () {
     sh('button', { class: 'btn bad', onclick: () => CP.UI.confirm(CP.t('end_confirm'), () => { this.hideAll(); CP.Main.endShift(); }) }, CP.t('pause_end'))));
 };
 CP.Screens.resume = function () { this.hideAll(); document.getElementById('game').classList.remove('hidden'); CP.R.resize(); CP.Main.last = performance.now(); };
-;(window.CP_FILES = window.CP_FILES || {})['18_screens'] = '1.5.0';
+;(window.CP_FILES = window.CP_FILES || {})['18_screens'] = '1.7.0';

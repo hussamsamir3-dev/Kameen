@@ -340,4 +340,4 @@ CP.Panels.visitor = function (body) {
   body.appendChild(hh('div', { class: 'row', style: 'align-items:flex-start' }, CP.A.thumb(s.visitor.civ, 80, 150), hh('div', { class: 'col', style: 'flex:1' }, hh('div', { class: 'lbl' }, CP.t('vis_q')), hh('div', { class: 'ln driver' }, CP.L(V.q)),
     ...opts.map(o => hh('button', { class: 'btn', style: 'justify-content:flex-start;text-align:start', onclick: () => { CP.Events.visitorHelped(o.ok); if (o.ok) CP.UI.toast(CP.L(V.thanks), 'ok'); CP.UI.close(); } }, CP.L(o.t))))));
 };
-;(window.CP_FILES = window.CP_FILES || {})['17_panels'] = '2.3.1';
+;(window.CP_FILES = window.CP_FILES || {})['17_panels'] = '2.3.2';

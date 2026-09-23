@@ -129,4 +129,4 @@ CP.bus.on('searchDone', ({ c, zone }) => {
 
 /* ---------- zoom-change flicker fix: quantised depth of field ---------- */
 CP.R.dof = function () { if (CP.S.reducedFx || !('filter' in this.ctx)) return 'none'; const z = this.zoom || 1; let px = CP.clamp((z - 0.9) * 2.6, 0.6, 4.2) * (this.ppm / 60); px = Math.round(px * 2) / 2; if (px < 0.75) return 'none'; return `blur(${px.toFixed(1)}px)`; };
-;(window.CP_FILES = window.CP_FILES || {})['29_world'] = '2.3.1';
+;(window.CP_FILES = window.CP_FILES || {})['29_world'] = '2.3.2';

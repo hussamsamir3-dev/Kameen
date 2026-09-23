@@ -79,4 +79,14 @@ if (CP.Feat && CP.Feat.RULES) CP.Feat.RULES.tuktuk = { cond: c => !!(c.flags && 
 if (CP.C.veh.tuktuk) CP.C.veh.tuktuk.w = { cairo: 3, alex: 2, sinai: 0, hurghada: 1, luxor: 2, aswan: 2, desert: 0 };
 /* frame safety: any failing UI hook is logged once and skipped, never aborting the frame */
 { const wui = CP.R.worldUI; let logged = {}; CP.R.worldUI = function (s, alpha) { try { return wui.call(this, s, alpha); } catch (e) { const k = e.message; if (!logged[k]) { logged[k] = 1; console.warn('worldUI hook failed:', e); (window.CP_ERRS = window.CP_ERRS || []).push('ui:' + k); } } }; }
-;(window.CP_FILES = window.CP_FILES || {})['32_polish2'] = '2.3.1';
+
+/* ---------- papers: automatic conflict highlighting on by default ---------- */
+/* The "تمييز تلقائي (مساعدة)" box in the papers panel is checked from the start and stays switchable per case.
+   (CP.S.assist is left off on purpose: when it is on, the panel disables that checkbox.) */
+if (!CP.S._assist24) { CP.S.assist = false; CP.S._assist24 = true; try { CP.saveSettings(); } catch (e) { } }
+CP.UI.docAssist = true;
+CP.bus.on('shiftStart', () => { if (CP.UI.docAssist == null || CP.UI.docAssist === false) CP.UI.docAssist = true; });
+/* flagged fields pulse red with a calm two-note beep the first time a case's papers show a conflict */
+{ const rp = CP.UI.renderPanel; CP.UI.renderPanel = function () { const r = rp.apply(this, arguments); const p = CP.UI.panel; if (!p || p.kind !== 'docs') return r; const c = CP.G.shift && CP.G.shift.cases[p.caseId]; const flagged = document.querySelectorAll('#panel .fld.assist'); if (!c || !flagged.length || c._conflictBeep) return r; c._conflictBeep = true;
+    flagged.forEach(f => f.classList.add('conflict')); const A = CP.Audio; if (A.ok) { const t = A.ctx.currentTime; A.tone('sine', 880, 0.14, 0.02, t); A.tone('sine', 660, 0.22, 0.016, t + 0.16); } if (navigator.vibrate) { try { navigator.vibrate(25); } catch (e) { } } return r; }; }
+;(window.CP_FILES = window.CP_FILES || {})['32_polish2'] = '2.3.2';

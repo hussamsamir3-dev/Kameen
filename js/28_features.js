@@ -101,7 +101,7 @@ FT.perksModal = function () {
   document.body.appendChild(wrap);
 };
 // effects
-CP.bus.on('shiftStart', () => { CP.UI.docAssist = FT.has('eagle') ? 'perk' : CP.UI.docAssist === 'perk' ? null : CP.UI.docAssist; CP.Pulse.comboTimeout = FT.has('memory') ? 85 : 55; CP.Polish.zoneW = FT.has('mech') ? 0.3 : 0.18; });
+CP.bus.on('shiftStart', () => { if (CP.UI.docAssist == null) CP.UI.docAssist = FT.has('eagle') ? 'perk' : null; CP.Pulse.comboTimeout = FT.has('memory') ? 85 : 55; CP.Polish.zoneW = FT.has('mech') ? 0.3 : 0.18; });
 { const td = CP.Cases.trueDiscrepancies; CP.Cases.trueDiscrepancies = function (c) { const r = td.apply(this, arguments); return CP.UI.docAssist === 'perk' && !CP.S.assist ? r.slice(0, 1) : r; }; }
 CP.bus.on('spawn', v => { const c = CP.G.shift.cases[v.caseId]; if (c && FT.has('talk')) c.patience = Math.min(100, c.patience + 15); });
 { const add = CP.Tasks.add; CP.Tasks.add = function (spec) { if (spec.type === 'radio' && FT.has('radio')) spec = Object.assign({}, spec, { dur: spec.dur * 0.6 }); return add.call(this, spec); }; }
@@ -175,4 +175,4 @@ CP.bus.on('stepEnd', () => { const R = CP.R; if (!R.fx) return; R.fx = R.fx.filt
 FT.buzz = p => { if (CP.S.haptics === false || !navigator.vibrate) return; try { navigator.vibrate(p); } catch (e) { } };
 { const st = CP.R.stamp; CP.R.stamp = function () { FT.buzz(35); return st.apply(this, arguments); }; }
 CP.bus.on('caseClosed', c => { if (c.res && c.res.eval && c.res.eval.sound && CP.FAM[c.fam] && CP.FAM[c.fam].serious && ['hold', 'handover'].indexOf(c.res.decision) >= 0) FT.buzz([50, 30, 90]); });
-;(window.CP_FILES = window.CP_FILES || {})['28_features'] = '2.3.1';
+;(window.CP_FILES = window.CP_FILES || {})['28_features'] = '2.3.2';

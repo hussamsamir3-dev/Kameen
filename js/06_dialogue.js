@@ -277,4 +277,4 @@ GF.pers = (c, p) => { const L = CP.C.persLabel[p]; if (!GF.isF(c)) return L; con
     const r = st(c, key, t, val, extra);
     if (!pax && GF.isF(c)) { const n = CP.G.shift.notes[CP.G.shift.notes.length - 1]; if (n && n.caseId === c.id && n.type === 'statement' && n.text.ar.indexOf('السواق: ') === 0) n.text = { ar: 'السواقة: ' + n.text.ar.slice(8), en: n.text.en }; }
     return r; }; }
-;(window.CP_FILES = window.CP_FILES || {})['06_dialogue'] = '2.2.2';
+;(window.CP_FILES = window.CP_FILES || {})['06_dialogue'] = '2.2.3';

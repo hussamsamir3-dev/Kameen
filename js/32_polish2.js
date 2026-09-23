@@ -77,4 +77,4 @@ CP.bus.on('caseClosed', c => {
 });
 if (CP.Feat && CP.Feat.RULES) CP.Feat.RULES.tuktuk = { cond: c => !!(c.flags && c.flags.tuktuk), ok: c => ['citation', 'hold', 'handover', 'refer_admin'].indexOf(c.res.decision) >= 0, s: 'ft_r_tuktuk' };
 if (CP.C.veh.tuktuk) CP.C.veh.tuktuk.w = { cairo: 3, alex: 2, sinai: 0, hurghada: 1, luxor: 2, aswan: 2, desert: 0 };
-;(window.CP_FILES = window.CP_FILES || {})['32_polish2'] = '2.2.2';
+;(window.CP_FILES = window.CP_FILES || {})['32_polish2'] = '2.2.3';

@@ -1,0 +1,3 @@
+# Kameen v2.2.3 — new vehicle wheels, done right
+- Cutting arches out of painted bodies could never be clean (fender paint above and shadow below the tyre spun with it; bikes carry frame and rider over the wheel). The bodies are now left intact and each wheel is a **procedural wheel drawn over the painted tyre** at the Hough-detected circle: real tyre with sidewall highlight, metallic alloy rim with five twin spokes and hub for cars/vans/trucks; thin tyre, wire rim and 18 spokes for the motorbikes and tuk-tuk. Rendered once per radius and rotated per frame with distance travelled.
+- Same physics/rotation rule as the original vehicles; no visual seams, no static painted wheels showing through.

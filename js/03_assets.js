@@ -74,9 +74,38 @@ CP.A = {
     const cx = left + g.width / 2, cy = top + g.height * 0.8;
     ctx.translate(cx, cy + (heave || 0)); ctx.rotate(pitch || 0); ctx.translate(-cx, -cy);
     this.draw(ctx, v.body, left, top, g.width);
+    if (v.procWheel) for (const [ax, ay] of v.axles) this.procWheel(ctx, v.procWheel, left + ax * g.k, top + ay * g.k, g.wheelR, wheelAngle);
     ctx.restore();
     if (alpha != null) ctx.globalAlpha = 1;
     return g;
+  },
+  /* v2.2.3 procedural wheels: a real tyre, rim and spokes rendered once per radius and rotated per frame.
+     'car' = alloy with five twin spokes; 'bike' = thin tyre with wire spokes. Drawn over the painted tyre of the new vehicle set. */
+  _wheelCache: {},
+  procWheel(ctx, kind, cx, cy, R, ang) {
+    const key = kind + '|' + Math.round(R * 2); let c = this._wheelCache[key];
+    if (!c) {
+      const S = Math.ceil(R * 2) + 4, r = S / 2; c = document.createElement('canvas'); c.width = c.height = S; const x = c.getContext('2d'); x.translate(r, r);
+      if (kind === 'car') {
+        const tyre = x.createRadialGradient(0, 0, R * 0.62, 0, 0, R); tyre.addColorStop(0, '#2a2a2d'); tyre.addColorStop(0.55, '#141416'); tyre.addColorStop(0.85, '#1c1c1f'); tyre.addColorStop(1, '#0d0d0f');
+        x.fillStyle = tyre; x.beginPath(); x.arc(0, 0, R, 0, 6.283); x.fill();
+        x.strokeStyle = 'rgba(255,255,255,.08)'; x.lineWidth = Math.max(1, R * 0.05); x.beginPath(); x.arc(0, 0, R * 0.92, 0, 6.283); x.stroke();
+        const rim = x.createRadialGradient(-R * 0.2, -R * 0.25, R * 0.05, 0, 0, R * 0.66); rim.addColorStop(0, '#f2f2f4'); rim.addColorStop(0.5, '#b9bcc4'); rim.addColorStop(1, '#6e737c');
+        x.fillStyle = rim; x.beginPath(); x.arc(0, 0, R * 0.64, 0, 6.283); x.fill();
+        x.fillStyle = '#2b2d33'; for (let i = 0; i < 5; i++) { const a0 = i * 6.283 / 5; x.save(); x.rotate(a0); x.beginPath(); x.moveTo(R * 0.16, -R * 0.03); x.lineTo(R * 0.58, -R * 0.13); x.lineTo(R * 0.58, R * 0.13); x.lineTo(R * 0.16, R * 0.03); x.closePath(); x.fill(); x.restore(); }
+        // dark gaps between the twin spokes give the rotation its read
+        x.fillStyle = '#35383f'; x.beginPath(); x.arc(0, 0, R * 0.2, 0, 6.283); x.fill(); x.fillStyle = '#9ea3ad'; x.beginPath(); x.arc(0, 0, R * 0.12, 0, 6.283); x.fill();
+        x.strokeStyle = 'rgba(0,0,0,.35)'; x.lineWidth = Math.max(1, R * 0.03); x.beginPath(); x.arc(0, 0, R * 0.64, 0, 6.283); x.stroke();
+      } else {
+        x.strokeStyle = '#1a1a1c'; x.lineWidth = Math.max(2, R * 0.2); x.beginPath(); x.arc(0, 0, R * 0.9, 0, 6.283); x.stroke();
+        x.strokeStyle = 'rgba(255,255,255,.07)'; x.lineWidth = Math.max(1, R * 0.03); x.beginPath(); x.arc(0, 0, R * 0.97, 0, 6.283); x.stroke();
+        x.strokeStyle = '#b8bcc4'; x.lineWidth = Math.max(1, R * 0.05); x.beginPath(); x.arc(0, 0, R * 0.78, 0, 6.283); x.stroke();
+        x.strokeStyle = 'rgba(210,214,220,.85)'; x.lineWidth = Math.max(0.8, R * 0.025); for (let i = 0; i < 18; i++) { const a0 = i * 6.283 / 18; x.beginPath(); x.moveTo(Math.cos(a0) * R * 0.14, Math.sin(a0) * R * 0.14); x.lineTo(Math.cos(a0 + 0.35) * R * 0.78, Math.sin(a0 + 0.35) * R * 0.78); x.stroke(); }
+        x.fillStyle = '#3a3d44'; x.beginPath(); x.arc(0, 0, R * 0.15, 0, 6.283); x.fill(); x.fillStyle = '#c9ccd2'; x.beginPath(); x.arc(0, 0, R * 0.07, 0, 6.283); x.fill();
+      }
+      this._wheelCache[key] = c;
+    }
+    ctx.save(); ctx.translate(cx, cy); ctx.rotate(ang || 0); ctx.drawImage(c, -c.width / 2, -c.height / 2); ctx.restore();
   },
   /* small standalone canvas thumbnail of a sprite (for DOM cards) */
   thumb(id, w, h, pad) {
@@ -98,4 +127,4 @@ CP.A = {
   /* portrait into a canvas element */
   portrait(n, size) { return this.thumb('portrait_' + String(n).padStart(2, '0'), size, size, 0); }
 };
-;(window.CP_FILES = window.CP_FILES || {})['03_assets'] = '2.2.2';
+;(window.CP_FILES = window.CP_FILES || {})['03_assets'] = '2.2.3';

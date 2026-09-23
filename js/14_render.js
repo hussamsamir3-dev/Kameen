@@ -95,6 +95,17 @@ CP.R.night = function () {
 /* v1.8: cinematic depth of field — the distant backdrop softens as the camera zooms into the lane, like a long lens */
 CP.R.dof = function () { if (CP.S.reducedFx || !('filter' in this.ctx)) return 'none'; const z = this.zoom || 1; const px = CP.clamp((z - 0.9) * 2.6, 0.6, 4.2) * (this.ppm / 60); return `blur(${px.toFixed(2)}px) saturate(1.04)`; };
 /* soft cast shadow: the sprite itself, flattened and skewed along the ground, blurred — sun by day, floodlights by night */
+/* v2.3.5: cross-fade between sprite frames — when a figure's frame changes, the previous frame fades out over 120 ms
+   while the new one fades in, so pose changes and strides blend instead of snapping */
+CP.R.XFADE = 0.12;
+CP.R.drawBlend = function (who, fr, cx, gy, k, flip) {
+  const A = CP.A, ctx = this.ctx, now = this.t;
+  if (who._fr && who._fr !== fr) { who._pfr = who._fr; who._pk = who._k; who._ft = now; }
+  who._fr = fr; who._k = k;
+  const a = who._pfr && who._ft != null ? Math.min(1, (now - who._ft) / this.XFADE) : 1;
+  if (a < 1 && !CP.S.reducedFx) { ctx.save(); ctx.globalAlpha *= (1 - a); A.drawGroundedScale(ctx, who._pfr, cx, gy, who._pk || k, flip); ctx.restore(); ctx.save(); ctx.globalAlpha *= a; A.drawGroundedScale(ctx, fr, cx, gy, k, flip); ctx.restore(); }
+  else { who._pfr = null; A.drawGroundedScale(ctx, fr, cx, gy, k, flip); }
+};
 CP.R._silCache = {};
 /* silhouette of a sprite (black, blurred), built once per frame id — no per-frame canvas filters */
 CP.R.silhouette = function (fr) {
@@ -252,8 +263,8 @@ CP.R.markings = function (s) {
   ctx.fillText(CP.lang === 'ar' ? 'منطقة التفتيش' : 'INSPECTION BAY', this.sx(33), this.sy(1.3));
   ctx.restore();
   // dashed separator between priority and bay rows
-  ctx.strokeStyle = 'rgba(240,236,225,.35)'; ctx.lineWidth = Math.max(1, 0.05 * ppm); ctx.setLineDash([0.9 * ppm, 0.8 * ppm]);
-  ctx.beginPath(); ctx.moveTo(0, this.sy(1.55)); ctx.lineTo(this.W, this.sy(1.55)); ctx.stroke(); ctx.setLineDash([]);
+  ctx.strokeStyle = 'rgba(240,236,225,.35)'; ctx.lineWidth = Math.max(1, 0.05 * ppm); ctx.setLineDash([0.9 * ppm, 0.8 * ppm]); ctx.lineDashOffset = ((this.camX * ppm) % (1.7 * ppm) + 1.7 * ppm) % (1.7 * ppm); // anchored to the world // anchored to the world
+  ctx.beginPath(); ctx.moveTo(0, this.sy(1.55)); ctx.lineTo(this.W, this.sy(1.55)); ctx.stroke(); ctx.setLineDash([]); ctx.lineDashOffset = 0;
   // bay boxes
   const slots = CP.G.career.upgrades.bay >= 1 ? [RW.bayA, RW.bayB] : [RW.bayA];
   ctx.strokeStyle = 'rgba(240,184,64,.6)'; ctx.lineWidth = Math.max(1.5, 0.07 * ppm);
@@ -349,7 +360,7 @@ CP.R.drawActor = function (a, who, alpha) {
   const hM = who === 'partner' ? CP.HUMAN.partner : CP.HUMAN.officer; const k = hM * ppm / (A.M.sprites[fr].hRef || r[3]);
   this.castShadow(fr, cx, gy, k, a.dir < 0);
   (this.occluders = this.occluders || []).push({ x0: cx - 0.28 * ppm, x1: cx + 0.28 * ppm, y0: gy - hM * ppm, y1: gy, h: hM * ppm });
-  A.drawGroundedScale(ctx, fr, cx, gy, k, a.dir < 0);
+  this.drawBlend(a, fr, cx, gy, k, a.dir < 0);
   if (who === 'officer') { this.hitsOfficer = { x: cx, y: gy }; if (a.pose === 'flashlight' || (a.torchT > 0)) { this.torch = { x: cx + a.dir * 0.45 * ppm, y: gy - 1.15 * ppm, dir: a.dir }; } }
   if (who === 'partner') this.partnerScr = { x: cx, y: gy - hM * ppm };
   else this.officerScr = { x: cx, y: gy - hM * ppm };
@@ -618,4 +629,4 @@ CP.R.pick = function (px, py) {
 CP.R.popup = function (text, x, yup, color) { this.fx.push({ kind: 'xp', text, x, yup, color, t0: this.t, dur: 1.6 }); };
 CP.R.stamp = function (text, color, x, yup) { this.fx.push({ kind: 'stamp', text, color, x, yup, t0: this.t, dur: 1.8 }); };
 CP.R.confetti = function (n, x, y) { for (let i = 0; i < (n || 60); i++) { this.emit('confetti', x ?? this.W / 2, y ?? this.H * 0.35); } };
-;(window.CP_FILES = window.CP_FILES || {})['14_render'] = '2.3.4';
+;(window.CP_FILES = window.CP_FILES || {})['14_render'] = '2.3.5';

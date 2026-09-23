@@ -436,4 +436,4 @@ CP.UI.freeArea = function () {
   else y1 = Math.max(40, b.top - a.top);
   return { x0, x1, y0, y1 };
 };
-;(window.CP_FILES = window.CP_FILES || {})['16_ui'] = '2.3.4';
+;(window.CP_FILES = window.CP_FILES || {})['16_ui'] = '2.3.5';

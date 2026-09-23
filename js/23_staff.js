@@ -81,7 +81,7 @@ CP.Staff.ents = function (R, s, ents, alpha) {
       const k = m.hM * ppm / (sp.hRef || sp.rect[3]);
       R.castShadow(fr, cx, gy, k, m.dir < 0);
       (R.occluders = R.occluders || []).push({ x0: cx - 0.26 * ppm, x1: cx + 0.26 * ppm, y0: gy - m.hM * ppm, y1: gy, h: m.hM * ppm });
-      A.drawGroundedScale(R.ctx, fr, cx, gy, k, m.dir < 0);
+      R.drawBlend(m, fr, cx, gy, k, m.dir < 0);
       if (m.pose === 'flashlight' && (R.nightLvl || 0) > 0.35) R.glows.push({ x: cx + m.dir * 0.5 * ppm, y: gy - 1.1 * ppm, r: 0.9 * ppm, c: '255,240,200', a: 0.55 });
     } });
   }
@@ -99,4 +99,4 @@ CP.bus.on('stepEnd', () => {
 });
 CP.bus.on('caseClosed', c => { const sgt = CP.Staff.list.find(m => m.id === 'sgt'); if (sgt && c.res && ['hold', 'handover', 'medical'].indexOf(c.res.decision) >= 0) sgt.bigCase = true; });
 CP.bus.on('shiftStart', () => CP.Staff.reset());
-;(window.CP_FILES = window.CP_FILES || {})['23_staff'] = '2.3.4';
+;(window.CP_FILES = window.CP_FILES || {})['23_staff'] = '2.3.5';

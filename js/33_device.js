@@ -39,7 +39,7 @@ DV.apply = function () {
 
 /* ---------- picker ---------- */
 DV.pick = function (first) {
-  if (document.getElementById('devPick')) return; const opt = (id, icon, t, sub) => dvh('button', { class: 'dv-opt' + ((CP.S.device || 'auto') === id ? ' on' : ''), onclick: () => { CP.S.device = id; if (id === 'phone' || id === 'phonemax') CP.S.portraitOk = false; CP.saveSettings(); CP.Audio.click(); DV.apply(); box.remove(); if (id !== 'desktop' && id !== 'auto') DV.fullscreen(); } }, dvh('span', { class: 'dv-i' }, icon), dvh('span', { class: 'dv-t' }, dvh('b', null, t), dvh('small', null, sub)));
+  if (document.getElementById('devPick')) return; if (first && CP.G && CP.G.shift && !CP.G.shift.ended) return; // never interrupt play const opt = (id, icon, t, sub) => dvh('button', { class: 'dv-opt' + ((CP.S.device || 'auto') === id ? ' on' : ''), onclick: () => { CP.S.device = id; if (id === 'phone' || id === 'phonemax') CP.S.portraitOk = false; CP.saveSettings(); CP.Audio.click(); DV.apply(); box.remove(); if (id !== 'desktop' && id !== 'auto') DV.fullscreen(); } }, dvh('span', { class: 'dv-i' }, icon), dvh('span', { class: 'dv-t' }, dvh('b', null, t), dvh('small', null, sub)));
   const box = dvh('div', { id: 'devPick', class: 'modal' }, dvh('div', { class: 'mc glass dv' }, dvh('b', { class: 'dv-title' }, CP.t('dv_title')), dvh('div', { class: 'small muted' }, CP.t('dv_sub')),
     dvh('div', { class: 'dv-grid' }, opt('phone', '📱', CP.t('dv_phone'), CP.t('dv_phoneD')), opt('phonemax', '📱', CP.t('dv_max'), CP.t('dv_maxD')), opt('tablet', '📟', CP.t('dv_tab'), CP.t('dv_tabD')), opt('desktop', '🖥️', CP.t('dv_desk'), CP.t('dv_deskD'))),
     dvh('button', { class: 'btn ghost', onclick: () => { CP.S.device = 'auto'; CP.saveSettings(); DV.apply(); box.remove(); } }, CP.t('dv_auto'))));
@@ -55,9 +55,9 @@ DV.rotatePrompt = function () {
   el = dvh('div', { id: 'rotate' }, dvh('div', { class: 'rot-icon' }, '🔄'), dvh('b', null, CP.t('dv_rotate')), dvh('div', { class: 'small' }, CP.t('dv_rotSub')), dvh('div', { class: 'row' }, dvh('button', { class: 'btn pri', onclick: () => DV.fullscreen() }, CP.t('dv_full')), dvh('button', { class: 'btn ghost', onclick: () => { CP.S.portraitOk = true; CP.saveSettings(); DV.apply(); el.remove(); } }, CP.t('dv_portrait'))));
   document.body.appendChild(el);
 };
-CP.bus.on('shiftStart', () => setTimeout(DV.rotatePrompt, 300));
+CP.bus.on('shiftStart', () => { const dp = document.getElementById('devPick'); if (dp) dp.remove(); setTimeout(DV.rotatePrompt, 300); });
 
 /* ---------- menu hook + first launch ---------- */
 { const menu = CP.Screens.menu; CP.Screens.menu = function () { const r = menu.apply(this, arguments); const icons = document.querySelector('.rv-icons'); if (icons && !icons.querySelector('.dv-btn')) icons.appendChild(dvh('button', { class: 'rv-ico dv-btn', onclick: () => { CP.Audio.clickSoft(); DV.pick(false); } }, dvh('span', null, '📐'), dvh('small', null, CP.t('dv_device')))); if (!CP.S.device) setTimeout(() => DV.pick(true), 600); return r; }; }
 window.addEventListener('load', () => setTimeout(DV.apply, 50));
-;(window.CP_FILES = window.CP_FILES || {})['33_device'] = '2.3.0';
+;(window.CP_FILES = window.CP_FILES || {})['33_device'] = '2.3.1';

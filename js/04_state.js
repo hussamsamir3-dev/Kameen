@@ -3,7 +3,7 @@ CP.G = null;
 CP.SAVE_KEY = 'cpns_save_v1';
 CP.SET_KEY = 'cpns_settings_v1';
 
-CP.defaultSettings = () => ({ lang: 'ar', shiftMin: 15, readMode: 'slow', assist: false, subs: true, reducedFx: false, reducedFlash: false, textSize: 'normal', master: 0.85, music: 0.55, tod: 'auto', sheet: null, amb: 0.6, sfx: 0.8, mute: false, quality: 'high', camZoom: 'auto' });
+CP.defaultSettings = () => ({ lang: 'ar', shiftMin: 15, readMode: 'slow', assist: true, subs: true, reducedFx: false, reducedFlash: false, textSize: 'normal', master: 0.85, music: 0.55, tod: 'auto', sheet: null, amb: 0.6, sfx: 0.8, mute: false, quality: 'high', camZoom: 'auto' });
 CP.S = CP.defaultSettings();
 /* time of day: every shift spans 12 in-game hours and crosses a sunrise or sunset */
 CP.TOD = { dusk: 15 * 60 + 30, dawn: 1 * 60 + 30, day: 7 * 60, night: 20 * 60 };
@@ -121,4 +121,4 @@ CP.once = function (key) {
   const s = CP.G.shift; if (!s) return false;
   if (s.idem[key]) return false; s.idem[key] = 1; return true;
 };
-;(window.CP_FILES = window.CP_FILES || {})['04_state'] = '2.3.0';
+;(window.CP_FILES = window.CP_FILES || {})['04_state'] = '2.3.1';

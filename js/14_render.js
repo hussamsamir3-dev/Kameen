@@ -365,7 +365,7 @@ CP.R.lighting = function (s, night, alpha) {
   if (!this.L2 || this.L2.width !== L.width || this.L2.height !== L.height) { this.L2 = document.createElement('canvas'); this.L2.width = L.width; this.L2.height = L.height; this.l2 = this.L2.getContext('2d'); }
   const L2 = this.L2, l2 = this.l2;
   const dust = s.events.dustUntil > s.t;
-  const dayC = [255, 250, 242], warm = [255, 188, 150], cool = CP.locBase(s.loc) === 'desert' ? [58, 70, 112] : [72, 82, 126];
+  const dayC = [255, 250, 242], warm = [255, 196, 160], cool = CP.locBase(s.loc) === 'desert' ? [110, 120, 160] : [124, 134, 176]; // v2.3.1: brighter nights
   const amb = night < 0.5 ? dayC.map((w, i) => Math.round(CP.lerp(w, warm[i], night * 2))) : warm.map((w, i) => Math.round(CP.lerp(w, cool[i], (night - 0.5) * 2)));
   l.setTransform(1, 0, 0, 1, 0, 0); l.globalCompositeOperation = 'source-over';
   l.fillStyle = `rgb(${amb[0]},${amb[1]},${amb[2]})`; l.fillRect(0, 0, L.width, L.height);
@@ -618,4 +618,4 @@ CP.R.pick = function (px, py) {
 CP.R.popup = function (text, x, yup, color) { this.fx.push({ kind: 'xp', text, x, yup, color, t0: this.t, dur: 1.6 }); };
 CP.R.stamp = function (text, color, x, yup) { this.fx.push({ kind: 'stamp', text, color, x, yup, t0: this.t, dur: 1.8 }); };
 CP.R.confetti = function (n, x, y) { for (let i = 0; i < (n || 60); i++) { this.emit('confetti', x ?? this.W / 2, y ?? this.H * 0.35); } };
-;(window.CP_FILES = window.CP_FILES || {})['14_render'] = '2.3.0';
+;(window.CP_FILES = window.CP_FILES || {})['14_render'] = '2.3.1';

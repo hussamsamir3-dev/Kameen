@@ -78,7 +78,7 @@ CP.bus.on('task', t => { if (t.owner === 'officer' && PO.fixTypes[t.type] && !CP
 PO.chestKey = 'cpns_chest'; PO.chestAmount = car => 40 + 25 * Math.min(10, Math.max(1, car.streak || 1));
 PO.chest = function (car) {
   if (!car) return null; const today = CP.Prog.today(); const got = localStorage.getItem(PO.chestKey) === today; const n = PO.chestAmount(car);
-  const el = ph('button', { class: 'rv-chest' + (got ? ' got' : ''), 'aria-disabled': got ? 'true' : 'false', onclick: () => { if (localStorage.getItem(PO.chestKey) === today) return; localStorage.setItem(PO.chestKey, today); car.xp += n; CP.Prog.ensure(car); CP.G = CP.G || CP.loadSaved(); if (CP.G && CP.G.career) { CP.G.career.xp = car.xp; CP.save(); } CP.Audio.fanfare(); el.classList.add('got'); el.querySelector('b').textContent = CP.t('po_claimed'); PO.burst(el); } },
+  const el = ph('button', { class: 'rv-chest' + (got ? ' got' : ''), 'aria-disabled': got ? 'true' : 'false', onclick: () => { if (localStorage.getItem(PO.chestKey) === today) return; localStorage.setItem(PO.chestKey, today); car.xp += n; if (CP.Guard) CP.Guard.legit('cxp', n); CP.Prog.ensure(car); CP.G = CP.G || CP.loadSaved(); if (CP.G && CP.G.career) { CP.G.career.xp = car.xp; CP.save(); } CP.Audio.fanfare(); el.classList.add('got'); el.querySelector('b').textContent = CP.t('po_claimed'); PO.burst(el); } },
     ph('span', { class: 'rv-ci' }, got ? '🎁' : '🎁'), ph('span', { class: 'rv-ct' }, ph('b', null, got ? CP.t('po_claimed') : CP.t('po_claim', { n: CP.num(n) })), ph('small', null, CP.t('po_chest') + ' • ' + CP.t('po_chestSub'))));
   return el;
 };
@@ -88,4 +88,4 @@ PO.burst = el => { const r = el.getBoundingClientRect(); for (let i = 0; i < 18;
 /* ---------- responsive type scale ---------- */
 PO.fit = () => { const w = window.innerWidth, h = window.innerHeight; const base = Math.min(w / 1440, h / 820); const s = CP.clamp(0.86 + base * 0.32, 0.86, 1.32); document.documentElement.style.setProperty('--ui', s.toFixed(3)); document.documentElement.classList.toggle('wide', w / h > 2); document.documentElement.classList.toggle('short', h < 620); };
 window.addEventListener('resize', PO.fit); PO.fit();
-;(window.CP_FILES = window.CP_FILES || {})['26_polish'] = '2.1.2';
+;(window.CP_FILES = window.CP_FILES || {})['26_polish'] = '2.2.0';

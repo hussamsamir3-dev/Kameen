@@ -770,3 +770,17 @@ html.short .rv-menu .logo3d, html.short .rv-menu .brandimg { transform: scale(.7
 .wcard .wplate { padding: 4px 10px; border: 2px solid #241d12; border-radius: 6px; background: #fff; font-weight: 800; letter-spacing: .05em; direction: ltr; }
 .wcard .wreward { color: #1f6b3a; font-weight: 800; }
 @media (max-width: 720px) { .wgrid { grid-template-columns: 1fr; } .perk-grid.two { grid-template-columns: 1fr; } }
+
+/* ===== v2.2: shift bar, ban screen, asked questions ===== */
+#shiftbar { position: absolute; left: 0; right: 0; top: 0; display: flex; flex-direction: column; gap: 3px; padding: 3px 12px 4px; background: linear-gradient(rgba(10,11,16,.85), rgba(10,11,16,.45)); z-index: 4; font-size: .76em; pointer-events: none; }
+#shiftbar .sb-track { position: relative; height: 6px; border-radius: 3px; background: rgba(255,255,255,.08); overflow: hidden; }
+#shiftbar .sb-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: linear-gradient(90deg, #8fe3a8, #f0b840); border-radius: 3px; transition: width .4s linear; }
+#shiftbar .sb-mark { position: absolute; top: -2px; bottom: -2px; width: 2px; background: rgba(255,90,60,.8); }
+#shiftbar .sb-text { display: flex; justify-content: space-between; gap: 8px; opacity: .85; }
+#shiftbar.late .sb-fill { background: linear-gradient(90deg, #f0b840, #ff6a4a); } #shiftbar.late .sb-m { color: #ffb08a; font-weight: 700; }
+#banScreen { position: fixed; inset: 0; z-index: 200; display: grid; place-items: center; background: rgba(6,7,10,.92); backdrop-filter: blur(10px); }
+.gd { width: min(460px, 92vw); display: flex; flex-direction: column; gap: 12px; text-align: center; align-items: center; padding: 26px; }
+.gd-icon { font-size: 54px; } .gd-title { font-size: 1.3em; color: #ff8a8a; } .gd-left { font-size: 1.6em; color: #ffd35a; font-variant-numeric: tabular-nums; }
+.gd-inp { flex: 1; padding: 10px 12px; border-radius: 10px; border: 1px solid var(--line2); background: rgba(255,255,255,.06); color: var(--ink); font-size: 1em; }
+.opts button.asked { opacity: .35; text-decoration: line-through; }
+.hud-hint { font-size: .8em; opacity: .7; }

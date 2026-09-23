@@ -9,6 +9,7 @@
    - The Black File: serious catches drop clues; 5 clues close a file for a big reward and a rank-up nudge — progress on the menu.
    - Uniform unlock: reach rank 6 to switch to the white officer's uniform (partner takes navy). */
 CP.addStrings({
+  dp_carQ: ['العربية عطلانة — تعمل إيه؟', 'The car has broken down — what now?'], dp_push: ['💪 ادفعها على الجنب (١٠ ث)', '💪 Push it aside (10 s)'], dp_tow: ['🚛 اطلب ونش (٢٠ ث)', '🚛 Call a tow (20 s)'], dp_sgtCar: ['👮 خلي الرقيب يساعد', '👮 Ask the sergeant'], dp_towOn: ['الونش في الطريق', 'Tow truck on its way'],
   dp_fixQ: ['البوابة عطلانة — تعمل إيه؟', 'The barrier is jammed — what now?'], dp_genQ: ['المولد فصل — تعمل إيه؟', 'The generator tripped — what now?'],
   dp_me: ['🔧 أصلحها بنفسي', '🔧 Fix it myself'], dp_sgt: ['👮 خلي الرقيب يصلحها', '👮 Ask the sergeant'], dp_cancel: ['إلغاء', 'Cancel'], dp_sgtBusy: ['الرقيب مشغول دلوقتي', 'The sergeant is busy right now'], dp_sgtOn: ['الرقيب رايح يصلحها', 'The sergeant is on it'],
   dp_step1: ['١ كلام', '1 Talk'], dp_step2: ['٢ الأوراق', '2 Papers'], dp_step3: ['٣ تأكيد', '3 Verify'], dp_step4: ['٤ القرار', '4 Decide'], dp_tone: ['النبرة', 'Tone'],
@@ -26,6 +27,7 @@ DP.brokenSpots = function (s) {
   const out = []; const W = CP.W, Y = CP.R.Y;
   if (s.gate.jam) out.push({ kind: 'gate', x: W.gateX, yup: Y.mainFar + 0.12, h: 1.6, w: 1.2 });
   if (s.equipment.generator !== 'ok') out.push({ kind: 'gen', x: W.genX, yup: Y.mainFar + 0.12, h: 1.6, w: 1.8 });
+  for (const v of s.vehicles) if (v.stall > 0 && v.stallKind) out.push({ kind: 'car', x: v.x - v.len / 2, yup: CP.R.rowY(v.row) + 0.2, h: 1.5, w: v.len, vid: v.id });
   return out;
 };
 DP.hitBroken = function (s, px, py) {
@@ -34,6 +36,14 @@ DP.hitBroken = function (s, px, py) {
 DP.popover = function (b, px, py) {
   if (document.getElementById('fixpop')) return; const s = CP.G.shift; const stage = document.getElementById('stage'); const sgt = CP.Staff.list.find(m => m.id === 'sgt');
   const close = () => { const e = document.getElementById('fixpop'); if (e) e.remove(); };
+  if (b.kind === 'car') { const v = CP.T.get(b.vid); const towDur = CP.Econ && CP.Econ.own('tow') ? 10 : 20;
+    const pop = dh('div', { id: 'fixpop', role: 'dialog' }, dh('b', null, CP.t('dp_carQ')),
+      dh('button', { class: 'btn pri', onclick: () => { close(); CP.Audio.click(); CP.Tasks.add({ type: 'o_vehicle', owner: 'officer', dur: 10, key: 'o_vehicle:' + b.vid, data: { vid: b.vid, x: b.x } }); CP.Actors.walkTo(s.officer, v.x - v.len / 2 - 0.6); } }, CP.t('dp_push')),
+      dh('button', { class: 'btn', onclick: () => { close(); CP.Audio.radioClick(true); CP.UI.toast(CP.t('dp_towOn'), 'ok'); CP.Tasks.add({ type: 'radio', owner: 'officer', dur: towDur, key: 'tow:' + b.vid, data: { tow: b.vid } }); } }, CP.t('dp_tow')),
+      dh('button', { class: 'btn', onclick: () => { close(); if (!sgt || sgt.job) { CP.UI.toast(CP.t('dp_sgtBusy'), 'warn'); return; } sgt.job = 'car:' + b.vid; sgt.hurry = true; CP.Audio.radioClick(true); CP.UI.toast(CP.t('dp_sgtOn'), 'ok'); } }, CP.t('dp_sgtCar')),
+      dh('button', { class: 'btn ghost sm', onclick: () => { close(); CP.Audio.clickSoft(); } }, CP.t('dp_cancel')));
+    stage.appendChild(pop); const r = stage.getBoundingClientRect(); pop.style.left = CP.clamp(px - r.left - 120, 8, r.width - 250) + 'px'; pop.style.top = CP.clamp(py - r.top - 200, 8, r.height - 230) + 'px';
+    setTimeout(() => document.addEventListener('pointerdown', function h(e) { if (!pop.contains(e.target)) { close(); document.removeEventListener('pointerdown', h); } }), 50); return; }
   const me = () => { close(); CP.Audio.click(); const t = b.kind === 'gate' ? CP.Tasks.add({ type: 'o_repair', owner: 'officer', dur: 6, key: 'o_repair', data: { x: b.x } }) : CP.Tasks.add({ type: 'o_generator', owner: 'officer', dur: 7, key: 'o_generator', data: { x: b.x } }); CP.Actors.walkTo(s.officer, b.x + (b.kind === 'gate' ? 0.9 : -1.2)); };
   const ask = () => { close(); if (!sgt || sgt.job) { CP.UI.toast(CP.t('dp_sgtBusy'), 'warn'); return; } CP.Audio.radioClick(true); sgt.job = b.kind; sgt.hurry = true; CP.UI.toast(CP.t('dp_sgtOn'), 'ok'); };
   const pop = dh('div', { id: 'fixpop', role: 'dialog' }, dh('b', null, CP.t(b.kind === 'gate' ? 'dp_fixQ' : 'dp_genQ')),
@@ -42,12 +52,15 @@ DP.popover = function (b, px, py) {
   setTimeout(() => document.addEventListener('pointerdown', function h(e) { if (!pop.contains(e.target)) { close(); document.removeEventListener('pointerdown', h); } }), 50);
 };
 CP.Actors.walkTo = CP.Actors.walkTo || function (a, x) { a.target = x; };
+CP.Tasks.on('sgt_vehicle', t => { const v = CP.T.get(t.data.vid); if (v) CP.Events.fixVehicle(v); });
+{ const pr = CP.Tasks.H.radio, pp = CP.Tasks.P.radio; CP.Tasks.on('radio', t => { if (pr) pr(t); if (t.data && t.data.tow) { const v = CP.T.get(t.data.tow); if (v) CP.Events.fixVehicle(v); } }, pp); }
 { const cv = () => CP.R.cv; document.addEventListener('pointerdown', e => { const c = cv(); if (!c || e.target !== c || !CP.G || !CP.G.shift) return; const b = DP.hitBroken(CP.G.shift, e.clientX - c.getBoundingClientRect().left, e.clientY - c.getBoundingClientRect().top); if (b) { e.stopPropagation(); DP.popover(b, e.clientX, e.clientY); } }, true);
   document.addEventListener('pointermove', e => { const c = cv(); if (!c || e.target !== c || !CP.G || !CP.G.shift) return; const rr = c.getBoundingClientRect(); c.style.cursor = DP.hitBroken(CP.G.shift, e.clientX - rr.left, e.clientY - rr.top) ? 'pointer' : ''; }); }
 // sergeant carries out the job
 CP.bus.on('stepEnd', () => {
   const s = CP.G && CP.G.shift; if (!s) return; const sgt = CP.Staff.list.find(m => m.id === 'sgt'); if (!sgt || !sgt.job) return;
-  const W = CP.W; const tx = sgt.job === 'gate' ? W.gateX + 1.1 : W.genX - 1.3;
+  const W = CP.W; if (String(sgt.job).startsWith('car:')) { const v = CP.T.get(sgt.job.slice(4)); if (!v || !(v.stall > 0)) { sgt.job = null; return; } const tx = v.x - v.len / 2 - 0.8; if (Math.abs(sgt.x - tx) > 0.3) { sgt.target = tx; sgt.hurry = true; return; } sgt.pose = 'lower'; sgt.hold = 0.3; if (!s.tasks.find(t => t.key === 'sgt_car:' + v.id)) CP.Tasks.add({ type: 'sgt_vehicle', owner: 'staff', dur: 12, key: 'sgt_car:' + v.id, data: { vid: v.id } }); return; }
+  const tx = sgt.job === 'gate' ? W.gateX + 1.1 : W.genX - 1.3;
   if ((sgt.job === 'gate' && !s.gate.jam) || (sgt.job === 'gen' && s.equipment.generator === 'ok')) { sgt.job = null; return; }
   if (Math.abs(sgt.x - tx) > 0.25) { sgt.target = tx; sgt.hurry = true; return; }
   sgt.pose = 'lower'; sgt.hold = 0.3; if (!s.tasks.find(t => t.key === 'sgt_' + sgt.job)) CP.Tasks.add({ type: sgt.job === 'gate' ? 'sgt_repair' : 'sgt_generator', owner: 'staff', dur: 11, key: 'sgt_' + sgt.job, data: {} });
@@ -124,4 +137,4 @@ CP.bus.on('shiftStart', () => { const s = CP.G.shift; const white = CP.S.uniform
     cards.appendChild(dh('button', { class: 'rv-card' + (ok ? '' : ' locked'), 'aria-disabled': ok ? 'false' : 'true', onclick: () => { if (!ok) { CP.UI.toast(CP.t('dp_uniLocked', { r: CP.Prog.rankName(DP.UNI_RANK) }), 'warn'); return; } CP.S.uniform = on ? 'navy' : 'white'; CP.saveSettings(); CP.Audio.click(); CP.Screens.menu(); } },
       dh('span', { class: 'rv-ci' }, ok ? (on ? '🤍' : '💙') : '🔒'), dh('span', { class: 'rv-ct' }, dh('b', null, CP.t('dp_uniform')), dh('small', null, ok ? CP.t(on ? 'dp_uniOn' : 'dp_uniOff') : CP.t('dp_uniLocked', { r: CP.Prog.rankName(DP.UNI_RANK) })))));
   }; }
-;(window.CP_FILES = window.CP_FILES || {})['27_depth'] = '2.1.2';
+;(window.CP_FILES = window.CP_FILES || {})['27_depth'] = '2.2.0';

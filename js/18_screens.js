@@ -55,7 +55,7 @@ CP.Screens.menuScene = function (cv) {
     if (cv.width !== Math.round(r.width * dpr) || cv.height !== Math.round(r.height * dpr)) { cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr); }
     const ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
     const W = r.width, H = r.height; const ar = CP.lang === 'ar'; if (W < 10 || H < 10 || !isFinite(dt)) return;
-    const ppm = Math.min(H / 7.2, W / 13); const gy = H * 0.84;
+    const ppm = Math.min(H / 8.6, W / 15.5); const gy = H * 0.84;
     const gx = ar ? W * 0.34 : W * 0.66; // gate screen x (scene sits opposite the menu panel)
     const px = st.mx * 18, py = st.my * 10;
     // sky/background with slow drift + parallax
@@ -105,7 +105,7 @@ CP.Screens.menuScene = function (cv) {
     // officer waving the car through
     // the crew from the v1.5 sheet: the sergeant by the booth on the radio, the player's officer working the barrier,
     // the partner (white) beside him ready with the papers
-    const F = CP.Actors.frameFor, dr = (fr, x, y, h, flip) => { const sp = A.M.sprites[fr]; if (!sp) return; A.drawGroundedScale(ctx, fr, x, y, h * ppm / (sp.hRef || sp.rect[3]), flip); };
+    const F = CP.Actors.frameFor, dr = (fr, x, y, h, flip) => { const sp = A.M.sprites[fr]; if (!sp) return; const k = h * ppm / (sp.hRef || sp.rect[3]); if (CP.R.castShadow) { const R = CP.R, sv = { ctx: R.ctx, ppm: R.ppm, W: R.W, nightLvl: R.nightLvl }; R.ctx = ctx; R.ppm = ppm; R.W = W; R.nightLvl = st.night || 0; R.castShadow(fr, x, y, k, flip, h); Object.assign(R, sv); } A.drawGroundedScale(ctx, fr, x, y, k, flip); };
     const incoming = st.cars.some(c => c.v > 0.5 && c.x < -1 && c.x > -9);
     dr(F(2, Math.floor(st.t / 7) % 3 === 1 ? 'radio' : 'idle', false, 0, st.t + 2), X(-5.4) + px * 1.2, gy - rhFar(ppm) - 0.25 * ppm, CP.HUMAN.menuSgt, false);
     dr(F(0, st.ang > 0.5 ? 'wave' : incoming ? 'stop' : 'idle', false, 0, st.t), X(1.6), gy + 0.4 * ppm, CP.HUMAN.menuOfficer, true);
@@ -329,4 +329,4 @@ CP.Screens.pause = function () {
     sh('button', { class: 'btn bad', onclick: () => CP.UI.confirm(CP.t('end_confirm'), () => { this.hideAll(); CP.Main.endShift(); }) }, CP.t('pause_end'))));
 };
 CP.Screens.resume = function () { this.hideAll(); document.getElementById('game').classList.remove('hidden'); CP.R.resize(); CP.Main.last = performance.now(); };
-;(window.CP_FILES = window.CP_FILES || {})['18_screens'] = '2.1.2';
+;(window.CP_FILES = window.CP_FILES || {})['18_screens'] = '2.2.0';

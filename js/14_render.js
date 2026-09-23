@@ -95,13 +95,31 @@ CP.R.night = function () {
 /* v1.8: cinematic depth of field — the distant backdrop softens as the camera zooms into the lane, like a long lens */
 CP.R.dof = function () { if (CP.S.reducedFx || !('filter' in this.ctx)) return 'none'; const z = this.zoom || 1; const px = CP.clamp((z - 0.9) * 2.6, 0.6, 4.2) * (this.ppm / 60); return `blur(${px.toFixed(2)}px) saturate(1.04)`; };
 /* soft cast shadow: the sprite itself, flattened and skewed along the ground, blurred — sun by day, floodlights by night */
+CP.R._silCache = {};
+/* silhouette of a sprite (black, blurred), built once per frame id — no per-frame canvas filters */
+CP.R.silhouette = function (fr) {
+  const c = this._silCache[fr]; if (c) return c; const sp = CP.A.M.sprites[fr]; const im = CP.A.img[sp.sheet]; if (!im) return null;
+  const [sx, sy, sw, sh] = sp.rect; const pad = 6; const cv = document.createElement('canvas'); cv.width = sw + pad * 2; cv.height = sh + pad * 2; const ctx = cv.getContext('2d');
+  if ('filter' in ctx) ctx.filter = 'brightness(0) blur(2px)'; ctx.drawImage(im, sx, sy, sw, sh, pad, pad, sw, sh);
+  if (!('filter' in ctx)) { ctx.globalCompositeOperation = 'source-in'; ctx.fillStyle = '#000'; ctx.fillRect(0, 0, cv.width, cv.height); }
+  this._silCache[fr] = { cv, pad }; return this._silCache[fr];
+};
+/* soft cast shadow: the sprite's silhouette flattened and skewed along the ground — sun by day, floodlights by night */
 CP.R.castShadow = function (fr, cx, gy, k, flip, hM) {
   const ctx = this.ctx, ppm = this.ppm, night = this.nightLvl || 0;
   this.shadow(cx, gy, 0.34 * ppm, 0.075 * ppm, 0.32);
-  if (CP.S.reducedFx || !('filter' in ctx)) return;
+  if (CP.S.reducedFx) return; const sil = this.silhouette(fr); if (!sil) return; const sp = CP.A.M.sprites[fr]; const [sx, sy, sw, sh] = sp.rect; const ax = sp.ax ?? 0.5;
   const dir = night > 0.5 ? (cx < this.W * 0.5 ? 1 : -1) : -0.85, len = night > 0.5 ? 0.42 : 0.55;
-  ctx.save(); ctx.translate(cx, gy); ctx.transform(1, 0, dir * len, -len * 0.75, 0, 0); ctx.filter = `brightness(0) opacity(${night > 0.5 ? 0.22 : 0.3}) blur(${(1.6 * ppm / 60).toFixed(1)}px)`;
-  CP.A.drawGroundedScale(ctx, fr, 0, 0, k, flip); ctx.restore();
+  ctx.save(); ctx.globalAlpha = night > 0.5 ? 0.22 : 0.3; ctx.translate(cx, gy); ctx.transform(1, 0, dir * len, -len * 0.75, 0, 0); if (flip) ctx.scale(-1, 1);
+  ctx.drawImage(sil.cv, -(ax * sw + sil.pad) * k, -(sh + sil.pad) * k, sil.cv.width * k, sil.cv.height * k); ctx.restore();
+};
+/* cinematic depth of field without per-frame filters: blurred copies of the backdrop are cached per blur step */
+CP.R._dofCache = {};
+CP.R.dofImage = function (im, key) {
+  if (CP.S.reducedFx || !im) return im; const z = this.zoom || 1; let px = CP.clamp((z - 0.9) * 2.6, 0.6, 4.2) * (this.ppm / 60); px = Math.round(px * 2) / 2; if (px < 0.75) return im;
+  const ck = key + '@' + px; const c = this._dofCache[ck]; if (c) return c;
+  const scale = 0.5; const cv = document.createElement('canvas'); cv.width = Math.max(1, Math.round(im.width * scale)); cv.height = Math.max(1, Math.round(im.height * scale)); const ctx = cv.getContext('2d');
+  if ('filter' in ctx) ctx.filter = `blur(${(px * scale).toFixed(2)}px)`; ctx.drawImage(im, 0, 0, cv.width, cv.height); this._dofCache[ck] = cv; return cv;
 };
 CP.R.background = function (s, W, H, ppm, Y, night) {
   const A = CP.A, ctx = this.ctx, L = CP.LOCS[s.loc] || CP.LOCS.cairo, B = L.bg;
@@ -125,9 +143,9 @@ CP.R.background = function (s, W, H, ppm, Y, night) {
     if (g.top > 0 && g.left + g.bw < W) ctx.drawImage(im, im.width - 1, 0, 1, 1, g.left + g.bw - 1, 0, W - g.left - g.bw + 1, g.top + 1);
   };
   if (B.day) {
-    const d = A.img[B.day], nImg = A.img[B.night]; if (!d) { ctx.fillStyle = '#1b1c22'; ctx.fillRect(0, 0, W, H); return; }
+    const d = this.dofImage(A.img[B.day], B.day), nImg = this.dofImage(A.img[B.night], B.night); if (!d) { ctx.fillStyle = '#1b1c22'; ctx.fillRect(0, 0, W, H); return; }
     const g = place(d, B.frac, this.sy(Y.mainFar));
-    ctx.save(); ctx.filter = this.dof();
+    ctx.save();
     if (night < 0.999) { cover(d, g); ctx.drawImage(d, g.left, g.top, g.bw, g.bh); }
     if (nImg && night > 0.001) { ctx.globalAlpha = night; cover(nImg, g); ctx.drawImage(nImg, g.left, g.top, g.bw, g.bh); ctx.globalAlpha = 1; }
     ctx.restore();
@@ -136,10 +154,10 @@ CP.R.background = function (s, W, H, ppm, Y, night) {
     if (g.top + g.bh < H) { ctx.fillStyle = '#222'; ctx.fillRect(0, g.top + g.bh, W, H - g.top - g.bh); }
     return;
   }
-  const bim = A.img[B.single];
+  const bim = this.dofImage(A.img[B.single], B.single);
   if (!bim) { ctx.fillStyle = '#1b1c22'; ctx.fillRect(0, 0, W, H); return; }
   const g = place(bim, B.frac, this.sy(Y.bgRoad));
-  ctx.save(); ctx.filter = this.dof(); cover(bim, g); ctx.drawImage(bim, g.left, g.top, g.bw, g.bh); ctx.restore();
+  cover(bim, g); ctx.drawImage(bim, g.left, g.top, g.bw, g.bh);
   // single-image scenes: grade towards daylight when the sun is up
   const day = 1 - night;
   if (day > 0.01) { ctx.save(); ctx.globalCompositeOperation = 'screen'; ctx.fillStyle = s.loc === 'desert' ? `rgba(200,175,140,${0.55 * day})` : `rgba(150,160,175,${0.35 * day})`; ctx.fillRect(0, 0, W, this.sy(Y.mainFar)); ctx.restore(); }
@@ -182,6 +200,7 @@ CP.R.frame = function (alpha, dt) {
   for (const v of s.vehicles) { const row = CP.lerp(v.prow, v.row, alpha); ents.push({ y: CP.R.rowY(row), k: 'v', v, row }); }
   if (CP.Props) CP.Props.ents(this, s, ents);
   if (CP.Staff) CP.Staff.ents(this, s, ents, alpha);
+  if (CP.Peds) CP.Peds.ents(this, s, ents, alpha);
   const o = s.officer, p = s.partner;
   ents.push({ y: CP.R.actorY(CP.lerp(o.prow ?? o.row, o.row, alpha)), k: 'a', a: o, who: 'officer' });
   ents.push({ y: CP.R.actorY(CP.lerp(p.prow ?? p.row, p.row, alpha)) + 0.01, k: 'a', a: p, who: 'partner' });
@@ -599,4 +618,4 @@ CP.R.pick = function (px, py) {
 CP.R.popup = function (text, x, yup, color) { this.fx.push({ kind: 'xp', text, x, yup, color, t0: this.t, dur: 1.6 }); };
 CP.R.stamp = function (text, color, x, yup) { this.fx.push({ kind: 'stamp', text, color, x, yup, t0: this.t, dur: 1.8 }); };
 CP.R.confetti = function (n, x, y) { for (let i = 0; i < (n || 60); i++) { this.emit('confetti', x ?? this.W / 2, y ?? this.H * 0.35); } };
-;(window.CP_FILES = window.CP_FILES || {})['14_render'] = '2.1.2';
+;(window.CP_FILES = window.CP_FILES || {})['14_render'] = '2.2.0';

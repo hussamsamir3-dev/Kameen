@@ -96,7 +96,16 @@ WD.street = function (R, id, yTopUp, yBotUp) {
 { const tile = CP.R.tile; CP.R.tile = function (id, yTopUp, yBotUp, vfrac) { if (CP.S.paintedStreet !== false && (id === 'road_marked' || id === 'road_plain') && CP.G && CP.G.shift) return WD.street(this, id, yTopUp, yBotUp); return tile.apply(this, arguments); }; }
 
 /* ---------- search complications ---------- */
-{ const zones = CP.Insp.zones; CP.Insp.zones = c => { const z = zones(c).slice(); if (z.indexOf('body') < 0) z.push('body'); if (z.indexOf('under') < 0 && c.type.indexOf('moto') < 0 && c.type !== 'tuktuk') z.push('under'); return z; }; }
+{ const zones = CP.Insp.zones; CP.Insp.zones = c => { const z = zones(c).slice(); const v = CP.vehOfCase(c); const inBay = v && v.st === 'bay';
+    if (!inBay) return z.filter(x => x === 'boot' || x === 'cargo' || x === 'luggage'); // quick trunk check at the marker
+    if (z.indexOf('driver') < 0) z.push('driver'); if (z.indexOf('body') < 0) z.push('body'); if (z.indexOf('under') < 0 && c.type.indexOf('moto') < 0 && c.type !== 'tuktuk') z.push('under'); return z; }; }
+CP.addStrings({ z_driver: ['السواق', 'Driver'], wd_quick: ['فحص سريع للشنطة عند العلامة — التفتيش الكامل في منطقة التفتيش', 'Quick trunk check at the marker — full search in the inspection bay'] });
+/* no repeats: recently used faces and vehicle types are skipped for as long as the pools allow */
+WD.recentP = []; WD.recentV = [];
+CP.bus.on('spawn', v => { const c = CP.G.shift.cases[v.caseId]; if (!c || c.regular) return; const PR = CP.C.portraits; const pool = Object.keys(PR).map(Number).filter(p => PR[p].g === c.driver.g && WD.recentP.indexOf(p) < 0);
+  if (WD.recentP.indexOf(c.driver.portrait) >= 0 && pool.length) c.driver.portrait = pool[Math.floor(Math.random() * pool.length)];
+  WD.recentP.push(c.driver.portrait); if (WD.recentP.length > 14) WD.recentP.shift(); WD.recentV.push(v.type); if (WD.recentV.length > 7) WD.recentV.shift(); });
+{ const sc = CP.T.spawnCivilian; CP.T.spawnCivilian = function (opts) { opts = opts || {}; if (!opts.type && CP.G && CP.G.shift) { const loc = CP.locBase(CP.G.shift.loc); const cand = Object.keys(CP.C.veh).filter(t => CP.C.veh[t].w && (CP.C.veh[t].w[loc] || 0) > 0 && WD.recentV.indexOf(t) < 0 && !/^pol_|ambulance/.test(t)); if (cand.length) { let tot = 0; const ws = cand.map(t => { tot += CP.C.veh[t].w[loc]; return tot; }); const r = Math.random() * tot; opts.type = cand[ws.findIndex(x => r < x)]; } } return sc.call(this, opts); }; }
 { const sz = CP.Insp.searchZone; CP.Insp.searchZone = function (c, zone) {
     if (!c.k.searchReason) return sz.call(this, c, zone);
     if (!c.k.consent && c.coop < 45 && !c.k.refused) { c.k.refused = true; WD.refusal(c, zone); return null; }
@@ -120,4 +129,4 @@ CP.bus.on('searchDone', ({ c, zone }) => {
 
 /* ---------- zoom-change flicker fix: quantised depth of field ---------- */
 CP.R.dof = function () { if (CP.S.reducedFx || !('filter' in this.ctx)) return 'none'; const z = this.zoom || 1; let px = CP.clamp((z - 0.9) * 2.6, 0.6, 4.2) * (this.ppm / 60); px = Math.round(px * 2) / 2; if (px < 0.75) return 'none'; return `blur(${px.toFixed(1)}px)`; };
-;(window.CP_FILES = window.CP_FILES || {})['29_world'] = '2.1.2';
+;(window.CP_FILES = window.CP_FILES || {})['29_world'] = '2.2.0';

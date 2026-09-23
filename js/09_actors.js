@@ -76,7 +76,7 @@ const PP = (t, fps, n) => { const k = ((Math.floor(t * fps) % (2 * n - 2)) + 2 *
 CP.Actors.frameFor = function (ch, pose, moving, walkT, t, calm, prog) {
   const S = CP.A.M.sprites, o = 'o' + ch + '_'; const has = id => !!S[id];
   if (moving) {
-    if (calm) return o + 'radio_' + [2, 3, 4, 5, 4, 3][((Math.floor(walkT / 0.22) % 6) + 6) % 6]; // relaxed walk holding the radio
+    if (calm) return o + 'walk_' + (((Math.floor(walkT / (1.3 / 8)) % 8) + 8) % 8); // normal walk cycle
     return o + 'run_' + (((Math.floor(walkT / (1.45 / 8)) % 8) + 8) % 8);
   }
   pose = pose || 'idle'; let id;
@@ -168,4 +168,4 @@ CP.Actors.partnerTraffic = function (dt) {
   s.flowT = (s.flowT || 0) + dt;
   if (s.flowT > 3.2) { s.flowT = 0; CP.Act.doWave(v, 'partner'); CP.Actors.seq('partner', ['lower', 'wave', 'idle'], 0.22); }
 };
-;(window.CP_FILES = window.CP_FILES || {})['09_actors'] = '2.1.2';
+;(window.CP_FILES = window.CP_FILES || {})['09_actors'] = '2.2.0';

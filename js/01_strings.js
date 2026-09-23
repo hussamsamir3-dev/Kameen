@@ -6,7 +6,7 @@ CP.addStrings({
   subtitle: ['محاكاة كمين مصري ثنائية الأبعاد', 'An Egyptian checkpoint simulation'],
   credit: ['تطوير: حسام حجازي', 'Developed by Hossam Hegazi'],
   fictionNote: ['كل الأسماء والوثائق والإجراءات في اللعبة خيالية.', 'All names, documents and procedures in this game are fictional.'],
-  loading: ['جاري تحميل الصور…', 'Loading artwork…'],
+  loading: ['جاري التحميل…', 'Loading…'],
   loadFail: ['تعذر تحميل ملف: {f}', 'Could not load file: {f}'],
   loadFailHelp: ['تأكد إن فولدر assets جنب ملف index.html، أو شغّل اللعبة من سيرفر محلي.', 'Keep the assets folder beside index.html, or run the game from a local web server.'],
   tapToStart: ['اضغط للبدء (لتفعيل الصوت)', 'Tap to start (enables audio)'],
@@ -431,4 +431,4 @@ CP.addStrings({
   how_body: ['<p><b>الهدف:</b> حافظ على الطريق ماشي، وافحص اللي يستاهل بشكل متناسب، واتخذ قرارات مبنية على دليل.</p><p><b>الحركة:</b> A/D أو الأسهم، أو اضغط على الطريق. <b>Q/E</b> لاختيار عربية. <b>1–9</b> للأزرار. <b>N</b> النوتة. <b>Esc</b> يقفل. <b>Space</b> إيقاف.</p><p><b>الدورة:</b> اختار العربية عند العلامة ← عدّيها أو اعمل «فحص» ← كلّم السواق واتكلم ← اطلب الأوراق وقارن ← استعلم باللاسلكي ← حوّل للساحة لو محتاج تفتيش أو كشف ← قرار بسبب وملاحظات ← رجّع الأوراق.</p><p>التعارض سبب للسؤال مش دليل. النتيجة المبدئية للكشف مش إدانة. اللبس والشكل والعصبية ملهمش علاقة بالذنب.</p>', '<p><b>Goal:</b> keep the road moving, check what deserves checking — proportionately — and make evidence-based decisions.</p><p><b>Move:</b> A/D or arrows, or click the road. <b>Q/E</b> selects vehicles. <b>1–9</b> press actions. <b>N</b> notebook. <b>Esc</b> closes. <b>Space</b> pauses.</p><p><b>Loop:</b> select the vehicle at the marker → wave through or signal stop → approach and talk → request and compare documents → verify by radio → divert to the bay if a search or screening is justified → decide with a reason and supporting notes → return documents.</p><p>A mismatch is a reason to ask, not proof. A preliminary screening result is not a finding. Clothes, looks and nervousness say nothing about guilt.</p>'],
   missingArt: ['الأصول الناقصة للتوسعات', 'Missing art for expansions'],
 });
-;(window.CP_FILES = window.CP_FILES || {})['01_strings'] = '2.1.2';
+;(window.CP_FILES = window.CP_FILES || {})['01_strings'] = '2.2.0';

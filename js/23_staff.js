@@ -10,8 +10,8 @@ const SW = CP.W;
 CP.Staff.reset = function () {
   const Y = CP.R.Y;
   this.list = [
-    { id: 'sgt', char: 2, x: 16.0, px: 16.0, yup: Y.mainFar + 0.10, dir: -1, pose: 'idle', walkT: 0, home: 16.0, wp: [16.0, 12.3, 21.9], next: 22 + Math.random() * 20, animOff: 1.7, hM: 1.74 },
-    { id: 'sup', char: 3, x: 31.0, px: 31.0, yup: 0.30, dir: -1, pose: 'idle', walkT: 0, home: 31.0, wp: [27.6, 31.0, 35.4], next: 15 + Math.random() * 20, animOff: 3.1, hM: 1.70 }
+    { id: 'sgt', char: 2, x: 16.0, px: 16.0, yup: Y.mainFar + 0.10, dir: -1, pose: 'idle', walkT: 0, home: 16.0, wp: [16.0, 12.3, 21.9], next: 22 + Math.random() * 20, animOff: 1.7, hM: CP.HUMAN.staffFar },
+    { id: 'sup', char: 3, x: 31.0, px: 31.0, yup: 0.30, dir: -1, pose: 'idle', walkT: 0, home: 31.0, wp: [27.6, 31.0, 35.4], next: 15 + Math.random() * 20, animOff: 3.1, hM: CP.HUMAN.staffNear }
   ];
 };
 
@@ -99,4 +99,4 @@ CP.bus.on('stepEnd', () => {
 });
 CP.bus.on('caseClosed', c => { const sgt = CP.Staff.list.find(m => m.id === 'sgt'); if (sgt && c.res && ['hold', 'handover', 'medical'].indexOf(c.res.decision) >= 0) sgt.bigCase = true; });
 CP.bus.on('shiftStart', () => CP.Staff.reset());
-;(window.CP_FILES = window.CP_FILES || {})['23_staff'] = '2.1.0';
+;(window.CP_FILES = window.CP_FILES || {})['23_staff'] = '2.1.2';

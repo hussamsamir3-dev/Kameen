@@ -40,7 +40,7 @@ CP.Peds.spawn = function (s) {
   const id = free[Math.floor(Math.random() * free.length)]; const dir = Math.random() < 0.5 ? 1 : -1; const row = Math.random() < 0.7 ? 'far' : 'near';
   const yup = row === 'far' ? CP.R.Y.mainFar + 0.06 + Math.random() * 0.08 : 0.26 + Math.random() * 0.1;
   const x0 = dir > 0 ? CP.R.camX - 3 : CP.R.camX + CP.R.span + 3;
-  this.list.push({ id, x: x0, px: x0, yup, dir, v: 1.05 + Math.random() * 0.45, walkT: 0, hM: 1.62 + (id % 5) * 0.035, pause: 0, look: 0, off: Math.random() * 9, row });
+  this.list.push({ id, x: x0, px: x0, yup, dir, v: 1.05 + Math.random() * 0.45, walkT: 0, hM: (row === 'far' ? CP.HUMAN.pedFar : CP.HUMAN.pedNear) - 0.06 + (id % 5) * 0.03, pause: 0, look: 0, off: Math.random() * 9, row });
 };
 CP.Peds.update = function (dt) {
   const s = CP.G.shift; if (!s || CP.S.reducedFx && this.list.length > 2) return; const R = CP.R;
@@ -120,4 +120,4 @@ CP.bus.on('searchDone', ({ c, zone }) => {
 
 /* ---------- zoom-change flicker fix: quantised depth of field ---------- */
 CP.R.dof = function () { if (CP.S.reducedFx || !('filter' in this.ctx)) return 'none'; const z = this.zoom || 1; let px = CP.clamp((z - 0.9) * 2.6, 0.6, 4.2) * (this.ppm / 60); px = Math.round(px * 2) / 2; if (px < 0.75) return 'none'; return `blur(${px.toFixed(1)}px)`; };
-;(window.CP_FILES = window.CP_FILES || {})['29_world'] = '2.1.0';
+;(window.CP_FILES = window.CP_FILES || {})['29_world'] = '2.1.2';

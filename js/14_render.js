@@ -327,7 +327,7 @@ CP.R.drawActor = function (a, who, alpha) {
   const x = CP.lerp(a.px ?? a.x, a.x, alpha); const row = CP.lerp(a.prow ?? a.row, a.row, alpha);
   const cx = this.sx(x), gy = this.sy(CP.R.actorY(row));
   let fr = CP.Actors.frameOf(a); if (!A.M.sprites[fr]) { if (!this._warned) { this._warned = 1; console.warn('missing frame', fr); } fr = 'ofi_00'; } const r = A.rect(fr);
-  const hM = who === 'partner' ? 1.76 : 1.8; const k = hM * ppm / (A.M.sprites[fr].hRef || r[3]);
+  const hM = who === 'partner' ? CP.HUMAN.partner : CP.HUMAN.officer; const k = hM * ppm / (A.M.sprites[fr].hRef || r[3]);
   this.castShadow(fr, cx, gy, k, a.dir < 0);
   (this.occluders = this.occluders || []).push({ x0: cx - 0.28 * ppm, x1: cx + 0.28 * ppm, y0: gy - hM * ppm, y1: gy, h: hM * ppm });
   A.drawGroundedScale(ctx, fr, cx, gy, k, a.dir < 0);
@@ -599,4 +599,4 @@ CP.R.pick = function (px, py) {
 CP.R.popup = function (text, x, yup, color) { this.fx.push({ kind: 'xp', text, x, yup, color, t0: this.t, dur: 1.6 }); };
 CP.R.stamp = function (text, color, x, yup) { this.fx.push({ kind: 'stamp', text, color, x, yup, t0: this.t, dur: 1.8 }); };
 CP.R.confetti = function (n, x, y) { for (let i = 0; i < (n || 60); i++) { this.emit('confetti', x ?? this.W / 2, y ?? this.H * 0.35); } };
-;(window.CP_FILES = window.CP_FILES || {})['14_render'] = '2.1.0';
+;(window.CP_FILES = window.CP_FILES || {})['14_render'] = '2.1.2';

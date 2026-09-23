@@ -752,3 +752,21 @@ html.short .rv-menu .logo3d, html.short .rv-menu .brandimg { transform: scale(.7
 .mail .ln { padding: 8px 10px; border-radius: 10px; margin-top: 6px; } .mail .cmd { background: rgba(60,160,110,.16); } .mail .cmp { background: rgba(200,60,60,.16); }
 .rankchip { border-color: var(--amberUser, var(--amber)) !important; }
 @media (max-width: 720px) { .perk-grid { grid-template-columns: 1fr; } }
+
+/* ===== v2.1: compact top bar, payslip, shop, wanted board ===== */
+#hud { gap: 8px; padding: 4px 10px; min-height: 46px; font-size: .86em; flex-wrap: nowrap; overflow: hidden; }
+#hud .hi b { font-size: 1em; white-space: nowrap; } #hud .hi span { font-size: .72em; opacity: .7; white-space: nowrap; }
+#hud .hi { padding: 2px 6px; border-radius: 8px; background: rgba(255,255,255,.03); }
+#hud .money b { color: #8fe3a8; } #hud .hboard { min-height: 32px; padding: 2px 10px; border-color: rgba(255,90,80,.6); }
+@media (max-width: 1100px) { #hud .hi.opt { display: none; } }
+@media (max-width: 800px) { #hud { font-size: .78em; } }
+.payslip .prow { display: flex; justify-content: space-between; padding: 4px 8px; border-radius: 8px; } .payslip .prow.neg b { color: #ff8a8a; } .payslip .prow.total { background: rgba(240,184,64,.15); font-size: 1.1em; margin-top: 4px; }
+.perk-grid.two { grid-template-columns: repeat(2, 1fr); }
+.wgrid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+.wcard { position: relative; display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 14px 10px; border-radius: 16px; background: linear-gradient(180deg, #f1e9d6, #e4d8bf); color: #241d12; text-align: center; box-shadow: 0 14px 40px rgba(0,0,0,.45); }
+.wcard canvas, .wcard img { border-radius: 10px; border: 3px solid #241d12; }
+.wcard .wph { width: 96px; height: 96px; border-radius: 10px; background: #cbbfa4; display: grid; place-items: center; font-size: 40px; }
+.wcard .wstamp { position: absolute; top: 8px; inset-inline-end: 8px; padding: 2px 8px; border: 2px solid #b3261e; color: #b3261e; font-weight: 900; letter-spacing: .12em; transform: rotate(-8deg); border-radius: 4px; font-size: .8em; }
+.wcard .wplate { padding: 4px 10px; border: 2px solid #241d12; border-radius: 6px; background: #fff; font-weight: 800; letter-spacing: .05em; direction: ltr; }
+.wcard .wreward { color: #1f6b3a; font-weight: 800; }
+@media (max-width: 720px) { .wgrid { grid-template-columns: 1fr; } .perk-grid.two { grid-template-columns: 1fr; } }

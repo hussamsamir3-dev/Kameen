@@ -136,4 +136,4 @@ CP.bus.on('shiftStart', () => { const s = CP.G.shift; const white = CP.S.uniform
     cards.appendChild(dh('button', { class: 'rv-card' + (ok ? '' : ' locked'), 'aria-disabled': ok ? 'false' : 'true', onclick: () => { if (!ok) { CP.UI.toast(CP.t('dp_uniLocked', { r: CP.Prog.rankName(DP.UNI_RANK) }), 'warn'); return; } CP.S.uniform = on ? 'navy' : 'white'; CP.saveSettings(); CP.Audio.click(); CP.Screens.menu(); } },
       dh('span', { class: 'rv-ci' }, ok ? (on ? '🤍' : '💙') : '🔒'), dh('span', { class: 'rv-ct' }, dh('b', null, CP.t('dp_uniform')), dh('small', null, ok ? CP.t(on ? 'dp_uniOn' : 'dp_uniOff') : CP.t('dp_uniLocked', { r: CP.Prog.rankName(DP.UNI_RANK) })))));
   }; }
-;(window.CP_FILES = window.CP_FILES || {})['27_depth'] = '2.3.2';
+;(window.CP_FILES = window.CP_FILES || {})['27_depth'] = '2.3.3';

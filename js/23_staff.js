@@ -99,4 +99,4 @@ CP.bus.on('stepEnd', () => {
 });
 CP.bus.on('caseClosed', c => { const sgt = CP.Staff.list.find(m => m.id === 'sgt'); if (sgt && c.res && ['hold', 'handover', 'medical'].indexOf(c.res.decision) >= 0) sgt.bigCase = true; });
 CP.bus.on('shiftStart', () => CP.Staff.reset());
-;(window.CP_FILES = window.CP_FILES || {})['23_staff'] = '2.3.2';
+;(window.CP_FILES = window.CP_FILES || {})['23_staff'] = '2.3.3';

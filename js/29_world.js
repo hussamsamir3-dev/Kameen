@@ -40,30 +40,27 @@ CP.Peds.spawn = function (s) {
   const id = free[Math.floor(Math.random() * free.length)]; const dir = Math.random() < 0.5 ? 1 : -1; const row = 'far';
   const yup = CP.R.Y.mainFar + 0.34 + Math.random() * 0.22; // the corniche pavement behind the police car, booth and sign
   const x0 = dir > 0 ? CP.R.camX - 3 : CP.R.camX + CP.R.span + 3;
-  this.list.push({ id, x: x0, px: x0, yup, dir, v: 1.05 + Math.random() * 0.45, walkT: 0, hM: (row === 'far' ? CP.HUMAN.pedFar : CP.HUMAN.pedNear) - 0.06 + (id % 5) * 0.03, pause: 0, look: 0, off: Math.random() * 9, row });
+  this.list.push({ id, x: x0, px: x0, yup, yupBase: yup, dir, v: 1.05 + Math.random() * 0.45, walkT: 0, hM: (row === 'far' ? CP.HUMAN.pedFar : CP.HUMAN.pedNear) - 0.06 + (id % 5) * 0.03, pause: 0, look: 0, off: Math.random() * 9, row });
 };
 CP.Peds.update = function (dt) {
-  const s = CP.G.shift; if (!s || CP.S.reducedFx && this.list.length > 2) return; const R = CP.R;
+  const s = CP.G.shift; if (!s) return; const R = CP.R;
   this.nextT -= dt; const maxN = CP.UI.isMob ? 2 : 3;
   if (this.nextT <= 0) { if (this.list.length < maxN) this.spawn(s); this.nextT = 16 + Math.random() * 22; }
   const alert = (s.events.wanted && s.events.wanted.spawned && !s.events.wanted.done) || CP.Events.emergency();
-  const blockers = [s.officer, s.partner, ...(CP.Staff ? CP.Staff.list : [])];
   for (const p of this.list) {
     p.px = p.x;
-    if (alert && p.look <= 0 && Math.random() < dt * 0.4) p.look = 2 + Math.random() * 3;
-    if (p.look > 0) { p.look -= dt; const cx = s.vehicles.find(v => v.st === 'marker'); if (cx) p.dir = cx.x > p.x ? 1 : -1; continue; }
-    if (p.pause > 0) { p.pause -= dt; continue; }
-    // keep distance from people on the same walkway
-    let block = false;
-    for (const b of blockers) { const by = b === s.officer || b === s.partner ? (p.row === 'near' ? 1 : 0) : (b.yup > 2 ? (p.row === 'far' ? 1 : 0) : (p.row === 'near' ? 1 : 0)); if (!by) continue; const dx = (b.x ?? 0) - p.x; if (Math.sign(dx) === p.dir && Math.abs(dx) < 1.0) { block = true; break; } }
-    for (const q of this.list) { if (q === p || q.row !== p.row) continue; const dx = q.x - p.x; if (Math.sign(dx) === p.dir && Math.abs(dx) < 0.9 && q.dir === p.dir) { block = true; break; } }
-    if (block) { p.pause = 0.4 + Math.random() * 0.8; continue; }
-    if (Math.random() < dt * 0.012) { p.pause = 1 + Math.random() * 2.5; continue; }
-    const step = p.v * dt; p.x += p.dir * step; p.walkT += step;
+    // always moving: never stop. Slow down for a moment behind someone walking the same way, drift a little deeper
+    // (further from the lane) to pass a person coming the other way, and slow to a stroll while something is happening.
+    let v = p.v * (alert ? 0.6 : 1);
+    for (const q of this.list) { if (q === p) continue; const dx = q.x - p.x; if (Math.sign(dx) !== p.dir || Math.abs(dx) > 1.4) continue;
+      if (q.dir === p.dir) v = Math.min(v, q.v * 0.9); else p.yup = CP.lerp(p.yup, p.yupBase + 0.14, dt * 2); }
+    p.yup = CP.lerp(p.yup, p.yupBase, dt * 0.8);
+    const step = v * dt; p.x += p.dir * step; p.walkT += step;
   }
+  // they enter from outside the visible world and leave it before despawning
   this.list = this.list.filter(p => p.x > R.camX - 6 && p.x < R.camX + R.span + 6);
 };
-CP.Peds.frame = p => { if (p.pause > 0 || p.look > 0) return 'ped' + p.id + '_2'; return 'ped' + p.id + '_' + (((Math.floor(p.walkT / (1.3 / 8)) % 8) + 8) % 8); };
+CP.Peds.frame = p => 'ped' + p.id + '_' + (((Math.floor(p.walkT / (1.3 / 8)) % 8) + 8) % 8);
 CP.Peds.ents = function (R, s, ents, alpha) {
   const A = CP.A, ppm = R.ppm;
   for (const p of this.list) ents.push({ y: p.yup, k: 'fn', draw: () => {
@@ -129,4 +126,4 @@ CP.bus.on('searchDone', ({ c, zone }) => {
 
 /* ---------- zoom-change flicker fix: quantised depth of field ---------- */
 CP.R.dof = function () { if (CP.S.reducedFx || !('filter' in this.ctx)) return 'none'; const z = this.zoom || 1; let px = CP.clamp((z - 0.9) * 2.6, 0.6, 4.2) * (this.ppm / 60); px = Math.round(px * 2) / 2; if (px < 0.75) return 'none'; return `blur(${px.toFixed(1)}px)`; };
-;(window.CP_FILES = window.CP_FILES || {})['29_world'] = '2.3.2';
+;(window.CP_FILES = window.CP_FILES || {})['29_world'] = '2.3.3';

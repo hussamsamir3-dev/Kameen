@@ -18,7 +18,7 @@ CP.R.resize = function () {
   const W = Math.max(200, Math.floor(r.width)), H = Math.max(120, Math.floor(r.height));
   cv.width = Math.floor(W * dpr); cv.height = Math.floor(H * dpr); cv.style.width = W + 'px'; cv.style.height = H + 'px';
   this.dpr = dpr; this.W = W; this.H = H;
-  const fit = Math.min(W / 38.5, H / 9.6);
+  const fit = Math.min(W / 33, H / 9.6); // v2.3.4: closer default framing so people and cars read bigger on wide screens
   // small screens: zoom in and let the camera follow instead of shrinking vehicles to nothing
   let ppm = fit >= 24 ? fit : Math.max(fit, Math.min(H / 8.4, W / 17));
   this.basePpm = ppm; this.ppm = ppm * (this.zoom || 1); this.span = W / this.ppm;
@@ -618,4 +618,4 @@ CP.R.pick = function (px, py) {
 CP.R.popup = function (text, x, yup, color) { this.fx.push({ kind: 'xp', text, x, yup, color, t0: this.t, dur: 1.6 }); };
 CP.R.stamp = function (text, color, x, yup) { this.fx.push({ kind: 'stamp', text, color, x, yup, t0: this.t, dur: 1.8 }); };
 CP.R.confetti = function (n, x, y) { for (let i = 0; i < (n || 60); i++) { this.emit('confetti', x ?? this.W / 2, y ?? this.H * 0.35); } };
-;(window.CP_FILES = window.CP_FILES || {})['14_render'] = '2.3.3';
+;(window.CP_FILES = window.CP_FILES || {})['14_render'] = '2.3.4';

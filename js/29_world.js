@@ -61,14 +61,16 @@ CP.Peds.update = function (dt) {
   this.list = this.list.filter(p => p.x > R.camX - 6 && p.x < R.camX + R.span + 6);
 };
 CP.Peds.frame = p => 'ped' + p.id + '_' + (((Math.floor(p.walkT / (1.3 / 8)) % 8) + 8) % 8);
-CP.Peds.ents = function (R, s, ents, alpha) {
+CP.Peds.ents = function () {};
+CP.Peds.drawAll = function (R, s, alpha) {
   const A = CP.A, ppm = R.ppm;
-  for (const p of this.list) ents.push({ y: p.yup, k: 'fn', draw: () => {
+  for (const p of this.list) { (() => {
     const x = CP.lerp(p.px, p.x, alpha); const cx = R.sx(x), gy = R.sy(p.yup); if (cx < -80 || cx > R.W + 80) return;
     const fr = CP.Peds.frame(p); const sp = A.M.sprites[fr]; if (!sp) return; const k = p.hM * ppm / (sp.hRef || sp.rect[3]);
     R.castShadow(fr, cx, gy, k, p.dir < 0, p.hM); A.drawGroundedScale(R.ctx, fr, cx, gy, k, p.dir < 0);
-  } });
+  })(); }
 };
+{ const st = CP.R.structures; CP.R.structures = function (s) { if (CP.Peds && CP.G && CP.G.shift) CP.Peds.drawAll(this, s, 1); return st.apply(this, arguments); }; }
 CP.bus.on('shiftStart', () => CP.Peds.reset());
 CP.bus.on('stepEnd', () => { if (CP.G && CP.G.shift) CP.Peds.update(1 / 60); });
 
@@ -82,7 +84,7 @@ WD.street = function (R, id, yTopUp, yBotUp) {
   g.addColorStop(0, `rgb(${c0.map(v => Math.round(v * dim)).join(',')})`); g.addColorStop(1, `rgb(${c1.map(v => Math.round(v * dim)).join(',')})`);
   ctx.fillStyle = g; ctx.fillRect(0, top, W, h);
   if (!WD.noise) { const n = document.createElement('canvas'); n.width = n.height = 128; const nc = n.getContext('2d'); const im = nc.createImageData(128, 128); for (let i = 0; i < im.data.length; i += 4) { const v = 118 + Math.random() * 30; im.data[i] = im.data[i + 1] = im.data[i + 2] = v; im.data[i + 3] = 26; } nc.putImageData(im, 0, 0); WD.noise = ctx.createPattern(n, 'repeat'); }
-  ctx.save(); ctx.globalAlpha = 0.85; ctx.fillStyle = WD.noise; ctx.translate(-R.camX * ppm % 128, 0); ctx.fillRect(R.camX * ppm % 128, top, W + 128, h); ctx.restore();
+  ctx.save(); ctx.globalAlpha = 0.85; ctx.fillStyle = WD.noise; const off = R.camX * ppm; ctx.translate(-off, 0); ctx.fillRect(off, top, W, h); ctx.restore(); // pattern anchored to the world, scrolls with the camera
   // kerb line + subtle sheen band
   ctx.fillStyle = `rgba(255,255,255,${0.10 * dim})`; ctx.fillRect(0, top, W, Math.max(1, 0.03 * ppm)); ctx.fillStyle = `rgba(0,0,0,.18)`; ctx.fillRect(0, bot - Math.max(1, 0.05 * ppm), W, Math.max(1, 0.05 * ppm));
   if (id === 'road_marked') { // dashed centre line in world metres
@@ -126,4 +128,4 @@ CP.bus.on('searchDone', ({ c, zone }) => {
 
 /* ---------- zoom-change flicker fix: quantised depth of field ---------- */
 CP.R.dof = function () { if (CP.S.reducedFx || !('filter' in this.ctx)) return 'none'; const z = this.zoom || 1; let px = CP.clamp((z - 0.9) * 2.6, 0.6, 4.2) * (this.ppm / 60); px = Math.round(px * 2) / 2; if (px < 0.75) return 'none'; return `blur(${px.toFixed(1)}px)`; };
-;(window.CP_FILES = window.CP_FILES || {})['29_world'] = '2.3.3';
+;(window.CP_FILES = window.CP_FILES || {})['29_world'] = '2.3.4';

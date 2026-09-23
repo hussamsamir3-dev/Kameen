@@ -30,11 +30,13 @@ EC.fmt = n => CP.num(Math.round(n)) + ' ' + CP.t('ec_egp');
 EC.addMoney = function (n, quiet) { const c = ecCar(); if (!c) return; EC.wallet(c); c.egp = Math.max(0, c.egp + n); if (CP.Guard) CP.Guard.legit('egp', n); if (!quiet && n) CP.R.popup((n > 0 ? '+' : '') + EC.fmt(n), null, null, n > 0 ? '#8fe3a8' : '#ff8a8a'); EC.refreshHud(); };
 
 /* ---------- radio sfx ---------- */
-CP.Audio.radioSfx = function (kind) { if (!this.ok) return; const t = this.ctx.currentTime; this.burst(0.05, 0.18, 2600, 2, t); this.burst(kind === 'long' ? 1.1 : 0.55, 0.035, 1900, 0.6, t + 0.05, 'bandpass'); this.burst(0.08, 0.06, 4200, 1.5, t + (kind === 'long' ? 1.15 : 0.6), 'bandpass'); this.tone('sine', 1180, 0.08, 0.028, t + (kind === 'long' ? 1.22 : 0.66)); };
+CP.Audio.radioSfx = function (kind) { if (!this.ok) return; const t = this.ctx.currentTime; const L = kind === 'long' ? 1.3 : 0.7; this.burst(0.06, 0.32, 2400, 1.6, t); this.burst(L, 0.12, 1700, 0.5, t + 0.05, 'bandpass'); this.burst(L * 0.6, 0.06, 900, 0.7, t + 0.12, 'bandpass'); this.burst(0.09, 0.14, 4000, 1.5, t + L + 0.02, 'bandpass'); this.tone('sine', 1180, 0.09, 0.05, t + L + 0.08); this.tone('sine', 1480, 0.07, 0.035, t + L + 0.2); };
 { const bn = CP.UI.banner; CP.UI.banner = function (text, kind) { if (/📻|🚨|📷/.test(String(text))) CP.Audio.radioSfx(kind === 'emergency' ? 'long' : 'short'); return bn.apply(this, arguments); }; }
 { const lg = CP.Events.log; CP.Events.log = function (type, text, kind) { CP.Audio.radioSfx(kind === 'emergency' ? 'long' : 'short'); return lg.apply(this, arguments); }; }
 { const rc = CP.Audio.radioClick; CP.Audio.radioClick = function (reply) { rc.apply(this, arguments); if (reply) this.radioSfx('short'); }; }
 
+/* pause every sound when the tab goes to the background, resume when it comes back */
+document.addEventListener('visibilitychange', () => { const A = CP.Audio; try { if (document.hidden) { if (A.ctx && A.ctx.state === 'running') A.ctx.suspend(); if (A.music && A.music.el && !A.music.el.paused) { A.music._wasPlaying = true; A.music.el.pause(); } } else { if (A.ctx && A.ctx.state === 'suspended') A.ctx.resume(); if (A.music && A.music.el && A.music._wasPlaying) { A.music._wasPlaying = false; A.music.el.play().catch(() => {}); } } } catch (e) { } });
 /* ---------- career merge for daily / free shifts ---------- */
 /* daily / free shifts run on a copy of the career: the copy now starts with the real wallet, gear, perks and board,
    and at the end the wallet, XP, mail and board are written back — nothing earned there is lost */
@@ -112,4 +114,4 @@ CP.bus.on('shiftStart', () => { EC.board(); setTimeout(EC.refreshHud, 50); });
     cards.insertBefore(eh('button', { class: 'rv-card', onclick: () => { CP.G = saved; CP.Audio.click(); EC.shop(); } }, eh('span', { class: 'rv-ci' }, '🛒'), eh('span', { class: 'rv-ct' }, eh('b', null, CP.t('ec_shop')), eh('small', null, '💵 ' + EC.fmt(car.egp || 0))), eh('span', { class: 'rv-go' }, '›')), cards.children[1] || null);
     cards.appendChild(eh('button', { class: 'rv-card', onclick: () => { CP.G = saved; CP.Audio.click(); EC.boardModal(); } }, eh('span', { class: 'rv-ci' }, '🚨'), eh('span', { class: 'rv-ct' }, eh('b', null, CP.t('ec_board')), eh('small', null, CP.t('ec_boardSub'))), eh('span', { class: 'rv-go' }, '›')));
     const more = document.querySelector('.rv-more .col'); if (more) more.appendChild(eh('button', { class: 'btn mb', onclick: () => { CP.S.paintedStreet = CP.S.paintedStreet === false ? true : false; CP.saveSettings(); CP.UI.toast(CP.t('wd_street') + ': ' + (CP.S.paintedStreet === false ? 'OFF' : 'ON')); } }, CP.t('wd_street'))); }; }
-;(window.CP_FILES = window.CP_FILES || {})['30_economy'] = '2.3.3';
+;(window.CP_FILES = window.CP_FILES || {})['30_economy'] = '2.3.4';

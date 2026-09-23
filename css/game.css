@@ -772,7 +772,10 @@ html.short .rv-menu .logo3d, html.short .rv-menu .brandimg { transform: scale(.7
 @media (max-width: 720px) { .wgrid { grid-template-columns: 1fr; } .perk-grid.two { grid-template-columns: 1fr; } }
 
 /* ===== v2.2: shift bar, ban screen, asked questions ===== */
-#shiftbar { position: absolute; left: 0; right: 0; top: 0; display: flex; flex-direction: column; gap: 3px; padding: 3px 12px 4px; background: linear-gradient(rgba(10,11,16,.85), rgba(10,11,16,.45)); z-index: 4; font-size: .76em; pointer-events: none; }
+#shiftbar { position: absolute; left: 0; right: 0; top: 0; display: block; padding: 0; background: none; z-index: 4; font-size: .7em; pointer-events: none; }
+#shiftbar .sb-track { height: 4px; border-radius: 0; background: rgba(0,0,0,.35); }
+#shiftbar .sb-text { position: absolute; top: 6px; inset-inline-end: 10px; display: flex; gap: 8px; padding: 2px 8px; border-radius: 8px; background: rgba(10,11,16,.7); white-space: nowrap; }
+#shiftbar .sb-r { display: none; }
 #shiftbar .sb-track { position: relative; height: 6px; border-radius: 3px; background: rgba(255,255,255,.08); overflow: hidden; }
 #shiftbar .sb-fill { position: absolute; left: 0; top: 0; bottom: 0; width: 0; background: linear-gradient(90deg, #8fe3a8, #f0b840); border-radius: 3px; transition: width .4s linear; }
 #shiftbar .sb-mark { position: absolute; top: -2px; bottom: -2px; width: 2px; background: rgba(255,90,60,.8); }

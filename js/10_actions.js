@@ -283,4 +283,4 @@ CP.Tasks.on('handover', t => {
   CP.UI.toast(CP.t(CP.Gender.isF(c) ? 'docs_handed_f' : 'docs_handed'), 'ok');
   CP.bus.emit('dialogue'); CP.UI.refreshDock(true); CP.autosave();
 });
-;(window.CP_FILES = window.CP_FILES || {})['10_actions'] = '2.3.3';
+;(window.CP_FILES = window.CP_FILES || {})['10_actions'] = '2.3.4';

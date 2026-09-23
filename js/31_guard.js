@@ -59,4 +59,4 @@ window.addEventListener('load', () => setTimeout(() => { if (GD.banned()) GD.scr
 for (const ev of ['pagehide', 'beforeunload']) window.addEventListener(ev, () => { try { if (CP.G && CP.G.shift && !CP.G.shift.ended) CP.save('auto'); } catch (e) { } });
 window.addEventListener('load', () => { const pause = CP.Main && CP.Main.pause; if (pause) CP.Main.pause = function () { try { if (CP.G && CP.G.shift && !CP.G.shift.ended) CP.save('auto'); } catch (e) { } return pause.apply(this, arguments); }; });
 { const menu = CP.Screens.menu; CP.Screens.menu = function () { if (GD.banned()) { GD.screen(); return; } return menu.apply(this, arguments); }; }
-;(window.CP_FILES = window.CP_FILES || {})['31_guard'] = '2.3.3';
+;(window.CP_FILES = window.CP_FILES || {})['31_guard'] = '2.3.4';

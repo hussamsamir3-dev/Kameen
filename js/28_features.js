@@ -175,4 +175,4 @@ CP.bus.on('stepEnd', () => { const R = CP.R; if (!R.fx) return; R.fx = R.fx.filt
 FT.buzz = p => { if (CP.S.haptics === false || !navigator.vibrate) return; try { navigator.vibrate(p); } catch (e) { } };
 { const st = CP.R.stamp; CP.R.stamp = function () { FT.buzz(35); return st.apply(this, arguments); }; }
 CP.bus.on('caseClosed', c => { if (c.res && c.res.eval && c.res.eval.sound && CP.FAM[c.fam] && CP.FAM[c.fam].serious && ['hold', 'handover'].indexOf(c.res.decision) >= 0) FT.buzz([50, 30, 90]); });
-;(window.CP_FILES = window.CP_FILES || {})['28_features'] = '2.2.0';
+;(window.CP_FILES = window.CP_FILES || {})['28_features'] = '2.2.1';

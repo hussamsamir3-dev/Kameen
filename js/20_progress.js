@@ -197,4 +197,4 @@ PG.finishShift = function (rep) {
   const pos1 = PG.position(car.xp);
   return { stars, caseXp, scoreXp, starXp, objXp, streakXp, total, xpBefore, xpAfter: car.xp, r0, r1, rankUp: r1 > r0, pos0, pos1, objs: P.objs.map(o => ({ id: o.id, done: o.done })), ach: P.ach.slice(), bestCombo: P.bestCombo };
 };
-;(window.CP_FILES = window.CP_FILES || {})['20_progress'] = '2.2.0';
+;(window.CP_FILES = window.CP_FILES || {})['20_progress'] = '2.2.1';

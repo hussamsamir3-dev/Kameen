@@ -60,4 +60,4 @@ CP.bus.on('stepEnd', () => { const s = CP.G && CP.G.shift; if (!s) return; for (
 CP.bus.on('spawn', v => { if (!own('drone')) return; const c = CP.G.shift.cases[v.caseId]; if (!c || v.x > 0) return; setTimeout(() => { if (CP.G.shift && CP.G.shift.cases[c.id]) CP.UI.toast(CP.t('p2_drone', { f: CP.L(CP.FAM_NAMES && CP.FAM_NAMES[c.fam] || { ar: c.fam, en: c.fam }) }), 'info'); }, 1200); });
 // custom siren on warrant arrests
 { const bn = CP.UI.banner; CP.UI.banner = function (text, kind) { if (own('siren') && /🚨/.test(String(text)) && CP.Audio.ok) { const t = CP.Audio.ctx.currentTime; for (let i = 0; i < 4; i++) { CP.Audio.tone('sawtooth', 620 + (i % 2) * 260, 0.22, 0.03, t + i * 0.25); } } return bn.apply(this, arguments); }; }
-;(window.CP_FILES = window.CP_FILES || {})['32_polish2'] = '2.2.0';
+;(window.CP_FILES = window.CP_FILES || {})['32_polish2'] = '2.2.1';

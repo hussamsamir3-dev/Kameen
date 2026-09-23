@@ -37,15 +37,15 @@ CP.Peds = { list: [], N: 25, nextT: 4 };
 CP.Peds.reset = function () { this.list = []; this.nextT = 3 + Math.random() * 5; };
 CP.Peds.spawn = function (s) {
   const used = new Set(this.list.map(p => p.id)); const free = []; for (let i = 0; i < this.N; i++) if (!used.has(i) && CP.A.M.sprites['ped' + i + '_0']) free.push(i); if (!free.length) return;
-  const id = free[Math.floor(Math.random() * free.length)]; const dir = Math.random() < 0.5 ? 1 : -1; const row = Math.random() < 0.7 ? 'far' : 'near';
-  const yup = row === 'far' ? CP.R.Y.mainFar + 0.06 + Math.random() * 0.08 : 0.26 + Math.random() * 0.1;
+  const id = free[Math.floor(Math.random() * free.length)]; const dir = Math.random() < 0.5 ? 1 : -1; const row = 'far';
+  const yup = CP.R.Y.mainFar + 0.34 + Math.random() * 0.22; // the corniche pavement behind the police car, booth and sign
   const x0 = dir > 0 ? CP.R.camX - 3 : CP.R.camX + CP.R.span + 3;
   this.list.push({ id, x: x0, px: x0, yup, dir, v: 1.05 + Math.random() * 0.45, walkT: 0, hM: (row === 'far' ? CP.HUMAN.pedFar : CP.HUMAN.pedNear) - 0.06 + (id % 5) * 0.03, pause: 0, look: 0, off: Math.random() * 9, row });
 };
 CP.Peds.update = function (dt) {
   const s = CP.G.shift; if (!s || CP.S.reducedFx && this.list.length > 2) return; const R = CP.R;
-  this.nextT -= dt; const maxN = CP.UI.isMob ? 3 : 5;
-  if (this.nextT <= 0) { if (this.list.length < maxN) this.spawn(s); this.nextT = 9 + Math.random() * 14; }
+  this.nextT -= dt; const maxN = CP.UI.isMob ? 2 : 3;
+  if (this.nextT <= 0) { if (this.list.length < maxN) this.spawn(s); this.nextT = 16 + Math.random() * 22; }
   const alert = (s.events.wanted && s.events.wanted.spawned && !s.events.wanted.done) || CP.Events.emergency();
   const blockers = [s.officer, s.partner, ...(CP.Staff ? CP.Staff.list : [])];
   for (const p of this.list) {
@@ -63,7 +63,7 @@ CP.Peds.update = function (dt) {
   }
   this.list = this.list.filter(p => p.x > R.camX - 6 && p.x < R.camX + R.span + 6);
 };
-CP.Peds.frame = p => { if (p.pause > 0 || p.look > 0) return 'ped' + p.id + '_2'; return 'ped' + p.id + '_' + (((Math.floor(p.walkT / (1.25 / 8)) % 8) + 8) % 8); };
+CP.Peds.frame = p => { if (p.pause > 0 || p.look > 0) return 'ped' + p.id + '_2'; return 'ped' + p.id + '_' + (((Math.floor(p.walkT / (1.3 / 8)) % 8) + 8) % 8); };
 CP.Peds.ents = function (R, s, ents, alpha) {
   const A = CP.A, ppm = R.ppm;
   for (const p of this.list) ents.push({ y: p.yup, k: 'fn', draw: () => {
@@ -129,4 +129,4 @@ CP.bus.on('searchDone', ({ c, zone }) => {
 
 /* ---------- zoom-change flicker fix: quantised depth of field ---------- */
 CP.R.dof = function () { if (CP.S.reducedFx || !('filter' in this.ctx)) return 'none'; const z = this.zoom || 1; let px = CP.clamp((z - 0.9) * 2.6, 0.6, 4.2) * (this.ppm / 60); px = Math.round(px * 2) / 2; if (px < 0.75) return 'none'; return `blur(${px.toFixed(1)}px)`; };
-;(window.CP_FILES = window.CP_FILES || {})['29_world'] = '2.2.0';
+;(window.CP_FILES = window.CP_FILES || {})['29_world'] = '2.2.1';

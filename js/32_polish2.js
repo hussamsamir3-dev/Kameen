@@ -60,4 +60,21 @@ CP.bus.on('stepEnd', () => { const s = CP.G && CP.G.shift; if (!s) return; for (
 CP.bus.on('spawn', v => { if (!own('drone')) return; const c = CP.G.shift.cases[v.caseId]; if (!c || v.x > 0) return; setTimeout(() => { if (CP.G.shift && CP.G.shift.cases[c.id]) CP.UI.toast(CP.t('p2_drone', { f: CP.L(CP.FAM_NAMES && CP.FAM_NAMES[c.fam] || { ar: c.fam, en: c.fam }) }), 'info'); }, 1200); });
 // custom siren on warrant arrests
 { const bn = CP.UI.banner; CP.UI.banner = function (text, kind) { if (own('siren') && /🚨/.test(String(text)) && CP.Audio.ok) { const t = CP.Audio.ctx.currentTime; for (let i = 0; i < 4; i++) { CP.Audio.tone('sawtooth', 620 + (i % 2) * 260, 0.22, 0.03, t + i * 0.25); } } return bn.apply(this, arguments); }; }
-;(window.CP_FILES = window.CP_FILES || {})['32_polish2'] = '2.2.1';
+
+/* ---------- tuk-tuks on the main road: violation ---------- */
+CP.addStrings({
+  tk_note: ['توك توك على الطريق الرئيسي — ممنوع قانوناً: مخالفة كبيرة وتحفظ على المركبة', 'Tuk-tuk on the main road — illegal: heavy fine and impound the vehicle'],
+  tk_line: ['يا باشا الطريق قصير، مش هاخد غير كيلو واحد على الرئيسي…', 'Officer it is a short hop, only one kilometre on the main road…'],
+  tk_fine: ['مخالفة توك توك على الطريق الرئيسي +٥٠٠ ج.م وتحفظ', 'Tuk-tuk on the main road: fine +500 EGP and impound'], tk_let: ['عدّيت توك توك على الطريق الرئيسي — ده ممنوع', 'You let a tuk-tuk onto the main road — that is illegal'],
+  ft_r_tuktuk: ['التوك توك ممنوع على الطريق الرئيسي: مخالفة + تحفظ', 'Tuk-tuks are banned from the main road: fine + impound']
+});
+CP.bus.on('spawn', v => { if (v.type !== 'tuktuk') return; const c = CP.G.shift.cases[v.caseId]; if (!c) return; c.flags = c.flags || {}; c.flags.tuktuk = true; (c.cues = c.cues || []).push('tuktuk'); CP.note(c, 'observation', CP.fill([CP.STR.ar.tk_note, CP.STR.en.tk_note]), 'verified'); });
+{ const ask = CP.Dlg.ask; CP.Dlg.ask = function (c) { const r = ask.apply(this, arguments); if (c.flags && c.flags.tuktuk && !c._tkLine) { c._tkLine = true; CP.Dlg.say(c, 'driver', CP.t('tk_line')); } return r; }; }
+CP.bus.on('caseClosed', c => {
+  if (!c.flags || !c.flags.tuktuk || !c.res) return; const s = CP.G.shift; const v = CP.vehOfCase(c); const vx = v ? v.x - v.len / 2 : null, vy = v ? CP.R.rowY(v.row) + 3.2 : null;
+  if (['citation', 'hold', 'handover', 'refer_admin'].indexOf(c.res.decision) >= 0) { CP.Prog.gain(70, vx, vy, '#ffd35a', '🛺'); CP.Econ.addMoney(500); CP.UI.banner(CP.t('tk_fine'), 'ok'); CP.R.stamp(CP.t('pr_citation') || 'مخالفة', '#ff9a4a'); }
+  else { s.prog.xp = Math.max(0, s.prog.xp - 60); CP.R.popup('−60 ' + CP.t('pr_xp'), vx, vy, '#ff6a6a'); s.prog.combo = 0; CP.G.career.trust = CP.clamp(CP.G.career.trust - 2, 0, 100); CP.UI.banner(CP.t('tk_let'), 'warn'); CP.Audio.chime('bad'); (s.events.mail = s.events.mail || { cmp: [], cmd: [] }).cmp.push(CP.t('tk_let')); }
+});
+if (CP.Feat && CP.Feat.RULES) CP.Feat.RULES.tuktuk = { cond: c => !!(c.flags && c.flags.tuktuk), ok: c => ['citation', 'hold', 'handover', 'refer_admin'].indexOf(c.res.decision) >= 0, s: 'ft_r_tuktuk' };
+if (CP.C.veh.tuktuk) CP.C.veh.tuktuk.w = { cairo: 3, alex: 2, sinai: 0, hurghada: 1, luxor: 2, aswan: 2, desert: 0 };
+;(window.CP_FILES = window.CP_FILES || {})['32_polish2'] = '2.2.2';

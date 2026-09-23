@@ -1,1 +1,1 @@
-UPLOAD (overwrite): index.html, manifest.js, js/ (all 33). No asset/css changes. Footer must read v2.2.1.
+UPLOAD (overwrite): index.html, js/ (all 33). Footer must read v2.2.2.

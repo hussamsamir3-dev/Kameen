@@ -98,4 +98,4 @@ CP.A = {
   /* portrait into a canvas element */
   portrait(n, size) { return this.thumb('portrait_' + String(n).padStart(2, '0'), size, size, 0); }
 };
-;(window.CP_FILES = window.CP_FILES || {})['03_assets'] = '2.2.1';
+;(window.CP_FILES = window.CP_FILES || {})['03_assets'] = '2.2.2';

@@ -253,6 +253,7 @@ CP.Env.back = function (s, ctx, W, H, ppm, Y, night) {
   }
 };
 CP.Env.front = function (s, ctx, W, H, ppm, Y, night, dt) {
+  CP.R.rain = CP.R.rain || []; CP.R.splash = CP.R.splash || [];
   const R = CP.R, w = s.weather || { kind: 'clear', i: 0, wind: 0 };
   // volumetric floodlight cones (ray-marched look: layered additive cones with drifting dust motes)
   if (night > 0.35 && s.equipment.generator === 'ok' && CP.S.quality !== 'low') {
@@ -632,4 +633,4 @@ CP.Fun = {
   }
 };
 CP.bus.on('stepEnd', () => CP.Fun.tick(CP.G && CP.G.shift));
-;(window.CP_FILES = window.CP_FILES || {})['21_features'] = '2.2.3';
+;(window.CP_FILES = window.CP_FILES || {})['21_features'] = '2.2.4';

@@ -119,10 +119,10 @@ CP.bus.on('caseClosed', c => {
 { const wui = CP.R.worldUI; CP.R.worldUI = function (s, alpha) {
     wui.call(this, s, alpha); const ctx = this.ctx, font = CP.UI ? CP.UI.font() : 'sans-serif';
     for (const f of this.fx) {
-      if (f.kind !== 'bubble') continue; const v = CP.T.get(f.vid); if (!v || !v._scr) continue;
+      if (f.kind !== 'bubble' || !f.vid) continue; const v = CP.T.get(f.vid); if (!v || !v._scr) continue; const txt = typeof f.text === 'string' ? f.text : CP.L(f.text || { ar: '', en: '' }); if (!txt) continue;
       const p = (this.t - f.t0) / f.dur; const a = p < 0.1 ? p / 0.1 : p > 0.8 ? (1 - p) / 0.2 : 1;
       ctx.save(); ctx.globalAlpha = a; ctx.font = `600 ${Math.max(12, Math.min(16, 0.34 * this.ppm))}px ${font}`;
-      const maxW = Math.min(this.W * 0.6, 320); const words = f.text.split(' '); const lines = []; let cur = '';
+      const maxW = Math.min(this.W * 0.6, 320); const words = String(txt).split(' '); const lines = []; let cur = '';
       for (const w of words) { const t = cur ? cur + ' ' + w : w; if (ctx.measureText(t).width > maxW && cur) { lines.push(cur); cur = w; } else cur = t; } if (cur) lines.push(cur);
       const lh = 19, bw = Math.max(...lines.map(l => ctx.measureText(l).width)) + 22, bh = lines.length * lh + 12;
       const cx = CP.clamp(v._scr.left + v._scr.w * 0.62, bw / 2 + 6, this.W - bw / 2 - 6), by = Math.max(bh + 6, v._scr.top - 34 - (p < 0.15 ? 0 : (p - 0.15) * 14));
@@ -176,4 +176,4 @@ CP.bus.on('stepEnd', () => {
   if (RV.hum) { const target = v ? 0.035 : 0; const gg = RV.hum.g.gain; gg.setTargetAtTime(target, A.ctx.currentTime, 0.4); RV.hum.o.frequency.setTargetAtTime(v ? 44 + Math.sin(CP.R.t * 3) * 1.5 : 30, A.ctx.currentTime, 0.2); if (!v && gg.value < 0.002) { RV.hum.o.stop(); RV.hum = null; } }
 });
 CP.bus.on('shiftStart', () => { if (RV.hum) { try { RV.hum.o.stop(); } catch (e) { } RV.hum = null; } });
-;(window.CP_FILES = window.CP_FILES || {})['25_revamp'] = '2.2.3';
+;(window.CP_FILES = window.CP_FILES || {})['25_revamp'] = '2.2.4';

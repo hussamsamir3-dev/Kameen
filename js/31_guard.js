@@ -57,4 +57,4 @@ GD.screen = function () {
 };
 window.addEventListener('load', () => setTimeout(() => { if (GD.banned()) GD.screen(); }, 800));
 { const menu = CP.Screens.menu; CP.Screens.menu = function () { if (GD.banned()) { GD.screen(); return; } return menu.apply(this, arguments); }; }
-;(window.CP_FILES = window.CP_FILES || {})['31_guard'] = '2.2.3';
+;(window.CP_FILES = window.CP_FILES || {})['31_guard'] = '2.2.4';

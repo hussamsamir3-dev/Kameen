@@ -218,7 +218,7 @@ CP.R.frame = function (alpha, dt) {
     else if (e.k === 'a') this.drawActor(e.a, e.who, alpha);
     else if (e.k === 'prop') { const r = A.rect(e.id); const h = e.h * ppm; this.shadow(this.sx(e.x), this.sy(e.y), h * r[2] / r[3] * 0.55, h * 0.12, .35); A.groundedH(ctx, e.id, this.sx(e.x), this.sy(e.y), h); }
     else if (e.k === 'gate') this.gateFront(s);
-    else if (e.k === 'fn') e.draw();
+    else if (e.k === 'fn') { try { e.draw(); } catch (err) { (window.CP_ERRS = window.CP_ERRS || []).push('ent:' + err.message + ' ' + (err.stack || '').split('\n')[1]); } }
     else if (e.k === 'civ') { this.shadow(this.sx(e.x), this.sy(e.y), 0.35 * ppm, 0.08 * ppm, .4); A.groundedH(ctx, e.id, this.sx(e.x), this.sy(e.y), 1.72 * ppm); }
   }
   // 7. lighting
@@ -618,4 +618,4 @@ CP.R.pick = function (px, py) {
 CP.R.popup = function (text, x, yup, color) { this.fx.push({ kind: 'xp', text, x, yup, color, t0: this.t, dur: 1.6 }); };
 CP.R.stamp = function (text, color, x, yup) { this.fx.push({ kind: 'stamp', text, color, x, yup, t0: this.t, dur: 1.8 }); };
 CP.R.confetti = function (n, x, y) { for (let i = 0; i < (n || 60); i++) { this.emit('confetti', x ?? this.W / 2, y ?? this.H * 0.35); } };
-;(window.CP_FILES = window.CP_FILES || {})['14_render'] = '2.2.3';
+;(window.CP_FILES = window.CP_FILES || {})['14_render'] = '2.2.4';

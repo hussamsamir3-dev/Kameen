@@ -522,4 +522,4 @@ CP.Cases.laterUpdate = function (c, d) {
   if (c.fam === 'screening') return P('تحديث: نتيجة التأكيد اتسجلت في ملف القضية.', 'Update: the confirmation result was added to the case file.');
   return P('تحديث: الإحالة الإدارية اتقفلت.', 'Update: the administrative referral was closed.');
 };
-;(window.CP_FILES = window.CP_FILES || {})['05_cases'] = '2.2.5';
+;(window.CP_FILES = window.CP_FILES || {})['05_cases'] = '2.3.0';

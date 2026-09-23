@@ -133,7 +133,7 @@ M.tutorial = function (force) {
 
 /* ---------------- boot ---------------- */
 /* every script stamps its version; a missing or mismatched stamp means an old or failed file on the server */
-M.EXPECTED = ["00_util", "01_strings", "02_content", "03_assets", "04_state", "05_cases", "06_dialogue", "07_tasks", "08_traffic", "09_actors", "10_actions", "11_events", "12_inspection", "13_screening", "14_render", "15_audio", "16_ui", "17_panels", "18_screens", "19_main", "20_progress", "21_features", "22_brand", "23_staff", "24_pulse", "25_revamp", "26_polish", "27_depth", "28_features", "29_world", "30_economy", "31_guard", "32_polish2"];
+M.EXPECTED = ["00_util", "01_strings", "02_content", "03_assets", "04_state", "05_cases", "06_dialogue", "07_tasks", "08_traffic", "09_actors", "10_actions", "11_events", "12_inspection", "13_screening", "14_render", "15_audio", "16_ui", "17_panels", "18_screens", "19_main", "20_progress", "21_features", "22_brand", "23_staff", "24_pulse", "25_revamp", "26_polish", "27_depth", "28_features", "29_world", "30_economy", "31_guard", "32_polish2", "33_device"];
 M.checkFiles = function (silent) {
   const F = window.CP_FILES || {}; const bad = M.EXPECTED.filter(n => F[n] !== CP.VERSION);
   if (!bad.length) return true;
@@ -171,4 +171,4 @@ M.bootLoad = function () {
 window.addEventListener('DOMContentLoaded', M.boot);
 
 CP.bus.on('caseClosed', () => { const s = CP.G && CP.G.shift; if (s) s.officer.returnAt = s.t + 1.6; });
-;(window.CP_FILES = window.CP_FILES || {})['19_main'] = '2.2.5';
+;(window.CP_FILES = window.CP_FILES || {})['19_main'] = '2.3.0';

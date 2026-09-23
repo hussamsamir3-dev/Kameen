@@ -79,4 +79,4 @@ if (CP.Feat && CP.Feat.RULES) CP.Feat.RULES.tuktuk = { cond: c => !!(c.flags && 
 if (CP.C.veh.tuktuk) CP.C.veh.tuktuk.w = { cairo: 3, alex: 2, sinai: 0, hurghada: 1, luxor: 2, aswan: 2, desert: 0 };
 /* frame safety: any failing UI hook is logged once and skipped, never aborting the frame */
 { const wui = CP.R.worldUI; let logged = {}; CP.R.worldUI = function (s, alpha) { try { return wui.call(this, s, alpha); } catch (e) { const k = e.message; if (!logged[k]) { logged[k] = 1; console.warn('worldUI hook failed:', e); (window.CP_ERRS = window.CP_ERRS || []).push('ui:' + k); } } }; }
-;(window.CP_FILES = window.CP_FILES || {})['32_polish2'] = '2.2.5';
+;(window.CP_FILES = window.CP_FILES || {})['32_polish2'] = '2.3.0';

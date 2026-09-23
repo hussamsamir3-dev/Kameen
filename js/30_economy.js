@@ -36,7 +36,13 @@ CP.Audio.radioSfx = function (kind) { if (!this.ok) return; const t = this.ctx.c
 { const rc = CP.Audio.radioClick; CP.Audio.radioClick = function (reply) { rc.apply(this, arguments); if (reply) this.radioSfx('short'); }; }
 
 /* ---------- career merge for daily / free shifts ---------- */
-{ const fin = CP.Career.finishShift; CP.Career.finishShift = function () { const r = fin.apply(this, arguments); try { const G = CP.G, s = G.shift; if (s && s.prog && !s.pay) EC.pay(s, s.report); if (G.mode === 'career') CP.save('auto'); if (G.mode !== 'career' && s && s.prog) { const k = CP.SAVE_KEY; CP.SAVE_KEY = 'cpns_save_v1'; const car = CP.loadSaved(); if (car && car.career) { car.career.xp = (car.career.xp || 0) + (s.prog.xp || 0); car.career.egp = (car.career.egp || 0) + (s.pay ? s.pay.total : 0); car.career.mail = car.career.mail || { cmp: 0, cmd: 0 }; CP.Prog.ensure(car.career); const keep = CP.G; CP.G = car; CP.save(); CP.G = keep; if (CP.Guard) CP.Guard.ledgerReset(); CP.UI.toast(CP.t('ec_merged'), 'ok'); } CP.SAVE_KEY = k; } } catch (e) { console.warn('merge', e); } return r; }; }
+/* daily / free shifts run on a copy of the career: the copy now starts with the real wallet, gear, perks and board,
+   and at the end the wallet, XP, mail and board are written back — nothing earned there is lost */
+CP.addStrings({ ec_carry: ['الفلوس والخبرة اتضافت لمسيرتك', 'Money and XP carried to your career'] });
+{ const ds = CP.Daily && CP.Daily.start; if (ds) CP.Daily.start = function () { const r = ds.apply(this, arguments); EC.borrow(); return r; }; }
+window.addEventListener('load', () => { const fr = CP.Main && CP.Main.free; if (fr) CP.Main.free = function () { const r = fr.apply(this, arguments); EC.borrow(); return r; }; });
+EC.borrow = function () { try { const G = CP.G; if (!G || G.mode === 'career') return; const k = CP.SAVE_KEY; CP.SAVE_KEY = 'cpns_save_v1'; const car = CP.loadSaved(); CP.SAVE_KEY = k; if (!car || !car.career) return; for (const f of ['egp', 'gear', 'perks', 'board', 'mail', 'style', 'regulars', 'casefile']) if (car.career[f] != null) G.career[f] = JSON.parse(JSON.stringify(car.career[f])); G.career._borrowedXp = car.career.xp; EC.refreshHud(); } catch (e) { console.warn('borrow', e); } };
+{ const fin = CP.Career.finishShift; CP.Career.finishShift = function () { const r = fin.apply(this, arguments); try { const G = CP.G, s = G.shift; if (s && s.prog && !s.pay) EC.pay(s, s.report); if (G.mode === 'career') CP.save('auto'); if (G.mode !== 'career' && s && s.prog) { const k = CP.SAVE_KEY; CP.SAVE_KEY = 'cpns_save_v1'; const car = CP.loadSaved(); if (car && car.career) { car.career.xp = Math.max(car.career.xp || 0, (G.career._borrowedXp != null ? G.career._borrowedXp : car.career.xp || 0) + (s.prog.xp || 0)); car.career.egp = Math.max(0, (G.career.egp || 0)); car.career.mail = G.career.mail || car.career.mail; car.career.board = G.career.board || car.career.board; car.career.regulars = G.career.regulars || car.career.regulars; car.career.casefile = G.career.casefile || car.career.casefile; CP.Prog.ensure(car.career); const keep = CP.G; CP.G = car; CP.save(); CP.G = keep; CP.UI.toast(CP.t('ec_carry'), 'ok'); } CP.SAVE_KEY = k; } } catch (e) { console.warn('merge', e); } return r; }; }
 
 /* ---------- salary ---------- */
 EC.pay = function (s, rep) {
@@ -44,7 +50,7 @@ EC.pay = function (s, rep) {
   const rows = []; const add = (k, v) => { if (v) rows.push([k, v]); };
   add('ec_base', 900 + ri * 260); add('ec_perf', Math.round(Math.max(0, ((rep && rep.score) || 0) - 50) * 12)); add('ec_clean', m.cmp.length ? 0 : 150);
   add('ec_dir', s.events.dirMiss ? 0 : (s.events.directives && s.events.directives.length ? 120 : 0)); add('ec_streak', Math.min(300, (car.streak || 0) * 50)); add('ec_wanted', s.events.warrantPay || 0); add('ec_cmp', -100 * m.cmp.length);
-  const total = rows.reduce((a, r) => a + r[1], 0); s.pay = { rows, total }; if (CP.G.mode === 'career') EC.addMoney(total, true); return s.pay;
+  const total = rows.reduce((a, r) => a + r[1], 0); s.pay = { rows, total }; EC.addMoney(total, true); return s.pay;
 };
 CP.bus.on('caseClosed', c => { const s = CP.G.shift; if (s && s.events.directives && c.res && s.events.directives.some(k => CP.Feat.RULES[k].cond(c, s) && !CP.Feat.RULES[k].ok(c))) s.events.dirMiss = true; });
 { const rep = CP.Screens.report; CP.Screens.report = function (r) { const s = CP.G.shift; const pay = s ? (s.pay || EC.pay(s, r)) : null; if (s) s.events.coffee = false; const out = rep.apply(this, arguments); if (!pay) return out;
@@ -106,4 +112,4 @@ CP.bus.on('shiftStart', () => { EC.board(); setTimeout(EC.refreshHud, 50); });
     cards.insertBefore(eh('button', { class: 'rv-card', onclick: () => { CP.G = saved; CP.Audio.click(); EC.shop(); } }, eh('span', { class: 'rv-ci' }, '🛒'), eh('span', { class: 'rv-ct' }, eh('b', null, CP.t('ec_shop')), eh('small', null, '💵 ' + EC.fmt(car.egp || 0))), eh('span', { class: 'rv-go' }, '›')), cards.children[1] || null);
     cards.appendChild(eh('button', { class: 'rv-card', onclick: () => { CP.G = saved; CP.Audio.click(); EC.boardModal(); } }, eh('span', { class: 'rv-ci' }, '🚨'), eh('span', { class: 'rv-ct' }, eh('b', null, CP.t('ec_board')), eh('small', null, CP.t('ec_boardSub'))), eh('span', { class: 'rv-go' }, '›')));
     const more = document.querySelector('.rv-more .col'); if (more) more.appendChild(eh('button', { class: 'btn mb', onclick: () => { CP.S.paintedStreet = CP.S.paintedStreet === false ? true : false; CP.saveSettings(); CP.UI.toast(CP.t('wd_street') + ': ' + (CP.S.paintedStreet === false ? 'OFF' : 'ON')); } }, CP.t('wd_street'))); }; }
-;(window.CP_FILES = window.CP_FILES || {})['30_economy'] = '2.2.4';
+;(window.CP_FILES = window.CP_FILES || {})['30_economy'] = '2.2.5';

@@ -1,1 +1,1 @@
-UPLOAD (overwrite): index.html, js/ (all 33). Footer must read v2.2.4.
+UPLOAD (overwrite): index.html, js/ (all 33). Footer must read v2.2.5.

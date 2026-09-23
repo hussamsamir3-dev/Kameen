@@ -20,7 +20,7 @@ GD.sig = car => GD.str([car.xp | 0, car.egp | 0, (car.totals && car.totals.shift
 { const save = CP.save; CP.save = function (reason) { if (!CP.G) return false; try { if (CP.G.career) CP.G.career._sig = GD.sig(CP.G.career); CP.G.savedAt = Date.now(); const data = GD.enc(CP.G); try { const prev = localStorage.getItem(CP.SAVE_KEY); if (prev) localStorage.setItem(CP.SAVE_KEY + '_bak', prev); } catch (e) { } localStorage.setItem(CP.SAVE_KEY, data); if (reason && CP.UI) CP.UI.saveIndicator(reason === 'manual' ? CP.t('sv_saved') : CP.t('sv_auto')); return true; } catch (e) { return save.call(this, reason); } }; }
 { const load = CP.loadSaved; CP.loadSaved = function () { let raw = null; try { raw = localStorage.getItem(CP.SAVE_KEY); } catch (e) { } if (!raw) return null;
     let o = GD.dec(raw); if (!o) { o = load.apply(this, arguments); if (o && o.career) { const keep = CP.G; CP.G = o; try { CP.save(); } catch (e) { } CP.G = keep; } return o; } // migrate old plain save
-    if (o.career) { const s = o.career._sig; if (s && s !== GD.sig(o.career)) { GD.tamper('signature'); const bak = GD.dec(localStorage.getItem(CP.SAVE_KEY + '_bak')); if (bak && bak.career && bak.career._sig === GD.sig(bak.career)) return bak; o.career.xp = 0; o.career.egp = 0; } }
+    if (o.career) { const s = o.career._sig; if (s && s !== GD.sig(o.career)) { GD.tamper('signature'); const bak = GD.dec(localStorage.getItem(CP.SAVE_KEY + '_bak')); if (bak && bak.career && bak.career._sig === GD.sig(bak.career)) return bak; } }
     return o; }; }
 
 /* ---------- watchers: single jumps larger than the game can ever hand out are tampering ---------- */
@@ -44,7 +44,7 @@ GD.banned = () => { try { const u = +localStorage.getItem(GD.BAN_KEY) || 0; retu
 GD.tamper = function (why) {
   try { localStorage.setItem(GD.BAN_KEY, String(Date.now() + 30 * 60 * 1000)); } catch (e) { }
   // roll back to the last signed save
-  try { const k = CP.SAVE_KEY; const bak = GD.dec(localStorage.getItem(k)); if (bak && bak.career && bak.career._sig === GD.sig(bak.career)) { const mode = CP.G && CP.G.mode; CP.G = bak; if (CP.G.shift) CP.G.shift = null; } else if (CP.G && CP.G.career) { CP.G.career.xp = 0; CP.G.career.egp = 0; } } catch (e) { }
+  try { const k = CP.SAVE_KEY; const bak = GD.dec(localStorage.getItem(k)); if (bak && bak.career && bak.career._sig === GD.sig(bak.career)) { const mode = CP.G && CP.G.mode; CP.G = bak; if (CP.G.shift) CP.G.shift = null; } } catch (e) { }
   GD.screen();
 };
 GD.screen = function () {
@@ -56,5 +56,7 @@ GD.screen = function () {
   const tick = () => { const u = GD.banned(); if (!u) { box.remove(); CP.Screens.menu(); return; } const s = Math.max(0, Math.round((u - Date.now()) / 1000)); left.textContent = CP.t('gd_left', { m: CP.num(Math.floor(s / 60)), s: String(s % 60).padStart(2, '0') }); if (document.body.contains(box)) setTimeout(tick, 1000); }; tick();
 };
 window.addEventListener('load', () => setTimeout(() => { if (GD.banned()) GD.screen(); }, 800));
+for (const ev of ['pagehide', 'beforeunload']) window.addEventListener(ev, () => { try { if (CP.G && CP.G.shift && !CP.G.shift.ended) CP.save('auto'); } catch (e) { } });
+window.addEventListener('load', () => { const pause = CP.Main && CP.Main.pause; if (pause) CP.Main.pause = function () { try { if (CP.G && CP.G.shift && !CP.G.shift.ended) CP.save('auto'); } catch (e) { } return pause.apply(this, arguments); }; });
 { const menu = CP.Screens.menu; CP.Screens.menu = function () { if (GD.banned()) { GD.screen(); return; } return menu.apply(this, arguments); }; }
-;(window.CP_FILES = window.CP_FILES || {})['31_guard'] = '2.2.4';
+;(window.CP_FILES = window.CP_FILES || {})['31_guard'] = '2.2.5';

@@ -47,7 +47,7 @@ M.step = function (dt) {
   for (const v of s.vehicles) { if (!v.caseId || v.x < 0) continue; const c = s.cases[v.caseId]; if (!c.res && c.cues.length) CP.Act.seeCues(v, c); }
   CP.bus.emit('stepEnd');
   M.tutorial();
-  M.saveT += dt; if (M.saveT > 30) { M.saveT = 0; CP.autosave(); }
+  M.saveT += dt; if (M.saveT > 8) { M.saveT = 0; CP.autosave(); }
   M.objT = (M.objT || 0) + dt; if (M.objT > 1) { M.objT = 0; CP.Prog.checkObjectives(); }
 };
 
@@ -171,4 +171,4 @@ M.bootLoad = function () {
 window.addEventListener('DOMContentLoaded', M.boot);
 
 CP.bus.on('caseClosed', () => { const s = CP.G && CP.G.shift; if (s) s.officer.returnAt = s.t + 1.6; });
-;(window.CP_FILES = window.CP_FILES || {})['19_main'] = '2.2.4';
+;(window.CP_FILES = window.CP_FILES || {})['19_main'] = '2.2.5';

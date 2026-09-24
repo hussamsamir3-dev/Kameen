@@ -851,15 +851,6 @@ html.mob.land #panel .pw { max-height: calc(var(--vvh) - 40px); }
 @keyframes luText { from { opacity: 0; transform: translateY(14px); } }
 .lu-spark { z-index: 1; animation-duration: 1.6s; }
 
-/* ===== v2.6.1: quick-flow decision strip ===== */
-#flowStrip { display: flex; flex-direction: column; gap: 6px; width: 100%; padding: 6px 8px; }
-#flowStrip .fl-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; } #flowStrip .fl-row.sm { grid-template-columns: repeat(3, 1fr); }
-#flowStrip .btn.fl { min-height: 50px; font-weight: 800; border-radius: 12px; }
-#flowStrip .btn.rel { background: rgba(60,160,110,.25); border-color: rgba(143,227,168,.6); } #flowStrip .btn.wrn { background: rgba(240,184,64,.18); border-color: rgba(240,184,64,.6); }
-#flowStrip .btn.cit { background: rgba(255,140,60,.18); border-color: rgba(255,140,60,.6); } #flowStrip .btn.bay, #flowStrip .btn.srch { background: rgba(110,183,255,.18); border-color: rgba(110,183,255,.6); } #flowStrip .btn.hld { background: rgba(255,90,80,.2); border-color: rgba(255,90,80,.7); }
-#flowStrip .fl-ask { display: flex; gap: 6px; flex-wrap: wrap; } #flowStrip .fl-ask.hidden { display: none; }
-#dock #flowStrip { grid-column: 1 / -1; }
-
 /* ===== v2.7: spikes button, shop preview, settings sections ===== */
 #spikeBtn { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 45; padding: 16px 34px; border-radius: 999px; border: 3px solid #ff5a3a; background: linear-gradient(135deg, #ff7a3a, #d92b1c); color: #fff; font-weight: 900; font-size: 1.25em; letter-spacing: .04em; box-shadow: 0 0 0 6px rgba(255,90,58,.25), 0 16px 40px rgba(0,0,0,.5); animation: spikePulse .9s ease-in-out infinite; cursor: pointer; }
 #spikeBtn.up { animation: none; background: linear-gradient(135deg, #6a6d75, #3d4048); border-color: #999; }
@@ -878,3 +869,32 @@ html.pswap #panel, html.pswap #panel .pw, html.pswap #panel * { transition: none
 
 #hSpikes { border-color: rgba(255,90,58,.6); } #hSpikes.on { background: linear-gradient(135deg,#ff7a3a,#d92b1c); color: #fff; animation: spikePulse 1s ease-in-out infinite; transform: none; }
 @keyframes spikePulseHud { 50% { box-shadow: 0 0 0 6px rgba(255,90,58,.15); } } #hSpikes.on { animation: spikePulseHud 1s ease-in-out infinite; }
+
+#hSpikes.warn { animation: spikeWarn .5s ease-in-out infinite alternate; }
+@keyframes spikeWarn { from { box-shadow: 0 0 0 0 rgba(255,60,40,.0); background: #d92b1c; } to { box-shadow: 0 0 0 8px rgba(255,60,40,.35); background: #ff7a3a; } }
+
+/* ===== v3.1: flow card (stop → release) ===== */
+#flowCard { display: none; }
+#dock.flowing #actions { display: none; }
+#dock.flowing #flowCard { display: flex; flex-direction: column; gap: 6px; flex: 1 1 auto; min-width: 0; padding: 6px 8px; }
+#flowCard .fc-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; }
+#flowCard .fc-status { color: #ffe4a3; font-size: .95em; }
+#flowCard .fc-say { opacity: .85; font-size: .9em; font-style: italic; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 100%; }
+#flowCard .fc-chips { display: flex; flex-wrap: wrap; gap: 4px; min-height: 22px; }
+#flowCard .fc-chips .tag.bad { background: rgba(255,90,80,.18); color: #ffb3ad; } #flowCard .fc-chips .tag.ok { background: rgba(60,160,110,.2); color: #9fe8bb; } #flowCard .fc-chips .tag.warn { background: rgba(240,184,64,.18); color: #ffe4a3; }
+#flowCard .fc-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; }
+#flowCard .btn.fl { min-height: 46px; font-weight: 800; border-radius: 12px; transition: none; }
+#flowCard .fc-row.sub .btn.fl { min-height: 38px; font-weight: 700; }
+#flowCard .btn.fl[disabled] { opacity: .38; }
+#flowCard .btn.rel { background: rgba(60,160,110,.25); border-color: rgba(143,227,168,.6); } #flowCard .btn.wrn { background: rgba(240,184,64,.18); border-color: rgba(240,184,64,.6); }
+#flowCard .btn.cit { background: rgba(255,140,60,.18); border-color: rgba(255,140,60,.6); } #flowCard .btn.bay, #flowCard .btn.srch { background: rgba(110,183,255,.18); border-color: rgba(110,183,255,.6); } #flowCard .btn.hld { background: rgba(255,90,80,.2); border-color: rgba(255,90,80,.7); }
+#flowCard .fc-ask { display: flex; gap: 6px; flex-wrap: wrap; } #flowCard .fc-ask.hidden { display: none; }
+
+/* flow card on short (phone landscape) screens: status + chips share a line, buttons compact, both rows visible */
+@media (max-height: 520px) {
+  #dock.flowing #flowCard { display: grid; grid-template-columns: auto 1fr; grid-template-areas: "st ch" "mn mn" "sb sb"; gap: 4px 8px; padding: 4px 6px; }
+  #flowCard .fc-head { grid-area: st; } #flowCard .fc-say { display: none; } #flowCard .fc-chips { grid-area: ch; min-height: 0; overflow: hidden; max-height: 22px; }
+  #flowCard .fc-row.main { grid-area: mn; } #flowCard .fc-row.sub { grid-area: sb; } #flowCard .fc-ask { grid-column: 1 / -1; }
+  #flowCard .btn.fl { min-height: 34px; padding: 2px 4px; font-size: .9em; } #flowCard .fc-row.sub .btn.fl { min-height: 28px; font-size: .82em; }
+  #flowCard .fc-chips .tag { font-size: .78em; padding: 1px 6px; }
+}

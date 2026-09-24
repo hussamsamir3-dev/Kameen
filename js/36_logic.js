@@ -55,4 +55,58 @@ LG.pending = () => { for (const [mode, key] of [['daily', 'cpns_daily_v1'], ['fr
 
 /* ---------- version chip in the HUD ---------- */
 { const bg = CP.UI.buildGame; CP.UI.buildGame = function () { const r = bg.apply(this, arguments); const hud = document.getElementById('hud'); if (hud && !document.getElementById('hVer')) hud.appendChild(CP.h('div', { id: 'hVer', class: 'hud-hint' }, 'v' + CP.VERSION)); return r; }; }
-;(window.CP_FILES = window.CP_FILES || {})['36_logic'] = '2.6.0';
+
+/* ---------- drivers and officers talk about what is actually being ridden ---------- */
+LG.NOUN = { moto: ['الموتوسيكل', 'motorbike'], tuktuk: ['التوك توك', 'tuk-tuk'], microbus: ['الميكروباص', 'microbus'], bus: ['الأتوبيس', 'bus'], truck: ['النقل', 'truck'], van: ['الفان', 'van'], pickup: ['النص نقل', 'pickup'], taxi: ['التاكسي', 'taxi'] };
+LG.nounFor = type => { for (const k in LG.NOUN) if (type.indexOf(k) >= 0 || (k === 'truck' && /cargo|box_truck/.test(type))) return LG.NOUN[k]; return null; };
+LG.fix = (text, type) => { const n = LG.nounFor(type); if (!n || typeof text !== 'string') return text;
+  return text.replace(/العربية دي|العربية|عربيتك|عربيتي|العربيه/g, m => m === 'عربيتك' ? n[0] + ' بتاعك' : m === 'عربيتي' ? n[0] + ' بتاعي' : n[0]).replace(/\bthe car\b/gi, 'the ' + n[1]).replace(/\byour car\b/gi, 'your ' + n[1]).replace(/\bmy car\b/gi, 'my ' + n[1]).replace(/\bcar\b/gi, n[1]); };
+{ const say = CP.Dlg.say; CP.Dlg.say = function (c, who, text) { if (c && c.type) text = typeof text === 'string' ? LG.fix(text, c.type) : (text && text.ar ? { ar: LG.fix(text.ar, c.type), en: LG.fix(text.en, c.type) } : text); return say.call(this, c, who, text); }; }
+
+/* ---------- Flow mode: one tap runs the routine, the player only makes the calls that matter ---------- */
+CP.addStrings({
+  fl_go: ['▶ افحص', '▶ Check'], fl_goSub: ['اقرب • سلّم • اطلب الأوراق', 'approach • greet • papers'], fl_release: ['✅ عدّي', '✅ Release'], fl_warn: ['⚠️ إنذار', '⚠️ Warning'], fl_cite: ['🧾 مخالفة', '🧾 Citation'], fl_bay: ['🔦 تفتيش', '🔦 Search'], fl_hold: ['🚔 تحفظ', '🚔 Hold'],
+  fl_ask: ['💬 اسأل', '💬 Ask'], fl_radio: ['📻 تأكد', '📻 Verify'], fl_search: ['🔦 تفتيش سريع', '🔦 Quick search'], fl_holdBay: ['التحفظ بيتم من منطقة التفتيش — بعتناه هناك', 'Holds happen in the inspection bay — sent there'], fl_flow: ['وضع التدفق السريع', 'Quick-flow mode'],
+  fl_q1: ['رايح فين؟', 'Where to?'], fl_q2: ['مين معاك؟', 'Who is with you?'], fl_q3: ['شغلك إيه؟', 'What do you do?']
+});
+LG.flowOn = () => CP.S.flow !== false;
+LG.flow = { caseId: null, stage: null };
+LG.startFlow = function () { const v = CP.Act.curV(); const c = CP.Act.curC(); if (!v || !c || c.res) return; LG.flow = { caseId: c.id, stage: 'stop' }; if (!c.k.stopped) CP.Act.run('stop'); };
+CP.bus.on('stepEnd', () => {
+  const s = CP.G && CP.G.shift; const f = LG.flow; if (!s || !f.caseId || !LG.flowOn()) return; const c = s.cases[f.caseId]; const v = c && CP.vehOfCase(c); if (!c || !v || c.res) { f.caseId = null; return; }
+  if (s.officer.moving) return;
+  f.wait = (f.wait || 0) - 1; if (f.wait > 0) return;
+  if (f.stage === 'stop' && c.k.stopped) { f.stage = 'talk'; if (!c.k.greeted) { const a = CP.Act.avail('talk'); if (a.ok) CP.Act.run('talk'); } f.wait = 30; return; }
+  if (f.stage === 'talk') { if (!c.k.greeted) { if (CP.UI.panel && CP.UI.panel.kind === 'dialogue') { CP.Dlg.ask(c, 'greet_docs', 'calm'); CP.UI.renderPanel(); f.wait = 90; } return; } f.stage = 'docs'; f.wait = 60; return; }
+  if (f.stage === 'docs') { if (c.k.docsHanding) return; if (!c.k.docsHave) { f.wait = 30; return; } if (!(CP.UI.panel && CP.UI.panel.kind === 'docs')) { const a = CP.Act.avail('docs'); if (a.ok) CP.Act.run('docs'); f.wait = 30; return; } f.stage = 'decide'; }
+});
+/* automatic reason: the strongest evidence the case already holds */
+LG.reasonFor = c => { const k = c.k || {}; if (CP.Cases.trueDiscrepancies && CP.Cases.trueDiscrepancies(c).length && k.docsViewed) return 'discrepancy'; if (c.flags && (c.flags.lookoutMatch || c.flags.tuktuk) || c.fam === 'alert' || c.fam === 'lookout') return 'alert'; if ((c.cues || []).length && (k.searchReason || k.docsViewed)) return 'observation'; if (k.consent) return 'consent'; if (k.asked && Object.keys(k.asked).length) return 'statement'; return 'routine'; };
+LG.decide = function (dec) { const c = CP.Act.curC(); const v = CP.Act.curV(); if (!c || c.res) return; CP.Audio.click();
+  if (dec === 'bay') { const a = CP.Act.avail('bay'); if (a.ok) CP.Act.run('bay'); else CP.UI.toast(a.reason, 'warn'); return; }
+  if (dec === 'hold' && (!v || v.st !== 'bay')) { const a = CP.Act.avail('bay'); if (a.ok) { CP.Act.run('bay'); CP.UI.toast(CP.t('fl_holdBay'), 'info'); } else CP.UI.toast(a.reason, 'warn'); return; }
+  const strong = LG.reasonFor(c); const reason = (dec === 'release' || dec === 'advice' || dec === 'waved') ? (c.k.asked && Object.keys(c.k.asked).length ? 'statement' : 'routine') : strong; const e = CP.Act.resolve(c, dec, reason, []); if (e) { CP.UI.toast(CP.t(e), 'warn'); CP.Audio.deny(); } else { CP.UI.close && CP.UI.close(); } };
+LG.quickSearch = function () { const c = CP.Act.curC(); const v = CP.Act.curV(); if (!c || !v) return; if (!c.k.searchReason) c.k.searchReason = LG.reasonFor(c) === 'routine' ? 'consent' : LG.reasonFor(c); c.k.consent = c.k.consent || c.coop >= 45;
+  const zones = CP.Insp.zones(c).filter(z => !(c.k.zones && c.k.zones[z] && c.k.zones[z].done)); if (!zones.length) { CP.UI.toast(CP.t('wd_clean', { z: '' }), 'info'); return; }
+  let i = 0; const next = () => { if (i >= zones.length || !CP.G.shift || c.res) return; const z = zones[i++]; const r = CP.Insp.searchZone(c, z); if (r === null) return; setTimeout(next, 1800); }; next(); };
+/* the decision strip: injected into any case panel and the dock while a case is stopped */
+LG.strip = function () {
+  const s = CP.G && CP.G.shift; if (!s || !LG.flowOn()) return; const c = CP.Act.curC(); const v = CP.Act.curV(); const old = document.getElementById('flowStrip');
+  if (!c || !v || c.res || !c.k.stopped) { if (old) old.remove(); return; }
+  const host = (CP.UI.panel && document.querySelector('#panel .pf')) || document.getElementById('dock'); if (!host) return;
+  if (old && old.parentElement === host && old.dataset.c === c.id + ':' + (v.st === 'bay')) return; if (old) old.remove();
+  const h = CP.h; const inBay = v.st === 'bay';
+  const btn = (cls, k, fn) => h('button', { class: 'btn fl ' + cls, onclick: e => { e.stopPropagation(); fn(); } }, CP.t(k));
+  const strip = h('div', { id: 'flowStrip', 'data-c': c.id + ':' + inBay },
+    h('div', { class: 'fl-row' }, btn('rel', 'fl_release', () => LG.decide('release')), btn('wrn', 'fl_warn', () => LG.decide('warning')), btn('cit', 'fl_cite', () => LG.decide('citation')), inBay ? btn('hld', 'fl_hold', () => LG.decide('hold')) : btn('bay', 'fl_bay', () => LG.decide('bay'))),
+    h('div', { class: 'fl-row sm' }, inBay ? btn('srch', 'fl_search', () => LG.quickSearch()) : null, btn('ask', 'fl_radio', () => { const a = CP.Act.avail('radio'); if (a.ok) CP.Act.run('radio'); else CP.UI.toast(a.reason, 'warn'); }),
+      h('button', { class: 'btn fl ask', onclick: e => { e.stopPropagation(); const m = strip.querySelector('.fl-ask'); m.classList.toggle('hidden'); } }, CP.t('fl_ask'))),
+    h('div', { class: 'fl-ask hidden' }, ...[['fl_q1', 'ask_destination'], ['fl_q2', 'ask_passengers'], ['fl_q3', 'ask_purpose']].map(([k, intent]) => h('button', { class: 'btn sm', onclick: e => { e.stopPropagation(); CP.Dlg.ask(c, intent, 'calm'); if (!CP.UI.panel || CP.UI.panel.kind !== 'dialogue') CP.UI.open('dialogue', c.id); else CP.UI.renderPanel(); } }, CP.t(k)))));
+  host.appendChild(strip);
+};
+CP.bus.on('stepEnd', () => { LG.st = (LG.st || 0) + 1; if (LG.st % 15 === 0) LG.strip(); });
+{ const rp = CP.UI.renderPanel; CP.UI.renderPanel = function () { const r = rp.apply(this, arguments); setTimeout(LG.strip, 0); return r; }; }
+/* the case card's "Check" becomes the one-tap routine */
+document.addEventListener('pointerdown', e => { const b = e.target.closest && e.target.closest('#dock .act'); if (!b || !LG.flowOn()) return; const lab = (b.textContent || ''); if (/فحص|Check/.test(lab) && !/سريع|Quick/.test(lab)) { const c = CP.Act.curC(); if (c && !c.k.stopped) { setTimeout(() => { if (!LG.flow.caseId) LG.startFlow(); }, 0); } } }, true);
+{ const menu = CP.Screens.menu; CP.Screens.menu = function () { const r = menu.apply(this, arguments); const more = document.querySelector('.rv-more .col'); if (more) more.appendChild(CP.h('button', { class: 'btn mb', onclick: () => { CP.S.flow = CP.S.flow === false; CP.saveSettings(); CP.UI.toast(CP.t('fl_flow') + ': ' + (CP.S.flow === false ? 'OFF' : 'ON')); } }, CP.t('fl_flow'))); return r; }; }
+;(window.CP_FILES = window.CP_FILES || {})['36_logic'] = '2.6.1';

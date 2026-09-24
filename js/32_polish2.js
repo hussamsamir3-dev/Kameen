@@ -89,4 +89,4 @@ CP.bus.on('shiftStart', () => { if (CP.UI.docAssist == null || CP.UI.docAssist =
 /* flagged fields pulse red with a calm two-note beep the first time a case's papers show a conflict */
 { const rp = CP.UI.renderPanel; CP.UI.renderPanel = function () { const r = rp.apply(this, arguments); const p = CP.UI.panel; if (!p || p.kind !== 'docs') return r; const c = CP.G.shift && CP.G.shift.cases[p.caseId]; const flagged = document.querySelectorAll('#panel .fld.assist'); if (!c || !flagged.length || c._conflictBeep) return r; c._conflictBeep = true;
     flagged.forEach(f => f.classList.add('conflict')); const A = CP.Audio; if (A.ok) { const t = A.ctx.currentTime; A.tone('sine', 880, 0.14, 0.02, t); A.tone('sine', 660, 0.22, 0.016, t + 0.16); } if (navigator.vibrate) { try { navigator.vibrate(25); } catch (e) { } } return r; }; }
-;(window.CP_FILES = window.CP_FILES || {})['32_polish2'] = '2.6.0';
+;(window.CP_FILES = window.CP_FILES || {})['32_polish2'] = '2.6.1';

@@ -13,4 +13,4 @@ CP.LevelUp.show = function (ri) {
 { const fin = CP.Career.finishShift; CP.Career.finishShift = function () { const car = CP.G && CP.G.career; const before = car ? CP.Prog.rankOf(car.xp) : 0; const r = fin.apply(this, arguments); const after = car ? CP.Prog.rankOf(car.xp) : 0; if (after > before) setTimeout(() => CP.LevelUp.show(after), 900); return r; }; }
 /* save heartbeat: every 5 s whenever there is a career, in or out of a shift */
 setInterval(() => { try { if (CP.G && CP.G.career && !(CP.Guard && CP.Guard.banned())) CP.save('auto'); } catch (e) { } }, 5000);
-;(window.CP_FILES = window.CP_FILES || {})['35_levelup'] = '2.6.0';
+;(window.CP_FILES = window.CP_FILES || {})['35_levelup'] = '2.6.1';

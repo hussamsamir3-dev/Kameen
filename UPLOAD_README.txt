@@ -1,1 +1,1 @@
-UPLOAD (overwrite): index.html, manifest.js, js/ (all 34), assets/officer_c0.png, assets/officer_c1.png. DELETE on the server: assets/officer_c2.png, assets/officer_c3.png. Footer must read v2.4.0.
+UPLOAD (overwrite): index.html, js/ (all 35; 34_music.js is new), assets/music/bed_day.mp3, bed_night.mp3, tension.mp3, sting.mp3. Footer must read v2.5.0.

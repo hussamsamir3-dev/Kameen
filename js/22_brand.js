@@ -104,4 +104,4 @@ CP.Brand.intro = function (done) {
   setTimeout(() => { try { if (CP.Audio.ok) { CP.Audio.tone('sine', 110, 2.4, 0.05, undefined, 220); CP.Audio.tone('triangle', 330, 1.6, 0.03); CP.Audio.burst(1.6, 0.05, 5200, 0.6, undefined, 'highpass'); setTimeout(() => CP.Audio.chime('great'), 900); } } catch (e) { } }, 250);
   setTimeout(finish, 3200);
 };
-;(window.CP_FILES = window.CP_FILES || {})['22_brand'] = '2.4.0';
+;(window.CP_FILES = window.CP_FILES || {})['22_brand'] = '2.5.0';

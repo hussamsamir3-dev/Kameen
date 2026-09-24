@@ -60,4 +60,4 @@ CP.bus.on('shiftStart', () => { const dp = document.getElementById('devPick'); i
 /* ---------- menu hook + first launch ---------- */
 { const menu = CP.Screens.menu; CP.Screens.menu = function () { const r = menu.apply(this, arguments); const icons = document.querySelector('.rv-icons'); if (icons && !icons.querySelector('.dv-btn')) icons.appendChild(dvh('button', { class: 'rv-ico dv-btn', onclick: () => { CP.Audio.clickSoft(); DV.pick(false); } }, dvh('span', null, '📐'), dvh('small', null, CP.t('dv_device')))); if (!CP.S.device) setTimeout(() => DV.pick(true), 600); return r; }; }
 window.addEventListener('load', () => setTimeout(DV.apply, 50));
-;(window.CP_FILES = window.CP_FILES || {})['33_device'] = '2.5.2';
+;(window.CP_FILES = window.CP_FILES || {})['33_device'] = '2.6.0';

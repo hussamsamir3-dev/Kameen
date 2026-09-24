@@ -329,4 +329,4 @@ CP.Screens.pause = function () {
     sh('button', { class: 'btn bad', onclick: () => CP.UI.confirm(CP.t('end_confirm'), () => { this.hideAll(); CP.Main.endShift(); }) }, CP.t('pause_end'))));
 };
 CP.Screens.resume = function () { this.hideAll(); document.getElementById('game').classList.remove('hidden'); CP.R.resize(); CP.Main.last = performance.now(); };
-;(window.CP_FILES = window.CP_FILES || {})['18_screens'] = '2.5.2';
+;(window.CP_FILES = window.CP_FILES || {})['18_screens'] = '2.6.0';

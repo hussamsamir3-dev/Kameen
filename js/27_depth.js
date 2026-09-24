@@ -67,7 +67,6 @@ CP.bus.on('stepEnd', () => {
 // pulsing ring on broken equipment + light pools
 { const wui = CP.R.worldUI; CP.R.worldUI = function (s, alpha) {
     wui.call(this, s, alpha); const ctx = this.ctx, R = this, ppm = this.ppm, night = this.nightLvl || 0;
-    for (const b of DP.brokenSpots(s)) { const cx = R.sx(b.x), cy = R.sy(b.yup) - b.h * ppm * 0.5; const pu = 0.5 + 0.5 * Math.sin(this.t * 4); ctx.save(); ctx.strokeStyle = `rgba(255,120,60,${0.45 + 0.4 * pu})`; ctx.lineWidth = 3; ctx.setLineDash([8, 6]); ctx.lineDashOffset = -this.t * 30; ctx.beginPath(); ctx.arc(cx, cy, (0.85 + pu * 0.12) * ppm, 0, Math.PI * 2); ctx.stroke(); ctx.setLineDash([]); ctx.font = `700 ${Math.round(0.5 * ppm)}px ${CP.UI.font()}`; ctx.textAlign = 'center'; ctx.fillStyle = '#fff'; ctx.shadowColor = '#000'; ctx.shadowBlur = 6; ctx.fillText('🔧', cx, cy + 0.18 * ppm); ctx.restore(); }
     if (night > 0.3 && !CP.S.reducedFx && s.equipment.generator === 'ok') {
       ctx.save(); ctx.globalCompositeOperation = 'lighter';
       const pool = (x, yup, rx, ry, a, c) => { const cx = R.sx(x), cy = R.sy(yup); if (cx < -rx || cx > R.W + rx) return; const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, rx); g.addColorStop(0, `rgba(${c},${a * night})`); g.addColorStop(0.6, `rgba(${c},${a * night * 0.35})`); g.addColorStop(1, `rgba(${c},0)`); ctx.fillStyle = g; ctx.save(); ctx.translate(cx, cy); ctx.scale(1, ry / rx); ctx.beginPath(); ctx.arc(0, 0, rx, 0, Math.PI * 2); ctx.fill(); ctx.restore(); };
@@ -136,4 +135,4 @@ CP.bus.on('shiftStart', () => { const s = CP.G.shift; const white = CP.S.uniform
     cards.appendChild(dh('button', { class: 'rv-card' + (ok ? '' : ' locked'), 'aria-disabled': ok ? 'false' : 'true', onclick: () => { if (!ok) { CP.UI.toast(CP.t('dp_uniLocked', { r: CP.Prog.rankName(DP.UNI_RANK) }), 'warn'); return; } CP.S.uniform = on ? 'navy' : 'white'; CP.saveSettings(); CP.Audio.click(); CP.Screens.menu(); } },
       dh('span', { class: 'rv-ci' }, ok ? (on ? '🤍' : '💙') : '🔒'), dh('span', { class: 'rv-ct' }, dh('b', null, CP.t('dp_uniform')), dh('small', null, ok ? CP.t(on ? 'dp_uniOn' : 'dp_uniOff') : CP.t('dp_uniLocked', { r: CP.Prog.rankName(DP.UNI_RANK) })))));
   }; }
-;(window.CP_FILES = window.CP_FILES || {})['27_depth'] = '2.5.2';
+;(window.CP_FILES = window.CP_FILES || {})['27_depth'] = '2.6.0';

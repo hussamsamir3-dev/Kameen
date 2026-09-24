@@ -60,13 +60,14 @@ LG.pending = () => { for (const [mode, key] of [['daily', 'cpns_daily_v1'], ['fr
 LG.NOUN = { moto: ['الموتوسيكل', 'motorbike'], tuktuk: ['التوك توك', 'tuk-tuk'], microbus: ['الميكروباص', 'microbus'], bus: ['الأتوبيس', 'bus'], truck: ['النقل', 'truck'], van: ['الفان', 'van'], pickup: ['النص نقل', 'pickup'], taxi: ['التاكسي', 'taxi'] };
 LG.nounFor = type => { for (const k in LG.NOUN) if (type.indexOf(k) >= 0 || (k === 'truck' && /cargo|box_truck/.test(type))) return LG.NOUN[k]; return null; };
 LG.fix = (text, type) => { const n = LG.nounFor(type); if (!n || typeof text !== 'string') return text;
-  return text.replace(/العربية دي|العربية|عربيتك|عربيتي|العربيه/g, m => m === 'عربيتك' ? n[0] + ' بتاعك' : m === 'عربيتي' ? n[0] + ' بتاعي' : n[0]).replace(/\bthe car\b/gi, 'the ' + n[1]).replace(/\byour car\b/gi, 'your ' + n[1]).replace(/\bmy car\b/gi, 'my ' + n[1]).replace(/\bcar\b/gi, n[1]); };
+  return text.replace(/العربية دي|العربية|عربيتك|عربيتي|العربيه/g, m => m === 'عربيتك' ? n[0] + ' بتاعك' : m === 'عربيتي' ? n[0] + ' بتاعي' : n[0]).replace(/\bthe car\b/gi, 'the ' + n[1]).replace(/\byour car\b/gi, 'your ' + n[1]).replace(/\bmy car\b/gi, 'my ' + n[1]).replace(/\bcar\b/gi, n[1]).replace(/\bvehicle licence(s?)\b/gi, n[1] + ' licence$1').replace(/\byour vehicle\b/gi, 'your ' + n[1]).replace(/\bthe vehicle\b/gi, 'the ' + n[1]); };
 { const say = CP.Dlg.say; CP.Dlg.say = function (c, who, text) { if (c && c.type) text = typeof text === 'string' ? LG.fix(text, c.type) : (text && text.ar ? { ar: LG.fix(text.ar, c.type), en: LG.fix(text.en, c.type) } : text); return say.call(this, c, who, text); }; }
 
 /* ---------- Flow mode: one tap runs the routine, the player only makes the calls that matter ---------- */
 CP.addStrings({
   fl_go: ['▶ افحص', '▶ Check'], fl_goSub: ['اقرب • سلّم • اطلب الأوراق', 'approach • greet • papers'], fl_release: ['✅ عدّي', '✅ Release'], fl_warn: ['⚠️ إنذار', '⚠️ Warning'], fl_cite: ['🧾 مخالفة', '🧾 Citation'], fl_bay: ['🔦 تفتيش', '🔦 Search'], fl_hold: ['🚔 تحفظ', '🚔 Hold'],
   fl_ask: ['💬 اسأل', '💬 Ask'], fl_radio: ['📻 تأكد', '📻 Verify'], fl_search: ['🔦 تفتيش سريع', '🔦 Quick search'], fl_holdBay: ['التحفظ بيتم من منطقة التفتيش — بعتناه هناك', 'Holds happen in the inspection bay — sent there'], fl_flow: ['وضع التدفق السريع', 'Quick-flow mode'],
+  fl_noEvidence: ['مفيش دليل على العربية دي — الأوراق سليمة ومفيش ملاحظات. عدّيها أو فتّشها', 'No evidence on this vehicle — papers are clean and nothing was observed. Release it or search it'],
   fl_q1: ['رايح فين؟', 'Where to?'], fl_q2: ['مين معاك؟', 'Who is with you?'], fl_q3: ['شغلك إيه؟', 'What do you do?']
 });
 LG.flowOn = () => CP.S.flow !== false;
@@ -82,10 +83,21 @@ CP.bus.on('stepEnd', () => {
 });
 /* automatic reason: the strongest evidence the case already holds */
 LG.reasonFor = c => { const k = c.k || {}; if (CP.Cases.trueDiscrepancies && CP.Cases.trueDiscrepancies(c).length && k.docsViewed) return 'discrepancy'; if (c.flags && (c.flags.lookoutMatch || c.flags.tuktuk) || c.fam === 'alert' || c.fam === 'lookout') return 'alert'; if ((c.cues || []).length && (k.searchReason || k.docsViewed)) return 'observation'; if (k.consent) return 'consent'; if (k.asked && Object.keys(k.asked).length) return 'statement'; return 'routine'; };
+/* evidence is gathered automatically: the highlighted discrepancies become discrepancy notes, cues become observation
+   notes, and every note the case holds is passed as support — the player never has to tick evidence boxes */
+LG.autoEvidence = function (c) {
+  try { const td = CP.Cases.trueDiscrepancies(c) || []; for (const d of td) if ((c.k.disc || []).indexOf(d.key) < 0) CP.Cases.recordDiscrepancy(c, d.f); } catch (e) { }
+  if ((c.cues || []).length && !c._cueNoted) { c._cueNoted = true; CP.note(c, 'observation', CP.fill(['ملاحظة ميدانية: {n}', 'Field observation: {n}'], { n: String((c.cues || []).join('، ')) }), 'verified'); }
+  if (c.flags && c.flags.tuktuk && !c._tkNoted) { c._tkNoted = true; CP.note(c, 'observation', CP.fill([CP.STR.ar.tk_note, CP.STR.en.tk_note]), 'verified'); }
+  return CP.notesFor(c).map(n => n.id);
+};
 LG.decide = function (dec) { const c = CP.Act.curC(); const v = CP.Act.curV(); if (!c || c.res) return; CP.Audio.click();
   if (dec === 'bay') { const a = CP.Act.avail('bay'); if (a.ok) CP.Act.run('bay'); else CP.UI.toast(a.reason, 'warn'); return; }
   if (dec === 'hold' && (!v || v.st !== 'bay')) { const a = CP.Act.avail('bay'); if (a.ok) { CP.Act.run('bay'); CP.UI.toast(CP.t('fl_holdBay'), 'info'); } else CP.UI.toast(a.reason, 'warn'); return; }
-  const strong = LG.reasonFor(c); const reason = (dec === 'release' || dec === 'advice' || dec === 'waved') ? (c.k.asked && Object.keys(c.k.asked).length ? 'statement' : 'routine') : strong; const e = CP.Act.resolve(c, dec, reason, []); if (e) { CP.UI.toast(CP.t(e), 'warn'); CP.Audio.deny(); } else { CP.UI.close && CP.UI.close(); } };
+  const soft = dec === 'release' || dec === 'advice' || dec === 'waved'; const support = soft ? [] : LG.autoEvidence(c);
+  if (!soft && !support.length) { CP.UI.toast(CP.t('fl_noEvidence'), 'warn'); CP.Audio.deny(); return; }
+  const strong = LG.reasonFor(c); const reason = soft ? (c.k.asked && Object.keys(c.k.asked).length ? 'statement' : 'routine') : strong;
+  const e = CP.Act.resolve(c, dec, reason, support); if (e) { CP.UI.toast(CP.t(e), 'warn'); CP.Audio.deny(); } else { CP.UI.close && CP.UI.close(); } };
 LG.quickSearch = function () { const c = CP.Act.curC(); const v = CP.Act.curV(); if (!c || !v) return; if (!c.k.searchReason) c.k.searchReason = LG.reasonFor(c) === 'routine' ? 'consent' : LG.reasonFor(c); c.k.consent = c.k.consent || c.coop >= 45;
   const zones = CP.Insp.zones(c).filter(z => !(c.k.zones && c.k.zones[z] && c.k.zones[z].done)); if (!zones.length) { CP.UI.toast(CP.t('wd_clean', { z: '' }), 'info'); return; }
   let i = 0; const next = () => { if (i >= zones.length || !CP.G.shift || c.res) return; const z = zones[i++]; const r = CP.Insp.searchZone(c, z); if (r === null) return; setTimeout(next, 1800); }; next(); };
@@ -109,4 +121,4 @@ CP.bus.on('stepEnd', () => { LG.st = (LG.st || 0) + 1; if (LG.st % 15 === 0) LG.
 /* the case card's "Check" becomes the one-tap routine */
 document.addEventListener('pointerdown', e => { const b = e.target.closest && e.target.closest('#dock .act'); if (!b || !LG.flowOn()) return; const lab = (b.textContent || ''); if (/فحص|Check/.test(lab) && !/سريع|Quick/.test(lab)) { const c = CP.Act.curC(); if (c && !c.k.stopped) { setTimeout(() => { if (!LG.flow.caseId) LG.startFlow(); }, 0); } } }, true);
 { const menu = CP.Screens.menu; CP.Screens.menu = function () { const r = menu.apply(this, arguments); const more = document.querySelector('.rv-more .col'); if (more) more.appendChild(CP.h('button', { class: 'btn mb', onclick: () => { CP.S.flow = CP.S.flow === false; CP.saveSettings(); CP.UI.toast(CP.t('fl_flow') + ': ' + (CP.S.flow === false ? 'OFF' : 'ON')); } }, CP.t('fl_flow'))); return r; }; }
-;(window.CP_FILES = window.CP_FILES || {})['36_logic'] = '2.6.1';
+;(window.CP_FILES = window.CP_FILES || {})['36_logic'] = '2.6.2';

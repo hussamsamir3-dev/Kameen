@@ -177,4 +177,4 @@ CP.bus.on('stepEnd', () => {
   if (RV.hum) { const target = v ? 0.035 : 0; const gg = RV.hum.g.gain; gg.setTargetAtTime(target, A.ctx.currentTime, 0.4); RV.hum.o.frequency.setTargetAtTime(v ? 44 + Math.sin(CP.R.t * 3) * 1.5 : 30, A.ctx.currentTime, 0.2); if (!v && gg.value < 0.002) { RV.hum.o.stop(); RV.hum = null; } }
 });
 CP.bus.on('shiftStart', () => { if (RV.hum) { try { RV.hum.o.stop(); } catch (e) { } RV.hum = null; } });
-;(window.CP_FILES = window.CP_FILES || {})['25_revamp'] = '2.6.1';
+;(window.CP_FILES = window.CP_FILES || {})['25_revamp'] = '2.6.2';

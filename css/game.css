@@ -850,3 +850,12 @@ html.mob.land #panel .pw { max-height: calc(var(--vvh) - 40px); }
 .lu-tap { position: absolute; bottom: 28px; opacity: .6; font-size: .9em; animation: luText 1s 1.4s both; }
 @keyframes luText { from { opacity: 0; transform: translateY(14px); } }
 .lu-spark { z-index: 1; animation-duration: 1.6s; }
+
+/* ===== v2.6.1: quick-flow decision strip ===== */
+#flowStrip { display: flex; flex-direction: column; gap: 6px; width: 100%; padding: 6px 8px; }
+#flowStrip .fl-row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 6px; } #flowStrip .fl-row.sm { grid-template-columns: repeat(3, 1fr); }
+#flowStrip .btn.fl { min-height: 50px; font-weight: 800; border-radius: 12px; }
+#flowStrip .btn.rel { background: rgba(60,160,110,.25); border-color: rgba(143,227,168,.6); } #flowStrip .btn.wrn { background: rgba(240,184,64,.18); border-color: rgba(240,184,64,.6); }
+#flowStrip .btn.cit { background: rgba(255,140,60,.18); border-color: rgba(255,140,60,.6); } #flowStrip .btn.bay, #flowStrip .btn.srch { background: rgba(110,183,255,.18); border-color: rgba(110,183,255,.6); } #flowStrip .btn.hld { background: rgba(255,90,80,.2); border-color: rgba(255,90,80,.7); }
+#flowStrip .fl-ask { display: flex; gap: 6px; flex-wrap: wrap; } #flowStrip .fl-ask.hidden { display: none; }
+#dock #flowStrip { grid-column: 1 / -1; }

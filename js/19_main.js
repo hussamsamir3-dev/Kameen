@@ -171,4 +171,4 @@ M.bootLoad = function () {
 window.addEventListener('DOMContentLoaded', M.boot);
 
 CP.bus.on('caseClosed', () => { const s = CP.G && CP.G.shift; if (s) s.officer.returnAt = s.t + 1.6; });
-;(window.CP_FILES = window.CP_FILES || {})['19_main'] = '2.3.5';
+;(window.CP_FILES = window.CP_FILES || {})['19_main'] = '2.3.6';

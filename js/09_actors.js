@@ -83,7 +83,7 @@ CP.Actors.frameFor = function (ch, pose, moving, walkT, t, calm, prog) {
   }
   pose = pose || 'idle'; let id; const ni = N('idle'), nh = N('hand'), ns = N('stop'), np = N('pass'), nr = N('radio');
   switch (pose) {
-    case 'idle': { const ph = t % 13; id = ph > 10.2 && ph < 11.6 ? o + 'hand_' + Math.min(nh - 1, Math.floor((ph - 10.2) / 1.4 * nh)) : o + 'idle_' + PP(t, 5, ni); break; }
+    case 'idle': id = o + 'idle_' + PP(t, 5, ni); break; // standing = breathing idle only
     case 'raise': id = o + 'stop_' + (prog == null ? 1 : Math.min(2, Math.floor(prog * 3))); break;
     case 'stop': id = o + 'stop_' + (Math.floor(t * 1.2) % 2 ? 3 : 2); break;
     case 'lower': id = o + 'stop_' + (prog == null ? 5 : 4 + Math.min(ns - 5, Math.floor(prog * (ns - 4)))); break;
@@ -95,12 +95,24 @@ CP.Actors.frameFor = function (ch, pose, moving, walkT, t, calm, prog) {
   }
   return has(id) ? id : o + 'idle_0';
 };
+/* stride settle: when a figure stops mid-stride, its walk cycle keeps advancing (as if the last step lands) until it
+   reaches a neutral legs-together frame, then it stands. Call each frame with the figure's calm/run mode. */
+CP.Actors.settle = function (a, dt) {
+  const s = CP.G && CP.G.shift; if (!s) return false;
+  if (a.moving) { a._wasMoving = true; a._settle = 0; return false; }
+  if (!a._wasMoving) return false;
+  const calm = a.calm != null ? a.calm : !a.hurry; const stride = calm ? 1.35 : 1.9, n = CP.Actors.nOf(CP.Actors.charOf(a), calm ? 'walk' : 'run'); const step = stride / n;
+  const idx = Math.floor((a.walkT || 0) / step) % n; const neutral = [0, Math.floor(n / 2)];
+  if (neutral.indexOf(idx) >= 0 || (a._settle || 0) > 0.45) { a._wasMoving = false; a._settle = 0; a.walkT = 0; return false; }
+  a.walkT += (calm ? 1.9 : 3.2) * dt; a._settle = (a._settle || 0) + dt; return true; // still landing the step
+};
 CP.Actors.frameOf = function (a) {
   const t = (CP.R && CP.R.t || 0) + (a.animOff || (CP.G && CP.G.shift && a === CP.G.shift.partner ? 0.9 : 0));
   const s = CP.G && CP.G.shift; const far = a.target != null && Math.abs((a.target.x ?? a.target) - a.x) > 6.5;
   const calm = a.calm != null ? a.calm : (s && a === s.partner) ? true : !(far || a.hurry || (s && (s.events.rushUntil > s.t)));
   const prog = a.seq && a.seq.step > 0 ? Math.min(0.999, (a.seq.t % a.seq.step) / a.seq.step) : null;
-  return CP.Actors.frameFor(CP.Actors.charOf(a), a.pose, a.moving, a.walkT || 0, t, calm, prog);
+  const settling = !a.moving && a._wasMoving && !a.seq;
+  return CP.Actors.frameFor(CP.Actors.charOf(a), a.pose, a.moving || settling, a.walkT || 0, t, calm, prog);
 };
 
 /* ---------------- partner tasks ---------------- */
@@ -170,4 +182,4 @@ CP.Actors.partnerTraffic = function (dt) {
   s.flowT = (s.flowT || 0) + dt;
   if (s.flowT > 3.2) { s.flowT = 0; CP.Act.doWave(v, 'partner'); CP.Actors.seq('partner', ['lower', 'wave', 'idle'], 0.22); }
 };
-;(window.CP_FILES = window.CP_FILES || {})['09_actors'] = '2.3.5';
+;(window.CP_FILES = window.CP_FILES || {})['09_actors'] = '2.3.6';

@@ -95,17 +95,6 @@ CP.R.night = function () {
 /* v1.8: cinematic depth of field — the distant backdrop softens as the camera zooms into the lane, like a long lens */
 CP.R.dof = function () { if (CP.S.reducedFx || !('filter' in this.ctx)) return 'none'; const z = this.zoom || 1; const px = CP.clamp((z - 0.9) * 2.6, 0.6, 4.2) * (this.ppm / 60); return `blur(${px.toFixed(2)}px) saturate(1.04)`; };
 /* soft cast shadow: the sprite itself, flattened and skewed along the ground, blurred — sun by day, floodlights by night */
-/* v2.3.5: cross-fade between sprite frames — when a figure's frame changes, the previous frame fades out over 120 ms
-   while the new one fades in, so pose changes and strides blend instead of snapping */
-CP.R.XFADE = 0.12;
-CP.R.drawBlend = function (who, fr, cx, gy, k, flip) {
-  const A = CP.A, ctx = this.ctx, now = this.t;
-  if (who._fr && who._fr !== fr) { who._pfr = who._fr; who._pk = who._k; who._ft = now; }
-  who._fr = fr; who._k = k;
-  const a = who._pfr && who._ft != null ? Math.min(1, (now - who._ft) / this.XFADE) : 1;
-  if (a < 1 && !CP.S.reducedFx) { ctx.save(); ctx.globalAlpha *= (1 - a); A.drawGroundedScale(ctx, who._pfr, cx, gy, who._pk || k, flip); ctx.restore(); ctx.save(); ctx.globalAlpha *= a; A.drawGroundedScale(ctx, fr, cx, gy, k, flip); ctx.restore(); }
-  else { who._pfr = null; A.drawGroundedScale(ctx, fr, cx, gy, k, flip); }
-};
 CP.R._silCache = {};
 /* silhouette of a sprite (black, blurred), built once per frame id — no per-frame canvas filters */
 CP.R.silhouette = function (fr) {
@@ -274,8 +263,14 @@ CP.R.markings = function (s) {
   for (let i = 0; i < 4; i++) ctx.fillRect(this.sx(10.3 + i * 0.13), this.sy(Y.mainFar - 0.1), 0.06 * ppm, (Y.mainFar - Y.mainNear - 0.2) * ppm);
 };
 
+/* v2.3.6: directional ground shadows. By day the sun sits high to the right, so shadows stretch left; by night the
+   nearest floodlight casts them away from itself and shorter. Soft-edged, elongated along the light direction. */
+CP.R.lightDir = function (cx) { const night = this.nightLvl || 0; if (night < 0.5) return { dir: -0.85, len: 0.55, soft: 0.35 }; const fl = [8.4, 35.2].map(x => this.sx(x + 0.6)); const near = Math.abs(fl[0] - cx) < Math.abs(fl[1] - cx) ? fl[0] : fl[1]; return { dir: cx < near ? -1 : 1, len: 0.4, soft: 0.5 }; };
 CP.R.shadow = function (cx, y, rx, ry, a) {
-  const ctx = this.ctx; a *= 1.15 - 0.3 * (this.nightLvl || 0); ctx.save(); ctx.fillStyle = `rgba(0,0,0,${a})`; ctx.beginPath(); ctx.ellipse(cx, y, Math.max(1, rx), Math.max(1, ry), 0, 0, Math.PI * 2); ctx.fill(); ctx.restore();
+  const ctx = this.ctx; a *= 1.15 - 0.3 * (this.nightLvl || 0); rx = Math.max(1, rx); ry = Math.max(1, ry); const L = this.lightDir(cx);
+  ctx.save(); ctx.translate(cx + L.dir * rx * L.len * 0.6, y); ctx.transform(1, 0, L.dir * L.len * 0.9, 1, 0, 0);
+  const g = ctx.createRadialGradient(0, 0, 0, 0, 0, 1); g.addColorStop(0, `rgba(0,0,0,${a})`); g.addColorStop(1 - L.soft, `rgba(0,0,0,${a * 0.85})`); g.addColorStop(1, 'rgba(0,0,0,0)');
+  ctx.scale(rx * (1 + L.len * 0.5), ry); ctx.fillStyle = g; ctx.beginPath(); ctx.arc(0, 0, 1, 0, Math.PI * 2); ctx.fill(); ctx.restore();
 };
 
 CP.R.structures = function (s) {
@@ -360,7 +355,7 @@ CP.R.drawActor = function (a, who, alpha) {
   const hM = who === 'partner' ? CP.HUMAN.partner : CP.HUMAN.officer; const k = hM * ppm / (A.M.sprites[fr].hRef || r[3]);
   this.castShadow(fr, cx, gy, k, a.dir < 0);
   (this.occluders = this.occluders || []).push({ x0: cx - 0.28 * ppm, x1: cx + 0.28 * ppm, y0: gy - hM * ppm, y1: gy, h: hM * ppm });
-  this.drawBlend(a, fr, cx, gy, k, a.dir < 0);
+  A.drawGroundedScale(ctx, fr, cx, gy, k, a.dir < 0);
   if (who === 'officer') { this.hitsOfficer = { x: cx, y: gy }; if (a.pose === 'flashlight' || (a.torchT > 0)) { this.torch = { x: cx + a.dir * 0.45 * ppm, y: gy - 1.15 * ppm, dir: a.dir }; } }
   if (who === 'partner') this.partnerScr = { x: cx, y: gy - hM * ppm };
   else this.officerScr = { x: cx, y: gy - hM * ppm };
@@ -629,4 +624,4 @@ CP.R.pick = function (px, py) {
 CP.R.popup = function (text, x, yup, color) { this.fx.push({ kind: 'xp', text, x, yup, color, t0: this.t, dur: 1.6 }); };
 CP.R.stamp = function (text, color, x, yup) { this.fx.push({ kind: 'stamp', text, color, x, yup, t0: this.t, dur: 1.8 }); };
 CP.R.confetti = function (n, x, y) { for (let i = 0; i < (n || 60); i++) { this.emit('confetti', x ?? this.W / 2, y ?? this.H * 0.35); } };
-;(window.CP_FILES = window.CP_FILES || {})['14_render'] = '2.3.5';
+;(window.CP_FILES = window.CP_FILES || {})['14_render'] = '2.3.6';

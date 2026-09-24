@@ -21,8 +21,9 @@ MU.stop = function () { for (const k in this.L) { try { this.L[k].pause(); } cat
 /* decide the target mix: beds cross-fade with the light; the tension track plays only on the shift-end report */
 MU.target = function () {
   const s = CP.G && CP.G.shift; const night = CP.R && CP.R.nightLvl != null && s ? CP.R.nightLvl : 0;
-  const onReport = !!(CP.Screens && CP.Screens.cur === 'report');
-  const inMenu = !s || (CP.Screens && CP.Screens.cur);
+  const vis = id => { const el = document.getElementById(id); return !!(el && !el.classList.contains('hidden')); };
+  const onReport = vis('report');
+  const inMenu = !s || vis('menu') || vis('briefing') || vis('settings') || vis('record') || vis('how');
   const bed = onReport ? 0 : inMenu ? 0.75 : 1;
   this.want = { day: bed * (1 - night), night: bed * night, tension: onReport ? 0.9 : 0 };
 };

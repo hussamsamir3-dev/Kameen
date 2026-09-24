@@ -18,22 +18,13 @@ MU.start = function () {
   if (!this._tick) this._tick = setInterval(() => MU.tick(), 100);
 };
 MU.stop = function () { for (const k in this.L) { try { this.L[k].pause(); } catch (e) { } } this.started = false; };
-/* decide the target mix from the game state */
+/* decide the target mix: beds cross-fade with the light; the tension track plays only on the shift-end report */
 MU.target = function () {
   const s = CP.G && CP.G.shift; const night = CP.R && CP.R.nightLvl != null && s ? CP.R.nightLvl : 0;
+  const onReport = !!(CP.Screens && CP.Screens.cur === 'report');
   const inMenu = !s || (CP.Screens && CP.Screens.cur);
-  let tension = 0;
-  if (s && !s.ended) {
-    const E = s.events || {};
-    if (E.wanted && E.wanted.spawned && !E.wanted.done) tension = 1;
-    if (E.rushUntil > s.t) tension = Math.max(tension, 0.8);
-    if (E.inspUntil > s.t) tension = Math.max(tension, 0.7);
-    if (CP.Events.emergency && CP.Events.emergency()) tension = Math.max(tension, 0.9);
-    if (E.sprint) tension = Math.max(tension, 0.5);
-    if (E.bet) tension = Math.max(tension, 0.6);
-  }
-  const bed = inMenu ? 0.75 : 1;
-  this.want = { day: bed * (1 - night), night: bed * night, tension: tension * 0.9 };
+  const bed = onReport ? 0 : inMenu ? 0.75 : 1;
+  this.want = { day: bed * (1 - night), night: bed * night, tension: onReport ? 0.9 : 0 };
 };
 MU.tick = function () {
   if (!this.started || document.hidden) return; this.target(); const m = this.master();
@@ -50,6 +41,6 @@ CP.Audio.music.play = function () {}; CP.Audio.music.next = function () {}; CP.A
 document.addEventListener('visibilitychange', () => { try { if (document.hidden) { for (const k in MU.L) MU.L[k].pause(); if (MU.sting) MU.sting.pause(); } else if (MU.started) { for (const k in MU.L) { const p = MU.L[k].play(); if (p && p.catch) p.catch(() => {}); } } } catch (e) { } });
 /* stings: serious catch, warrant arrest, shift end, black file closed */
 CP.bus.on('caseClosed', c => { if (c.res && c.res.eval && c.res.eval.sound && CP.FAM[c.fam] && CP.FAM[c.fam].serious && ['hold', 'handover', 'refer_admin'].indexOf(c.res.decision) >= 0) MU.playSting(); });
-{ const rep = CP.Screens.report; CP.Screens.report = function () { const r = rep.apply(this, arguments); MU.playSting(); return r; }; }
+{ const rep = CP.Screens.report; CP.Screens.report = function () { const r = rep.apply(this, arguments); MU.playSting(); try { if (MU.L.tension) MU.L.tension.currentTime = 0; } catch (e) { } return r; }; }
 { const st = CP.R.stamp; CP.R.stamp = function (text) { if (/WANTED|مطلوب|BET WON|كسبت|الملف|File/i.test(String(text))) MU.playSting(); return st.apply(this, arguments); }; }
 ;(window.CP_FILES = window.CP_FILES || {})['34_music'] = '2.5.0';

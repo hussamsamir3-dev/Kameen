@@ -859,3 +859,14 @@ html.mob.land #panel .pw { max-height: calc(var(--vvh) - 40px); }
 #flowStrip .btn.cit { background: rgba(255,140,60,.18); border-color: rgba(255,140,60,.6); } #flowStrip .btn.bay, #flowStrip .btn.srch { background: rgba(110,183,255,.18); border-color: rgba(110,183,255,.6); } #flowStrip .btn.hld { background: rgba(255,90,80,.2); border-color: rgba(255,90,80,.7); }
 #flowStrip .fl-ask { display: flex; gap: 6px; flex-wrap: wrap; } #flowStrip .fl-ask.hidden { display: none; }
 #dock #flowStrip { grid-column: 1 / -1; }
+
+/* ===== v2.7: spikes button, shop preview, settings sections ===== */
+#spikeBtn { position: absolute; left: 50%; bottom: 14px; transform: translateX(-50%); z-index: 45; padding: 16px 34px; border-radius: 999px; border: 3px solid #ff5a3a; background: linear-gradient(135deg, #ff7a3a, #d92b1c); color: #fff; font-weight: 900; font-size: 1.25em; letter-spacing: .04em; box-shadow: 0 0 0 6px rgba(255,90,58,.25), 0 16px 40px rgba(0,0,0,.5); animation: spikePulse .9s ease-in-out infinite; cursor: pointer; }
+#spikeBtn.up { animation: none; background: linear-gradient(135deg, #6a6d75, #3d4048); border-color: #999; }
+@keyframes spikePulse { 50% { transform: translateX(-50%) scale(1.06); box-shadow: 0 0 0 12px rgba(255,90,58,.12), 0 16px 40px rgba(0,0,0,.5); } }
+.ex-preview { display: flex; flex-direction: column; align-items: center; gap: 8px; padding: 10px; border-radius: 14px; background: radial-gradient(60% 70% at 50% 60%, rgba(240,184,64,.18), rgba(255,255,255,.03)); border: 1px solid var(--line); }
+.ex-prev { image-rendering: auto; } .ex-wear { display: flex; flex-wrap: wrap; gap: 6px; justify-content: center; }
+.set-sec { margin-bottom: 14px; padding: 12px 14px; border-radius: 14px; background: rgba(255,255,255,.04); border: 1px solid var(--line); }
+.set-sec h3 { margin: 0 0 8px; font-size: 1em; color: #ffe4a3; }
+.set.sectioned { display: block; }
+.btn.danger { border-color: rgba(255,90,80,.7); background: rgba(255,90,80,.15); color: #ffb3ad; }

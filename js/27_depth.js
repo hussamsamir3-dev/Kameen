@@ -39,7 +39,7 @@ DP.popover = function (b, px, py) {
   if (b.kind === 'car') { const v = CP.T.get(b.vid); const towDur = CP.Econ && CP.Econ.own('tow') ? 10 : 20;
     const pop = dh('div', { id: 'fixpop', role: 'dialog' }, dh('b', null, CP.t('dp_carQ')),
       dh('button', { class: 'btn pri', onclick: () => { close(); CP.Audio.click(); CP.Tasks.add({ type: 'o_vehicle', owner: 'officer', dur: 10, key: 'o_vehicle:' + b.vid, data: { vid: b.vid, x: b.x } }); CP.Actors.walkTo(v.x - v.len / 2 - 0.6, v.row); } }, CP.t('dp_push')),
-      dh('button', { class: 'btn', onclick: () => { close(); CP.Audio.radioClick(true); CP.UI.toast(CP.t('dp_towOn'), 'ok'); CP.Tasks.add({ type: 'radio', owner: 'officer', dur: towDur, key: 'tow:' + b.vid, data: { tow: b.vid } }); } }, CP.t('dp_tow')),
+      dh('button', { class: 'btn', onclick: () => { close(); CP.Audio.radioClick(true); CP.UI.toast(CP.t('dp_towOn'), 'ok'); v._towReq = true; CP.Tasks.add({ type: 'radio', owner: 'officer', dur: towDur, key: 'tow:' + b.vid, data: { tow: b.vid } }); } }, CP.t('dp_tow')),
       dh('button', { class: 'btn', onclick: () => { close(); if (!sgt || sgt.job) { CP.UI.toast(CP.t('dp_sgtBusy'), 'warn'); return; } sgt.job = 'car:' + b.vid; sgt.hurry = true; CP.Audio.radioClick(true); CP.UI.toast(CP.t('dp_sgtOn'), 'ok'); } }, CP.t('dp_sgtCar')),
       dh('button', { class: 'btn ghost sm', onclick: () => { close(); CP.Audio.clickSoft(); } }, CP.t('dp_cancel')));
     stage.appendChild(pop); const r = stage.getBoundingClientRect(); pop.style.left = CP.clamp(px - r.left - 120, 8, r.width - 250) + 'px'; pop.style.top = CP.clamp(py - r.top - 200, 8, r.height - 230) + 'px';
@@ -135,4 +135,4 @@ CP.bus.on('shiftStart', () => { const s = CP.G.shift; const white = CP.S.uniform
     cards.appendChild(dh('button', { class: 'rv-card' + (ok ? '' : ' locked'), 'aria-disabled': ok ? 'false' : 'true', onclick: () => { if (!ok) { CP.UI.toast(CP.t('dp_uniLocked', { r: CP.Prog.rankName(DP.UNI_RANK) }), 'warn'); return; } CP.S.uniform = on ? 'navy' : 'white'; CP.saveSettings(); CP.Audio.click(); CP.Screens.menu(); } },
       dh('span', { class: 'rv-ci' }, ok ? (on ? '🤍' : '💙') : '🔒'), dh('span', { class: 'rv-ct' }, dh('b', null, CP.t('dp_uniform')), dh('small', null, ok ? CP.t(on ? 'dp_uniOn' : 'dp_uniOff') : CP.t('dp_uniLocked', { r: CP.Prog.rankName(DP.UNI_RANK) })))));
   }; }
-;(window.CP_FILES = window.CP_FILES || {})['27_depth'] = '2.6.2';
+;(window.CP_FILES = window.CP_FILES || {})['27_depth'] = '2.7.0';

@@ -74,7 +74,7 @@ CP.A = {
     const cx = left + g.width / 2, cy = top + g.height * 0.8;
     ctx.translate(cx, cy + (heave || 0)); ctx.rotate(pitch || 0); ctx.translate(-cx, -cy);
     this.draw(ctx, v.body, left, top, g.width);
-    if (v.procWheel) for (const [ax, ay] of v.axles) this.procWheel(ctx, v.procWheel, left + ax * g.k, top + ay * g.k, g.wheelR, wheelAngle);
+    if (v.procWheel && v.procWheel !== 'none') for (const [ax, ay] of v.axles) this.procWheel(ctx, v.procWheel, left + ax * g.k, top + ay * g.k, g.wheelR, wheelAngle);
     ctx.restore();
     if (alpha != null) ctx.globalAlpha = 1;
     return g;
@@ -127,4 +127,4 @@ CP.A = {
   /* portrait into a canvas element */
   portrait(n, size) { return this.thumb('portrait_' + String(n).padStart(2, '0'), size, size, 0); }
 };
-;(window.CP_FILES = window.CP_FILES || {})['03_assets'] = '2.6.2';
+;(window.CP_FILES = window.CP_FILES || {})['03_assets'] = '2.7.0';

@@ -109,7 +109,6 @@ CP.Screens.menuScene = function (cv) {
     const incoming = st.cars.some(c => c.v > 0.5 && c.x < -1 && c.x > -9);
     dr(F(2, Math.floor(st.t / 7) % 3 === 1 ? 'radio' : 'idle', false, 0, st.t + 2), X(3.7) + px * 1.2, gy - rhFar(ppm) - 0.25 * ppm, CP.HUMAN.menuSgt, true);
     dr(F(0, st.ang > 0.5 ? 'wave' : incoming ? 'stop' : 'idle', false, 0, st.t), X(1.6), gy + 0.4 * ppm, CP.HUMAN.menuOfficer, true);
-    dr(F(1, st.ang > 0.5 ? 'idle' : incoming ? 'documents' : 'idle', false, 0, st.t + 0.9), X(3.0), gy + 0.42 * ppm, CP.HUMAN.menuPartner, true);
     // lamp + floodlight glows
     ctx.save(); ctx.globalCompositeOperation = 'lighter';
     const lampC = st.ang > 0.95 ? '60,255,120' : st.ang < 0.05 ? '255,60,50' : '255,190,40';
@@ -329,4 +328,4 @@ CP.Screens.pause = function () {
     sh('button', { class: 'btn bad', onclick: () => CP.UI.confirm(CP.t('end_confirm'), () => { this.hideAll(); CP.Main.endShift(); }) }, CP.t('pause_end'))));
 };
 CP.Screens.resume = function () { this.hideAll(); document.getElementById('game').classList.remove('hidden'); CP.R.resize(); CP.Main.last = performance.now(); };
-;(window.CP_FILES = window.CP_FILES || {})['18_screens'] = '2.6.2';
+;(window.CP_FILES = window.CP_FILES || {})['18_screens'] = '2.7.0';

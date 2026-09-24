@@ -11,21 +11,29 @@ CP.addStrings({ sk_on: ['🧨 الشوك مرفوع', '🧨 Spikes UP'], sk_off:
 const CFX = CP.CineFX = { sparks: [], smoke: [] };
 
 /* ---------- in-game spike effects ---------- */
-CFX.burst = function (x, yup, n) { for (let i = 0; i < n; i++) CFX.sparks.push({ x, yup, vx: (Math.random() - 0.35) * 6, vy: 2 + Math.random() * 6, t: 0, life: 0.5 + Math.random() * 0.5 }); };
-CFX.puff = function (x, yup, r) { CFX.smoke.push({ x, yup, r: r || 0.25, t: 0, vx: -0.4 + Math.random() * 0.3 }); };
+CFX.tyreX = function (v, i) { const V = CP.A.M.vehicles[v.type]; if (!V || !V.axles || !V.axles[i]) return v.x - v.len * (i ? 0.2 : 0.8); const b = CP.A.M.sprites[V.body].rect; return v.x - v.len + (V.axles[i][0] / b[2]) * v.len; };
+CFX.burst = function (x, gy, n, h) { for (let i = 0; i < n; i++) CFX.sparks.push({ x, gy, h: h || 0.05, vx: (Math.random() - 0.35) * 6, vy: 1.5 + Math.random() * 5, t: 0, life: 0.45 + Math.random() * 0.5 }); };
+CFX.puff = function (x, gy, r) { CFX.smoke.push({ x, gy, h: 0.15, r: r || 0.25, t: 0, vx: -0.4 + Math.random() * 0.3 }); };
 CP.bus.on('stepEnd', () => { const s = CP.G && CP.G.shift; if (!s) return; const dt = 1 / 60;
-  for (const v of s.vehicles) { if (!v.spiked) continue; if (!v._sparkT) { v._sparkT = 0; CFX.burst(v.x - v.len * 0.15, CP.R.rowY(v.row), 70); CFX.burst(v.x - v.len * 0.85, CP.R.rowY(v.row), 50); CP.R.shake(9, 0.5); CP.Audio.burst && CP.Audio.ok && CP.Audio.burst(0.6, 0.18, 2200, 1.2); }
-    v._sparkT += dt; if (v.v > 0.4 && v.limp) { if (Math.random() < 0.7) CFX.puff(v.x - v.len * 0.15, CP.R.rowY(v.row), 0.2 + Math.random() * 0.2); if (Math.random() < 0.35) CFX.burst(v.x - v.len * 0.15, CP.R.rowY(v.row), 2); } }
-  for (const p of CFX.sparks) { p.t += dt; p.x += p.vx * dt; p.yup += p.vy * dt; p.vy -= 16 * dt; if (p.yup < 0) { p.yup = 0; p.vy *= -0.4; } } CFX.sparks = CFX.sparks.filter(p => p.t < p.life);
-  for (const m of CFX.smoke) { m.t += dt; m.x += m.vx * dt; m.r += 0.5 * dt; } CFX.smoke = CFX.smoke.filter(m => m.t < 1.6);
+  for (const v of s.vehicles) { if (!v.spiked) continue; if (!v._sparkT) { v._sparkT = 0; const gy = CP.R.rowY(v.row); CFX.burst(CFX.tyreX(v, 1), gy, 70, 0.08); CFX.burst(CFX.tyreX(v, 0), gy, 50, 0.08); CP.R.shake(9, 0.5); CP.Audio.burst && CP.Audio.ok && CP.Audio.burst(0.6, 0.18, 2200, 1.2); }
+    v._sparkT += dt; if (v.v > 0.4 && v.limp) { const gy = CP.R.rowY(v.row); if (Math.random() < 0.7) CFX.puff(CFX.tyreX(v, 1), gy, 0.2 + Math.random() * 0.2); if (Math.random() < 0.35) CFX.burst(CFX.tyreX(v, 1), gy, 2, 0.06); } }
+  for (const p of CFX.sparks) { p.t += dt; p.x += p.vx * dt; p.h += p.vy * dt; p.vy -= 16 * dt; if (p.h < 0) { p.h = 0; p.vy *= -0.4; } } CFX.sparks = CFX.sparks.filter(p => p.t < p.life);
+  for (const m of CFX.smoke) { m.t += dt; m.x += m.vx * dt; m.r += 0.5 * dt; m.h += 0.6 * dt; } CFX.smoke = CFX.smoke.filter(m => m.t < 1.6);
 });
 { const wui = CP.R.worldUI; CP.R.worldUI = function (s, alpha) { wui.call(this, s, alpha); const ctx = this.ctx, R = this, ppm = this.ppm; if (!CFX.sparks.length && !CFX.smoke.length) return; ctx.save();
-    for (const m of CFX.smoke) { const a = Math.max(0, 0.32 - m.t * 0.2); const cx = R.sx(m.x), cy = R.sy(m.yup) - m.yup * 0 - (0.2 + m.t * 0.6) * ppm; const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, m.r * ppm); g.addColorStop(0, `rgba(120,120,125,${a})`); g.addColorStop(1, 'rgba(120,120,125,0)'); ctx.fillStyle = g; ctx.fillRect(cx - m.r * ppm, cy - m.r * ppm, m.r * ppm * 2, m.r * ppm * 2); }
-    ctx.globalCompositeOperation = 'lighter'; for (const p of CFX.sparks) { const a = Math.max(0, 1 - p.t / p.life); const cx = R.sx(p.x), cy = R.sy(0) - p.yup * ppm * 0.5 - 0.05 * ppm; ctx.fillStyle = `rgba(255,${200 - 120 * p.t},80,${a})`; ctx.fillRect(cx, cy, Math.max(1.5, 0.035 * ppm), Math.max(1.5, 0.035 * ppm)); if (a > 0.6) { const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, 0.18 * ppm); g.addColorStop(0, `rgba(255,170,60,${0.25 * a})`); g.addColorStop(1, 'rgba(255,170,60,0)'); ctx.fillStyle = g; ctx.fillRect(cx - 0.18 * ppm, cy - 0.18 * ppm, 0.36 * ppm, 0.36 * ppm); } }
+    for (const m of CFX.smoke) { const a = Math.max(0, 0.32 - m.t * 0.2); const cx = R.sx(m.x), cy = R.sy(m.gy) - m.h * ppm; const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, m.r * ppm); g.addColorStop(0, `rgba(120,120,125,${a})`); g.addColorStop(1, 'rgba(120,120,125,0)'); ctx.fillStyle = g; ctx.fillRect(cx - m.r * ppm, cy - m.r * ppm, m.r * ppm * 2, m.r * ppm * 2); }
+    ctx.globalCompositeOperation = 'lighter'; for (const p of CFX.sparks) { const a = Math.max(0, 1 - p.t / p.life); const cx = R.sx(p.x), cy = R.sy(p.gy) - p.h * ppm; ctx.fillStyle = `rgba(255,${200 - 120 * p.t},80,${a})`; ctx.fillRect(cx, cy, Math.max(1.5, 0.035 * ppm), Math.max(1.5, 0.035 * ppm)); if (a > 0.6) { const g = ctx.createRadialGradient(cx, cy, 0, cx, cy, 0.18 * ppm); g.addColorStop(0, `rgba(255,170,60,${0.25 * a})`); g.addColorStop(1, 'rgba(255,170,60,0)'); ctx.fillStyle = g; ctx.fillRect(cx - 0.18 * ppm, cy - 0.18 * ppm, 0.36 * ppm, 0.36 * ppm); } }
     ctx.restore(); }; }
+/* ---------- suspension: front/rear springs, excited by the strip (raised or flat) ---------- */
+CFX.susp = function (v, dt) { const S = v.susp || (v.susp = { zf: 0, vf: 0, zr: 0, vr: 0, cf: false, cr: false }); const K = 85, C = 9; const X = CP.Spikes ? CP.Spikes.x : -99; const hStrip = 0.06 + 0.2 * (CP.Spikes ? CP.Spikes.up : 0);
+  const fx = CFX.tyreX(v, 1), rx = CFX.tyreX(v, 0); const onF = Math.abs(fx - X) < 0.35, onR = Math.abs(rx - X) < 0.35; const sp = Math.min(1.6, Math.abs(v.v) / 3);
+  if (onF && !S.cf) S.vf += hStrip * 9 * sp; if (onR && !S.cr) S.vr += hStrip * 9 * sp; S.cf = onF; S.cr = onR;
+  S.vf += (-K * S.zf - C * S.vf) * dt; S.zf += S.vf * dt; S.vr += (-K * S.zr - C * S.vr) * dt; S.zr += S.vr * dt; };
+CP.bus.on('stepEnd', () => { const s = CP.G && CP.G.shift; if (!s) return; for (const v of s.vehicles) if (!v.tow) CFX.susp(v, 1 / 60); });
+{ const dv = CP.R.drawVeh; CP.R.drawVeh = function (v) { const S = v.susp; if (S && (Math.abs(S.zf) > 0.002 || Math.abs(S.zr) > 0.002)) { const sh = v.heave, sp = v.pitch; v.heave = (v.heave || 0) - (S.zf + S.zr) / 2; v.pitch = (v.pitch || 0) + (S.zr - S.zf) / Math.max(1.5, v.len * 0.6) * 0.9; const r = dv.apply(this, arguments); v.heave = sh; v.pitch = sp; return r; } return dv.apply(this, arguments); }; }
 /* ---------- HUD spike switch ---------- */
 { const bg = CP.UI.buildGame; CP.UI.buildGame = function () { const r = bg.apply(this, arguments); const hud = document.getElementById('hud'); if (!hud || document.getElementById('hSpikes') || !CP.Spikes) return r; const b = CP.h('button', { id: 'hSpikes', class: 'btn sm', onclick: () => { const S = CP.Spikes; S.manual = !S.manual; S.deployed = S.manual; S.t = S.manual ? 0 : 99; CP.Audio.click(); b.classList.toggle('on', S.manual); b.textContent = CP.t(S.manual ? 'sk_on' : 'sk_off'); } }, CP.t('sk_off')); const sp = hud.querySelector('.sp'); if (sp) hud.insertBefore(b, sp); else hud.appendChild(b); return r; }; }
-CP.bus.on('stepEnd', () => { const S = CP.Spikes; if (!S) return; if (S.manual) { S.deployed = true; S.up = Math.min(1, S.up + 1 / 36); if (S.t > 6) S.t = 6; } });
+CP.bus.on('stepEnd', () => { const S = CP.Spikes; if (!S) return; if (S.manual) S.deployed = true; });
 CP.bus.on('shiftStart', () => { if (CP.Spikes) { CP.Spikes.manual = false; CP.Spikes.deployed = false; } });
 
 /* ---------- realistic cosmetics ---------- */
@@ -60,4 +68,4 @@ CFX.post = function (ctx, W, H, night, t, flares, beacon) {
   if (!CFX.grain) { const c = document.createElement('canvas'); c.width = c.height = 160; const x = c.getContext('2d'); const im = x.createImageData(160, 160); for (let i = 0; i < im.data.length; i += 4) { const v = 100 + Math.random() * 80; im.data[i] = im.data[i + 1] = im.data[i + 2] = v; im.data[i + 3] = 18; } x.putImageData(im, 0, 0); CFX.grain = ctx.createPattern(c, 'repeat'); }
   ctx.save(); ctx.translate((t * 60) % 160, (t * 37) % 160); ctx.fillStyle = CFX.grain; ctx.fillRect(-160, -160, W + 320, H + 320); ctx.restore();
 };
-;(window.CP_FILES = window.CP_FILES || {})['40_cinefx'] = '2.8.1';
+;(window.CP_FILES = window.CP_FILES || {})['40_cinefx'] = '2.8.2';

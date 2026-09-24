@@ -23,8 +23,8 @@ CP.Cine = {}; const CN = CP.Cine;
 
 /* ---------- spikes: lower on the lane, speed bump physics ---------- */
 if (CP.Spikes) {
-  { const upd = CP.T.update; CP.T.update = function (dt) { const r = upd.apply(this, arguments); const s = CP.G.shift; const X = CP.Spikes.x; for (const v of s.vehicles) { if (v.row !== 0 || v.tow) continue; const d = v.x - X; if (d > -2.2 && d < v.len + 0.4 && !v.runner && !v.spiked) { v.bumpZone = true; const front = CP.clamp(1 - Math.abs(d) / 0.7, 0, 1), rear = CP.clamp(1 - Math.abs(d - v.len) / 0.7, 0, 1); v.bump = 0.14 * Math.max(front, rear) * Math.min(1, v.v / 1.5); v.pitch = (front - rear) * 0.05 * Math.min(1, v.v / 1.5); } else { v.bumpZone = false; if (v.bump) { v.bump = 0; v.pitch = 0; } } } return r; }; }
-  { const dv = CP.R.drawVeh; CP.R.drawVeh = function (v) { if (v.bump) { const sv = v.heave; v.heave = (v.heave || 0) - v.bump; const r = dv.apply(this, arguments); v.heave = sv; return r; } return dv.apply(this, arguments); }; } }
+  { const upd = CP.T.update; CP.T.update = function (dt) { const r = upd.apply(this, arguments); const s = CP.G.shift; const X = CP.Spikes.x; for (const v of s.vehicles) { if (v.row !== 0 || v.tow) continue; const d = v.x - X; if (d > -2.2 && d < v.len + 0.4 && !v.runner && !v.spiked) { v.bumpZone = true; } else v.bumpZone = false; } return r; }; }
+}
 
 /* ---------- no panel animation when swapping ---------- */
 { const open = CP.UI.open; CP.UI.open = function (kind) { const swapping = !!CP.UI.panel; document.documentElement.classList.toggle('pswap', swapping); const r = open.apply(this, arguments); if (swapping) setTimeout(() => document.documentElement.classList.remove('pswap'), 60); return r; }; }
@@ -64,7 +64,12 @@ CP.Screens.menuScene = function (cv) {
     const r = cv.getBoundingClientRect(); const dpr = Math.min(2, window.devicePixelRatio || 1); if (r.width < 10) return;
     if (cv.width !== Math.round(r.width * dpr) || cv.height !== Math.round(r.height * dpr)) { cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr); }
     const ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); const W = r.width, H = r.height; const ar = CP.lang === 'ar';
-    const ppm = Math.min(H / 12, W / 26) * (1 + 0.035 * Math.sin(st.t * 0.12)); const span = W / ppm; const gateX = 19.5; const camX = gateX - span * (CP.lang === 'ar' ? 0.28 : 0.72) + Math.sin(st.t * 0.07) * 0.9; const sx = x => (x - camX) * ppm; const gy0 = H * 0.66, gy1 = H * 0.86; // far lane / near lane ground
+    const gateX = 19.5; const base = Math.min(H / 12, W / 26); const cam = st.cam || (st.cam = { x: 0, z: 1, tx: 0, tz: 1 });
+    // shot list: idle = slow dolly; bolt = follow the runner, pushed in; spike = tight on the strip; tow = follow the truck wide
+    const anchor = CP.lang === 'ar' ? 0.28 : 0.72; const E = st.ev; let focusX = gateX, tz = 1 + 0.04 * Math.sin(st.t * 0.11), sway = Math.sin(st.t * 0.06) * 1.4;
+    if (E && E.stage === 'wait') { focusX = gateX - 3; tz = 1.25; sway = 0; } else if (E && E.stage === 'bolt') { focusX = E.car.x + 2; tz = 1.2; sway = 0; } else if (E && E.stage === 'spike') { focusX = gateX + 4.2 + (E.car.spiked ? E.car.x - gateX - 4.2 : 0) * 0.5; tz = 1.35; sway = 0; } else if (E && E.stage === 'tow') { focusX = E.truck ? E.truck.x - 3 : gateX + 4; tz = 1.05; sway = 0; }
+    cam.tx = focusX - (W / (base * tz)) * anchor + sway; cam.tz = tz; cam.x += (cam.tx - cam.x) * Math.min(1, dt * 1.6); cam.z += (cam.tz - cam.z) * Math.min(1, dt * 1.2);
+    const ppm = base * cam.z; const span = W / ppm; const camX = cam.x; const sx = x => (x - camX) * ppm; const gy0 = H * 0.66, gy1 = H * 0.86; // far lane / near lane ground
     st.night = 0.5 + 0.5 * Math.sin(st.t / 30 * Math.PI - Math.PI / 2); const night = CP.clamp(st.night, 0, 1);
     // backdrop
     const L = CP.LOCS.alex; const im = A.img[L.bg.day], nimg = A.img[L.bg.night]; if (im) { let bw = W * 1.08, bh = bw * im.height / im.width; const minH = gy0 - 0.4 * ppm + 10; if (bh < minH) { bh = minH; bw = bh * im.width / im.height; } const bx = W / 2 - bw / 2 + Math.sin(st.t * 0.05) * 6; ctx.drawImage(im, bx, gy0 - 0.4 * ppm - bh, bw, bh); if (nimg && night > 0.01) { ctx.globalAlpha = night; ctx.drawImage(nimg, bx, gy0 - 0.4 * ppm - bh, bw, bh); ctx.globalAlpha = 1; } }
@@ -113,4 +118,4 @@ CP.Screens.menuScene = function (cv) {
   };
   requestAnimationFrame(loop);
 };
-;(window.CP_FILES = window.CP_FILES || {})['39_cinema'] = '2.8.1';
+;(window.CP_FILES = window.CP_FILES || {})['39_cinema'] = '2.8.2';

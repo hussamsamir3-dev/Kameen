@@ -144,4 +144,4 @@ CP.FUN.push(
 { const ap = CP.Fun.apply; CP.Fun.apply = function (fx) { if (fx.xp < 0 && CP.G.shift.prog) { CP.G.shift.prog.xp = Math.max(0, CP.G.shift.prog.xp + fx.xp); CP.R.popup(CP.num(fx.xp) + ' ' + CP.t('pr_xp'), null, null, '#ff6a6a'); fx = Object.assign({}, fx, { xp: 0 }); } return ap.call(this, fx); }; }
 CP.bus.on('stepEnd', () => { const s = CP.G && CP.G.shift; const ob = document.getElementById('objBox'); if (!s || !ob) return; const dim = s.t > 12 && !(s.t - (s.events.objPingT || -99) < 8); ob.classList.toggle('dim', dim); });
 { const chk = CP.Prog.checkObjectives; CP.Prog.checkObjectives = function () { const s = CP.G.shift; const before = s && s.prog ? s.prog.objs.filter(o => o.done).length : 0; chk.apply(this, arguments); if (s && s.prog && s.prog.objs.filter(o => o.done).length !== before) s.events.objPingT = s.t; }; }
-;(window.CP_FILES = window.CP_FILES || {})['24_pulse'] = '2.8.1';
+;(window.CP_FILES = window.CP_FILES || {})['24_pulse'] = '2.8.2';

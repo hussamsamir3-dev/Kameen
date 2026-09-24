@@ -54,8 +54,8 @@ const SK = CP.Spikes;
 SK.deploy = function () { if (SK.deployed) return; SK.deployed = true; SK.t = 0; CP.Audio.click(); CP.R.punch(); if (navigator.vibrate) { try { navigator.vibrate(60); } catch (e) { } } };
 CP.bus.on('stepEnd', () => {
   const s = CP.G && CP.G.shift; if (!s) return; const dt = 1 / 60;
-  if (SK.deployed) { SK.t += dt; SK.up = CP.clamp(SK.t / 0.6, 0, 1); if (SK.t > 6.5) { SK.deployed = false; } }
-  else SK.up = Math.max(0, SK.up - dt * 2);
+  if (SK.deployed) { SK.t += dt; if (SK.t > 6.5 && !SK.manual) SK.deployed = false; }
+  const target = SK.deployed ? 1 : 0; SK.up = target > SK.up ? Math.min(1, SK.up + dt / 0.6) : Math.max(0, SK.up - dt / 0.9); // 16 steps over 0.6 s up, 0.9 s down
   if (SK.up > 0.8) for (const v of s.vehicles) { if (v.tow || v.limp || v.spiked || v.row !== 0) continue; const front = v.x, back = v.x - v.len; if (front > SK.x && back < SK.x && v.v > 0.5) SK.hit(v); }
   for (const v of s.vehicles) if (v.spiked && !v.towing && v.v < 0.3 && s.t - v.spiked > 1) { v.stall = 9999; v.stallKind = 'stall'; TOW.call(v, v.runner ? 'handover' : 'towed'); }
 });
@@ -64,7 +64,7 @@ SK.hit = function (v) { const s = CP.G.shift; v.spiked = s.t; v.limp = true; v.m
   else { CP.UI.banner(CP.t('rn_innocent'), 'emergency'); CP.Econ && CP.Econ.addMoney(-400); CP.G.career.trust = CP.clamp(CP.G.career.trust - 4, 0, 100); (s.events.mail = s.events.mail || { cmp: [], cmd: [] }).cmp.push(CP.t('rn_innocent')); }
 };
 /* draw the strip after the barrier (world-anchored), with the deploy frames */
-{ const st = CP.R.structures; CP.R.structures = function (s) { const r = st.apply(this, arguments); const A = CP.A; const fr = 'spikes_' + String(Math.min(15, Math.round(SK.up * 15))).padStart(2, '0'); const sp = A.M.sprites[fr]; if (!sp) return r; const ppm = this.ppm; const cx = this.sx(SK.x), gy = this.sy(this.Y.mainNear + 0.12); const k = 1.15 * ppm / sp.rect[2]; A.drawGroundedScale(this.ctx, fr, cx, gy, k, false, 0.5); return r; }; }
+{ const st = CP.R.structures; CP.R.structures = function (s) { const r = st.apply(this, arguments); const A = CP.A; const fr = 'spikes_' + String(Math.min(15, Math.floor(SK.up * 15.999))).padStart(2, '0'); const sp = A.M.sprites[fr]; if (!sp) return r; const ppm = this.ppm; const cx = this.sx(SK.x), gy = this.sy(this.Y.mainNear + 0.12); const k = 1.15 * ppm / sp.rect[2]; A.drawGroundedScale(this.ctx, fr, cx, gy, k, false, 0.5); return r; }; }
 
 /* ---------- runner scenario ---------- */
 CP.Events.MINOR.push('runner'); CP.Events.tierOf.runner = 3;
@@ -81,4 +81,4 @@ CP.bus.on('stepEnd', () => { const s = CP.G && CP.G.shift; let b = document.getE
   if (!show) { if (b) b.remove(); return; } if (b) { b.classList.toggle('up', SK.deployed); return; }
   b = CP.h('button', { id: 'spikeBtn', onclick: e => { e.stopPropagation(); SK.deploy(); } }, CP.t('rn_deploy')); document.getElementById('stage').appendChild(b); });
 document.addEventListener('keydown', e => { if (e.code === 'Space' && document.getElementById('spikeBtn') && !document.getElementById('fixbar')) { e.preventDefault(); SK.deploy(); } });
-;(window.CP_FILES = window.CP_FILES || {})['37_tow'] = '2.8.1';
+;(window.CP_FILES = window.CP_FILES || {})['37_tow'] = '2.8.2';

@@ -23,7 +23,7 @@ CP.Cine = {}; const CN = CP.Cine;
 
 /* ---------- spikes: lower on the lane, speed bump physics ---------- */
 if (CP.Spikes) {
-  { const upd = CP.T.update; CP.T.update = function (s, dt) { const r = upd.apply(this, arguments); const X = CP.Spikes.x; for (const v of s.vehicles) { if (v.row !== 0 || v.tow) continue; const d = v.x - X; if (d > -0.4 && d < v.len + 0.4 && !v.runner) { if (v.v > 2.5) v.v = Math.max(2.5, v.v - 14 * dt); const ph = CP.clamp((d + 0.4) / (v.len + 0.8), 0, 1); v.bump = Math.sin(ph * Math.PI) * 0.06; } else v.bump = 0; } return r; }; }
+  { const upd = CP.T.update; CP.T.update = function (dt) { const r = upd.apply(this, arguments); const s = CP.G.shift; const X = CP.Spikes.x; for (const v of s.vehicles) { if (v.row !== 0 || v.tow) continue; const d = v.x - X; if (d > -2.2 && d < v.len + 0.4 && !v.runner && !v.spiked) { v.bumpZone = true; const front = CP.clamp(1 - Math.abs(d) / 0.7, 0, 1), rear = CP.clamp(1 - Math.abs(d - v.len) / 0.7, 0, 1); v.bump = 0.14 * Math.max(front, rear) * Math.min(1, v.v / 1.5); v.pitch = (front - rear) * 0.05 * Math.min(1, v.v / 1.5); } else { v.bumpZone = false; if (v.bump) { v.bump = 0; v.pitch = 0; } } } return r; }; }
   { const dv = CP.R.drawVeh; CP.R.drawVeh = function (v) { if (v.bump) { const sv = v.heave; v.heave = (v.heave || 0) - v.bump; const r = dv.apply(this, arguments); v.heave = sv; return r; } return dv.apply(this, arguments); }; } }
 
 /* ---------- no panel animation when swapping ---------- */
@@ -64,7 +64,7 @@ CP.Screens.menuScene = function (cv) {
     const r = cv.getBoundingClientRect(); const dpr = Math.min(2, window.devicePixelRatio || 1); if (r.width < 10) return;
     if (cv.width !== Math.round(r.width * dpr) || cv.height !== Math.round(r.height * dpr)) { cv.width = Math.round(r.width * dpr); cv.height = Math.round(r.height * dpr); }
     const ctx = cv.getContext('2d'); ctx.setTransform(dpr, 0, 0, dpr, 0, 0); const W = r.width, H = r.height; const ar = CP.lang === 'ar';
-    const ppm = Math.min(H / 12, W / 26); const span = W / ppm; const gateX = 19.5; const camX = gateX - span * (CP.lang === 'ar' ? 0.28 : 0.72); const sx = x => (x - camX) * ppm; const gy0 = H * 0.66, gy1 = H * 0.86; // far lane / near lane ground
+    const ppm = Math.min(H / 12, W / 26) * (1 + 0.035 * Math.sin(st.t * 0.12)); const span = W / ppm; const gateX = 19.5; const camX = gateX - span * (CP.lang === 'ar' ? 0.28 : 0.72) + Math.sin(st.t * 0.07) * 0.9; const sx = x => (x - camX) * ppm; const gy0 = H * 0.66, gy1 = H * 0.86; // far lane / near lane ground
     st.night = 0.5 + 0.5 * Math.sin(st.t / 30 * Math.PI - Math.PI / 2); const night = CP.clamp(st.night, 0, 1);
     // backdrop
     const L = CP.LOCS.alex; const im = A.img[L.bg.day], nimg = A.img[L.bg.night]; if (im) { let bw = W * 1.08, bh = bw * im.height / im.width; const minH = gy0 - 0.4 * ppm + 10; if (bh < minH) { bh = minH; bw = bh * im.width / im.height; } const bx = W / 2 - bw / 2 + Math.sin(st.t * 0.05) * 6; ctx.drawImage(im, bx, gy0 - 0.4 * ppm - bh, bw, bh); if (nimg && night > 0.01) { ctx.globalAlpha = night; ctx.drawImage(nimg, bx, gy0 - 0.4 * ppm - bh, bw, bh); ctx.globalAlpha = 1; } }
@@ -76,7 +76,7 @@ CP.Screens.menuScene = function (cv) {
     const prop = (id, x, gy, hM) => { const sp = A.M.sprites[id]; if (!sp) return; const k = hM * ppm / sp.rect[3]; A.drawGroundedScale(ctx, id, sx(x), gy, k, false, 0.5); };
     prop('booth', 26, gy0 - 0.3 * ppm, 3.2); prop('floodlight', 13.6, gy0 - 0.3 * ppm, 4.2); prop('gate_motor', gateX, gy0 - 0.2 * ppm, 1.6); prop('gate_f7', gateX, gy0 - 0.2 * ppm, 1.6);
     // sergeant on the far pavement
-    const S = st.sgt; S.t += dt; if (S.t > 9) { S.t = 0; S.target = 10 + Math.random() * 14; } if (S.target != null) { const d = S.target - S.x; if (Math.abs(d) > 0.1) { S.x += Math.sign(d) * 1.2 * dt; S.dir = Math.sign(d); S.walk = (S.walk || 0) + 1.2 * dt; S.moving = true; } else { S.moving = false; S.target = null; } } dr(CP.Actors.frameFor(2, S.moving ? 'idle' : (Math.floor(st.t / 7) % 3 ? 'idle' : 'radio'), S.moving, S.walk || 0, st.t + 2, true), sx(S.x || 12), gy0 - 0.35 * ppm, 1.75, S.dir < 0);
+    const S = st.sgt; S.t += dt; if (S.t > 9) { S.t = 0; S.target = 10 + Math.random() * 14; } if (S.target != null) { const d = S.target - S.x; if (Math.abs(d) > 0.1) { S.x += Math.sign(d) * 1.2 * dt; S.dir = Math.sign(d); S.walk = (S.walk || 0) + 1.2 * dt; S.moving = true; } else { S.moving = false; S.target = null; } } dr(CP.Actors.frameFor(2, S.moving ? 'idle' : (Math.floor(st.t / 7) % 3 ? 'idle' : 'radio'), S.moving, S.walk || 0, st.t + 2, true), sx(S.x || 12), gy0 - 0.35 * ppm, 1.45, S.dir < 0);
     // traffic
     st.spawn = (st.spawn || 0) - dt; if (st.spawn <= 0 && st.cars.length < 7) { st.spawn = 4 + Math.random() * 5; const type = TYPES[Math.floor(Math.random() * TYPES.length)]; const V = A.M.vehicles[type]; st.cars.push({ type, x: camX - 8 - Math.random() * 6, v: 6 + Math.random() * 3, w: 0, lane: 1, len: V.lengthMetres, stopT: 0 }); }
     const marker = gateX - 3.5; const O = st.officer; O.t -= dt; let held = null;
@@ -88,7 +88,7 @@ CP.Screens.menuScene = function (cv) {
     if (st.ev) { const E = st.ev, c = E.car; E.t += dt;
       if (E.stage === 'wait' && c.stopT > 1.4) { E.stage = 'bolt'; c.passed = true; c.runner = true; c.v = 4; O.pose = 'stop'; O.t = 1.2; }
       if (E.stage === 'bolt') { c.v = Math.min(14, c.v + 8 * dt); if (c.x > gateX + 1.5) { E.stage = 'spike'; st.spikes = 0; } }
-      if (E.stage === 'spike') { st.spikes = Math.min(1, st.spikes + dt / 0.5); if (c.x > gateX + 4.2 && !c.spiked) { c.spiked = true; for (let i = 0; i < 40; i++) st.sparks.push({ x: sx(gateX + 4.2), y: gy1, vx: (Math.random() - 0.3) * 260, vy: -80 - Math.random() * 260, t: 0 }); } if (c.spiked) { c.v = Math.max(0, c.v - 6 * dt); c.limp = true; if (Math.random() < 0.6) st.smoke.push({ x: sx(c.x - c.len * 0.8), y: gy1, r: 4 + Math.random() * 8, t: 0 }); if (c.v < 0.2) { E.stage = 'tow'; E.truck = { x: -12, v: 0 }; } } }
+      if (E.stage === 'spike') { st.spikes = Math.min(1, st.spikes + dt / 0.5); if (c.x > gateX + 4.2 && !c.spiked) { c.spiked = true; for (let i = 0; i < 110; i++) st.sparks.push({ x: sx(gateX + 4.2), y: gy1, vx: (Math.random() - 0.3) * 380, vy: -60 - Math.random() * 360, t: 0 }); } if (c.spiked) { c.v = Math.max(0, c.v - 6 * dt); c.limp = true; if (Math.random() < 0.6) st.smoke.push({ x: sx(c.x - c.len * 0.8), y: gy1, r: 4 + Math.random() * 8, t: 0 }); if (c.v < 0.2) { E.stage = 'tow'; E.truck = { x: -12, v: 0 }; } } }
       if (E.stage === 'tow') { const T = E.truck; if (T.x === -12) T.x = camX - 12; const target = c.x + 0.6; if (!E.loaded) { const d = target - T.x; T.v = Math.min(8, Math.max(0.6, d * 1.3)); T.x += Math.min(d, T.v * dt); if (d < 0.05) { E.lift = (E.lift || 0) + dt / 2.4; if (E.lift >= 1) E.loaded = true; } } else { T.v = Math.min(9, T.v + 2.5 * dt); T.x += T.v * dt; c.x = T.x - 7.4 * 0.58 + c.len / 2; if (T.x > camX + span + 14) { st.cars = st.cars.filter(x => x !== c); st.ev = null; st.evT = 24; st.spikes = 0; } }
         const p = E.loaded ? 1 : (E.lift || 0); c.lift = Math.sin(p * Math.PI) * 0.5 + (p > 0.5 ? (p - 0.5) * 2 * 1.05 : 0); if (p > 0.05) { const e = p < 0.5 ? 2 * p * p : 1 - Math.pow(-2 * p + 2, 2) / 2; c.x = c.x0 == null ? (c.x0 = c.x, c.x) : c.x0 + (T.x - 7.4 * 0.58 + c.len / 2 - c.x0) * e; } if (st.spikes > 0 && E.loaded) st.spikes = Math.max(0, st.spikes - dt); }
     }
@@ -98,14 +98,19 @@ CP.Screens.menuScene = function (cv) {
     if (st.ev && st.ev.truck) { const T = st.ev.truck; A.drawVehicle(ctx, 'tow_truck', sx(T.x - 7.4), gy1 + 0.35 * ppm, ppm, 0, 0, 0); }
     for (const c of st.cars.filter(c => c.lane === 1)) A.drawVehicle(ctx, c.type, sx(c.x - c.len), gy1 - (c.lift || 0) * ppm, ppm, c.w, 0, 0);
     // officer at the marker
-    O.pose = O.t > 0 ? O.pose : 'idle'; dr(CP.Actors.frameFor(0, O.pose, false, 0, st.t), sx(marker + 1.6), gy1 + 0.02 * ppm, 2.1, true);
+    O.pose = O.t > 0 ? O.pose : 'idle'; dr(CP.Actors.frameFor(0, O.pose, false, 0, st.t), sx(marker + 1.6), gy1 + 0.02 * ppm, 1.78, true);
     // sparks + smoke
     ctx.save(); for (const s of st.sparks) { s.t += dt; s.x += s.vx * dt; s.y += s.vy * dt; s.vy += 500 * dt; ctx.globalAlpha = Math.max(0, 1 - s.t * 1.6); ctx.fillStyle = Math.random() < 0.5 ? '#ffd35a' : '#ff8a3a'; ctx.fillRect(s.x, s.y, 2.5, 2.5); } st.sparks = st.sparks.filter(s => s.t < 0.7);
     for (const m of st.smoke) { m.t += dt; m.y -= 18 * dt; m.r += 14 * dt; ctx.globalAlpha = Math.max(0, 0.35 - m.t * 0.25); ctx.fillStyle = '#9a9a9a'; ctx.beginPath(); ctx.arc(m.x, m.y, m.r, 0, 6.283); ctx.fill(); } st.smoke = st.smoke.filter(m => m.t < 1.5); ctx.restore();
+    // headlights / brake lights at night, tow beacon, post-processing
+    if (night > 0.1) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; for (const c of st.cars) { const hx = sx(c.x), hy = gy1 - 0.55 * ppm; const g = ctx.createLinearGradient(hx, hy, hx + 5 * ppm, hy); g.addColorStop(0, `rgba(255,240,200,${0.35 * night})`); g.addColorStop(1, 'rgba(255,240,200,0)'); ctx.fillStyle = g; ctx.beginPath(); ctx.moveTo(hx, hy - 0.15 * ppm); ctx.lineTo(hx + 5.5 * ppm, hy - 1.1 * ppm); ctx.lineTo(hx + 5.5 * ppm, hy + 0.7 * ppm); ctx.lineTo(hx, hy + 0.15 * ppm); ctx.closePath(); ctx.fill(); if (c.v < 1.5) { ctx.fillStyle = `rgba(255,60,50,${0.55 * night})`; ctx.beginPath(); ctx.arc(sx(c.x - c.len) + 0.1 * ppm, gy1 - 0.6 * ppm, 0.12 * ppm, 0, 6.283); ctx.fill(); } } ctx.restore(); }
+    const flares = night > 0.35 ? [13.6, 30].map(fx => ({ x: sx(fx) + 0.2 * ppm, y: gy0 - 0.3 * ppm - 4.0 * ppm, r: 1.6 * ppm, a: 0.45 * night })) : [];
+    const beacon = st.ev && st.ev.truck ? { x: sx(st.ev.truck.x - 1.2), y: gy1 + 0.35 * ppm - 3.3 * ppm, r: 1.2 * ppm } : null;
     // night: floodlight pools + vignette
     if (night > 0.05) { ctx.save(); ctx.globalCompositeOperation = 'lighter'; for (const fx of [13.6, 30]) { const cx = sx(fx), cy = gy1 - 0.5 * ppm; const gg = ctx.createRadialGradient(cx, cy, 0, cx, cy, 6 * ppm); gg.addColorStop(0, `rgba(255,225,170,${0.25 * night})`); gg.addColorStop(1, 'rgba(255,225,170,0)'); ctx.fillStyle = gg; ctx.save(); ctx.translate(cx, cy); ctx.scale(1, 0.4); ctx.beginPath(); ctx.arc(0, 0, 6 * ppm, 0, 6.283); ctx.fill(); ctx.restore(); } ctx.restore(); ctx.fillStyle = `rgba(10,14,30,${0.35 * night})`; ctx.fillRect(0, 0, W, H); }
     st.cars = st.cars.filter(c => c.x - c.len < camX + span + 6 || c.towing != null || (st.ev && st.ev.car === c));
+    if (CP.CineFX) CP.CineFX.post(ctx, W, H, night, st.t, flares, beacon);
   };
   requestAnimationFrame(loop);
 };
-;(window.CP_FILES = window.CP_FILES || {})['39_cinema'] = '2.8.0';
+;(window.CP_FILES = window.CP_FILES || {})['39_cinema'] = '2.8.1';

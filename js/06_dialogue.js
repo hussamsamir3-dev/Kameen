@@ -96,7 +96,7 @@ CP.Dlg.ask = function (c, intent, tone) {
         CP.note(c, 'observation', pr('مواطن متعامل معاه قبل كده (' + CP.STR.ar['res_' + c.ret.lastOutcome] + ')', 'Returning citizen — previous outcome: ' + CP.STR.en['res_' + c.ret.lastOutcome]), 'verified');
       }
       // the driver now hands the papers over (short, visible handover) — documents are only readable once received
-      if (!k.docsHave && !k.docsHanding) { k.docsHanding = true; CP.Tasks.add({ type: 'handover', owner: 'driver', caseId: c.id, dur: 1.6, key: 'handover:' + c.id, data: {} }); }
+      if (!k.docsHave && !k.docsHanding) { k.docsHanding = true; CP.Tasks.add({ type: 'handover', owner: 'driver', caseId: c.id, dur: 0.8, key: 'handover:' + c.id, data: {} }); }
       CP.Actors.poseHold('documents', 2.2);
       break; }
     case 'ask_destination': {
@@ -277,4 +277,4 @@ GF.pers = (c, p) => { const L = CP.C.persLabel[p]; if (!GF.isF(c)) return L; con
     const r = st(c, key, t, val, extra);
     if (!pax && GF.isF(c)) { const n = CP.G.shift.notes[CP.G.shift.notes.length - 1]; if (n && n.caseId === c.id && n.type === 'statement' && n.text.ar.indexOf('السواق: ') === 0) n.text = { ar: 'السواقة: ' + n.text.ar.slice(8), en: n.text.en }; }
     return r; }; }
-;(window.CP_FILES = window.CP_FILES || {})['06_dialogue'] = '2.8.0';
+;(window.CP_FILES = window.CP_FILES || {})['06_dialogue'] = '2.8.1';

@@ -875,3 +875,6 @@ html.mob.land #panel .pw { max-height: calc(var(--vvh) - 40px); }
 .rankchip .rk-name { margin-inline-start: 6px; font-weight: 800; font-size: .95em; color: #ffe4a3; white-space: nowrap; }
 .dev-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
 html.pswap #panel, html.pswap #panel .pw, html.pswap #panel * { transition: none !important; animation: none !important; }
+
+#hSpikes { border-color: rgba(255,90,58,.6); } #hSpikes.on { background: linear-gradient(135deg,#ff7a3a,#d92b1c); color: #fff; animation: spikePulse 1s ease-in-out infinite; transform: none; }
+@keyframes spikePulseHud { 50% { box-shadow: 0 0 0 6px rgba(255,90,58,.15); } } #hSpikes.on { animation: spikePulseHud 1s ease-in-out infinite; }

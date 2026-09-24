@@ -67,4 +67,4 @@ CP.Audio.radioSfx = function (kind) { if (!this.ok) return; const t = this.ctx.c
 if (CP.Logic) { const orig = CP.Logic.strip; }
 { const bt = CP.bus.on; }
 document.addEventListener('pointerdown', e => { const b = e.target.closest && e.target.closest('#flowStrip .btn.ask'); if (!b || !/📻/.test(b.textContent)) return; e.stopPropagation(); e.preventDefault(); const a = CP.Act.avail('radio'); if (!a.ok) { CP.UI.toast(a.reason, 'warn'); return; } if (CP.UI.panel && CP.UI.panel.kind !== 'radio') CP.UI.close(); setTimeout(() => CP.Act.run('radio'), 30); }, true);
-;(window.CP_FILES = window.CP_FILES || {})['38_experience'] = '2.8.0';
+;(window.CP_FILES = window.CP_FILES || {})['38_experience'] = '2.8.1';

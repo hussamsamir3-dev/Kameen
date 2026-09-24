@@ -161,6 +161,7 @@ CP.T.step = function (dt) {
     if (rowNow !== 0 || v.trans) maxV = Math.min(maxV, v.special === 'ambulance' ? 9 : 5);
     if (v.trans) maxV = Math.min(maxV, 3.2);
     if (v.limp) maxV = Math.min(maxV, 2.2);
+    if (v.bumpZone) maxV = Math.min(maxV, 2.4); // spike strip / speed bump
     const dist = target - v.x;
     // stopping-distance governed desired speed: d = v^2/(2b) + v*t + margin
     const b = v.dec * 0.62 * (CP.Weather ? CP.Weather.grip(s) : 1);
@@ -322,4 +323,4 @@ CP.T.far = function (dt) {
   for (const f of s.far) { f.px = f.x; f.pw = f.w; f.x += f.v * dt * 2.1; f.w += (f.v * dt) / CP.A.M.vehicles[f.type].wheelRadiusMetres; }
   s.far = s.far.filter(f => f.x < 95);
 };
-;(window.CP_FILES = window.CP_FILES || {})['08_traffic'] = '2.8.0';
+;(window.CP_FILES = window.CP_FILES || {})['08_traffic'] = '2.8.1';

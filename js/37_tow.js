@@ -41,7 +41,7 @@ CP.bus.on('stepEnd', () => {
   }
 });
 /* keep the base physics off towed vehicles and the truck */
-{ const upd = CP.T.update; CP.T.update = function (s, dt) { const held = s.vehicles.filter(v => v.tow || (v.towing && v.towing.phase !== 'wait')); const snap = held.map(v => ({ v, x: v.x, row: v.row, vel: v.v })); const r = upd.apply(this, arguments); for (const o of snap) { o.v.x = o.x; o.v.row = o.row; o.v.v = o.vel; } return r; }; }
+{ const upd = CP.T.update; CP.T.update = function (dt) { const s = CP.G.shift; const held = s.vehicles.filter(v => v.tow || (v.towing && v.towing.phase !== 'wait')); const snap = held.map(v => ({ v, x: v.x, row: v.row, vel: v.v })); const r = upd.apply(this, arguments); for (const o of snap) { o.v.x = o.x; o.v.row = o.row; o.v.v = o.vel; } return r; }; }
 /* draw the towed car lifted on the bed (heave) */
 { const dv = CP.R.drawVeh; CP.R.drawVeh = function (v, alpha) { if (v.towLift) { const sv = v.heave; v.heave = (v.heave || 0) - v.towLift; const r = dv.apply(this, arguments); v.heave = sv; return r; } return dv.apply(this, arguments); }; }
 /* tow requests from the repair popover / tow contract / radio task now bring the truck */
@@ -81,4 +81,4 @@ CP.bus.on('stepEnd', () => { const s = CP.G && CP.G.shift; let b = document.getE
   if (!show) { if (b) b.remove(); return; } if (b) { b.classList.toggle('up', SK.deployed); return; }
   b = CP.h('button', { id: 'spikeBtn', onclick: e => { e.stopPropagation(); SK.deploy(); } }, CP.t('rn_deploy')); document.getElementById('stage').appendChild(b); });
 document.addEventListener('keydown', e => { if (e.code === 'Space' && document.getElementById('spikeBtn') && !document.getElementById('fixbar')) { e.preventDefault(); SK.deploy(); } });
-;(window.CP_FILES = window.CP_FILES || {})['37_tow'] = '2.8.0';
+;(window.CP_FILES = window.CP_FILES || {})['37_tow'] = '2.8.1';

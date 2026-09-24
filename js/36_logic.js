@@ -77,8 +77,8 @@ CP.bus.on('stepEnd', () => {
   const s = CP.G && CP.G.shift; const f = LG.flow; if (!s || !f.caseId || !LG.flowOn()) return; const c = s.cases[f.caseId]; const v = c && CP.vehOfCase(c); if (!c || !v || c.res) { f.caseId = null; return; }
   if (s.officer.moving) return;
   f.wait = (f.wait || 0) - 1; if (f.wait > 0) return;
-  if (f.stage === 'stop' && c.k.stopped) { f.stage = 'talk'; if (!c.k.greeted) { const a = CP.Act.avail('talk'); if (a.ok) CP.Act.run('talk'); } f.wait = 6; return; }
-  if (f.stage === 'talk') { if (!c.k.greeted) { if (CP.UI.panel && CP.UI.panel.kind === 'dialogue') { CP.Dlg.ask(c, 'greet_docs', 'calm'); CP.UI.renderPanel(); f.wait = 12; } return; } f.stage = 'docs'; f.wait = 6; return; }
+  if (f.stage === 'stop' && c.k.stopped) { f.stage = 'talk'; if (!c.k.greeted) { const a = CP.Act.avail('talk'); if (a.ok) CP.Act.run('talk'); } f.wait = 3; return; }
+  if (f.stage === 'talk') { if (!c.k.greeted) { if (CP.UI.panel && CP.UI.panel.kind === 'dialogue') { CP.Dlg.ask(c, 'greet_docs', 'calm'); CP.UI.renderPanel(); f.wait = 4; } return; } f.stage = 'docs'; f.wait = 6; return; }
   if (f.stage === 'docs') { if (c.k.docsHanding) return; if (!c.k.docsHave) { f.wait = 6; return; } if (!(CP.UI.panel && CP.UI.panel.kind === 'docs')) { const a = CP.Act.avail('docs'); if (a.ok) CP.Act.run('docs'); f.wait = 6; return; } f.stage = 'decide'; }
 });
 /* automatic reason: the strongest evidence the case already holds */
@@ -121,4 +121,4 @@ CP.bus.on('stepEnd', () => { LG.st = (LG.st || 0) + 1; if (LG.st % 15 === 0) LG.
 /* the case card's "Check" becomes the one-tap routine */
 document.addEventListener('pointerdown', e => { const b = e.target.closest && e.target.closest('#dock .act'); if (!b || !LG.flowOn()) return; const lab = (b.textContent || ''); if (/فحص|Check/.test(lab) && !/سريع|Quick/.test(lab)) { const c = CP.Act.curC(); if (c && !c.k.stopped) { setTimeout(() => { if (!LG.flow.caseId) LG.startFlow(); }, 0); } } }, true);
 { const menu = CP.Screens.menu; CP.Screens.menu = function () { const r = menu.apply(this, arguments); const more = document.querySelector('.rv-more .col'); if (more) more.appendChild(CP.h('button', { class: 'btn mb', onclick: () => { CP.S.flow = CP.S.flow === false; CP.saveSettings(); CP.UI.toast(CP.t('fl_flow') + ': ' + (CP.S.flow === false ? 'OFF' : 'ON')); } }, CP.t('fl_flow'))); return r; }; }
-;(window.CP_FILES = window.CP_FILES || {})['36_logic'] = '2.8.0';
+;(window.CP_FILES = window.CP_FILES || {})['36_logic'] = '2.8.1';

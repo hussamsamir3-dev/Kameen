@@ -276,4 +276,4 @@ Object.assign(CP.C.visitor, {
     thanks: ['تسلم إيدك يا باشا.', 'Thank you kindly, officer.'] }
 });
 CP.addStrings = CP.addStrings || function () {};
-;(window.CP_FILES = window.CP_FILES || {})['02_content'] = '2.3.6';
+;(window.CP_FILES = window.CP_FILES || {})['02_content'] = '2.4.0';

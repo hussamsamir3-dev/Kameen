@@ -1,1 +1,1 @@
-Real edits: js/09_actors.js, js/14_render.js, js/23_staff.js, js/29_world.js, index.html. Other js files carry only the 2.3.6 stamp (boot check). Upload as-is; footer must read v2.3.6.
+UPLOAD (overwrite): index.html, manifest.js, js/ (all 34), assets/officer_c0.png, assets/officer_c1.png. DELETE on the server: assets/officer_c2.png, assets/officer_c3.png. Footer must read v2.4.0.

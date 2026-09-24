@@ -74,25 +74,32 @@ CP.Actors.update = function (dt) {
 CP.Actors.charOf = a => a.char != null ? a.char : (CP.G && CP.G.shift && a === CP.G.shift.partner ? 1 : 0);
 const PP = (t, fps, n) => { const k = ((Math.floor(t * fps) % (2 * n - 2)) + 2 * n - 2) % (2 * n - 2); return k < n ? k : 2 * n - 2 - k; }; // ping-pong index
 CP.Actors.nOf = (ch, row) => { const s = CP.A.M.sprites['o' + ch + '_' + row + '_0']; return s && s.n || 7; };
+/* v2.4 officer sheets: 16 rows x 7 frames per character, already ordered right-to-left as authored.
+   Rows: idle, hand, walk, run, stop, pass, point, slow, request, inspect, radio, citation, flash, crouch, reach, salute.
+   Standing = idle only. Moving = walk; run only when far / hurrying. Every other row is an action, driven by the
+   action's own clock (prog 0..1 sweeps the row start→end) or held on its middle frames. */
+CP.Actors.ACT = {
+  raise: { row: 'stop', sweep: [0, 2] }, stop: { row: 'stop', hold: [3, 4], fps: 1.2 }, lower: { row: 'stop', sweep: [5, 6] },
+  wave: { row: 'pass', sweep: [0, 6] }, request: { row: 'request', sweep: [0, 6] }, point: { row: 'point', sweep: [0, 6] },
+  slow: { row: 'slow', cycle: [1, 6], fps: 6 }, radio: { row: 'radio', hold: [3, 4], fps: 2.5 }, documents: { row: 'inspect', hold: [2, 4], fps: 0.9 },
+  citation: { row: 'citation', hold: [2, 5], fps: 1.6 }, flashlight: { row: 'flash', hold: [3, 4], fps: 1.5 }, crouch: { row: 'crouch', sweep: [0, 6], mid: [3, 4] },
+  reach: { row: 'reach', sweep: [0, 6], mid: [3, 4] }, salute: { row: 'salute', sweep: [0, 6] }
+};
 CP.Actors.frameFor = function (ch, pose, moving, walkT, t, calm, prog) {
   const S = CP.A.M.sprites, o = 'o' + ch + '_'; const has = id => !!S[id]; const N = row => CP.Actors.nOf(ch, row); const wrap = (i, n) => ((i % n) + n) % n;
   if (moving) {
-    // one full gait cycle (both legs) covers a fixed distance, so feet never slide: 1.35 m walking, 1.9 m running
     if (calm) return o + 'walk_' + wrap(Math.floor(walkT / (1.35 / N('walk'))), N('walk'));
     return o + 'run_' + wrap(Math.floor(walkT / (1.9 / N('run'))), N('run'));
   }
-  pose = pose || 'idle'; let id; const ni = N('idle'), nh = N('hand'), ns = N('stop'), np = N('pass'), nr = N('radio');
-  switch (pose) {
-    case 'idle': id = o + 'idle_' + PP(t, 5, ni); break; // standing = breathing idle only
-    case 'raise': id = o + 'stop_' + (prog == null ? 1 : Math.min(2, Math.floor(prog * 3))); break;
-    case 'stop': id = o + 'stop_' + (Math.floor(t * 1.2) % 2 ? 3 : 2); break;
-    case 'lower': id = o + 'stop_' + (prog == null ? 5 : 4 + Math.min(ns - 5, Math.floor(prog * (ns - 4)))); break;
-    case 'wave': id = o + 'pass_' + (prog == null ? [0, 1, 2, 3, 4, 3, 2, 1][((Math.floor(t * 11) % 8) + 8) % 8] : Math.min(np - 1, Math.floor(prog * np))); break;
-    case 'radio': id = o + 'radio_' + (Math.floor(t * 2.5) % 2 ? 3 : 2); break;
-    case 'documents': id = o + 'hand_' + (Math.floor(t * 0.9) % 2 ? 2 : 1); break;
-    case 'flashlight': id = o + 'radio_4'; break;
-    default: id = o + pose;
-  }
+  pose = pose || 'idle'; let id;
+  if (pose === 'idle') id = o + 'idle_' + PP(t, 5, N('idle'));
+  else { const A = CP.Actors.ACT[pose]; if (!A) id = o + pose; else {
+    const n = N(A.row); let i;
+    if (A.cycle) i = A.cycle[0] + wrap(Math.floor(t * A.fps), A.cycle[1] - A.cycle[0] + 1);
+    else if (A.sweep && prog != null) { const [s0, s1] = A.sweep; if (A.mid && prog > 0.35 && prog < 0.75) i = A.mid[0] + (Math.floor(t * 1.5) % 2 ? 1 : 0); else i = s0 + Math.min(s1 - s0, Math.floor(prog * (s1 - s0 + 1))); }
+    else if (A.hold) i = A.hold[0] + wrap(Math.floor(t * A.fps), A.hold[1] - A.hold[0] + 1);
+    else i = A.sweep ? A.sweep[1] : 0;
+    id = o + A.row + '_' + Math.min(n - 1, Math.max(0, i)); } }
   return has(id) ? id : o + 'idle_0';
 };
 /* stride settle: when a figure stops mid-stride, its walk cycle keeps advancing (as if the last step lands) until it
@@ -182,4 +189,4 @@ CP.Actors.partnerTraffic = function (dt) {
   s.flowT = (s.flowT || 0) + dt;
   if (s.flowT > 3.2) { s.flowT = 0; CP.Act.doWave(v, 'partner'); CP.Actors.seq('partner', ['lower', 'wave', 'idle'], 0.22); }
 };
-;(window.CP_FILES = window.CP_FILES || {})['09_actors'] = '2.3.6';
+;(window.CP_FILES = window.CP_FILES || {})['09_actors'] = '2.4.0';

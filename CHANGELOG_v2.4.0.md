@@ -1,0 +1,15 @@
+# Kameen v2.4.0 — full officer animation set (16 rows)
+- New sheets (navy officer = officer_c0.png, white senior = officer_c1.png; the sergeant shares navy, the supervisor shares white — delete officer_c2.png and officer_c3.png on the server). 16 rows × 7 frames each, played **right to left** as authored; column 0 (label overlap) is never used, so no text can appear.
+- One scale for every row (these sheets are drawn on one grid): no height changes between idle, walk, run, stop, radio, etc.
+- **Standing = idle breathing only. Moving = walk; run only when far or hurrying.** Stride settles on a legs-together frame before standing.
+- Every other row is wired to a real action, driven by the action's own clock (start→end sweep or held on its middle frames):
+  - request documents → when the officer greets / asks for the papers
+  - inspect document → while a case panel is open beside the car
+  - radio call → verification and dispatch calls
+  - write citation → when a citation is issued
+  - direct to inspection → when a car is sent to the bay
+  - slow down → when a car approaches the marker fast
+  - stop vehicle / allow to pass → stopping and releasing (raise → hold → lower; full pass sweep)
+  - flashlight check → torch at night
+  - crouch inspection → frisk and underbody searches;  reach to search → trunk, cabin and cargo searches
+  - salute → shift start and when the supervisor arrives

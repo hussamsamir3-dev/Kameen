@@ -100,4 +100,13 @@ CP.bus.on('stepEnd', () => {
 });
 CP.bus.on('caseClosed', c => { const sgt = CP.Staff.list.find(m => m.id === 'sgt'); if (sgt && c.res && ['hold', 'handover', 'medical'].indexOf(c.res.decision) >= 0) sgt.bigCase = true; });
 CP.bus.on('shiftStart', () => CP.Staff.reset());
-;(window.CP_FILES = window.CP_FILES || {})['23_staff'] = '2.3.6';
+
+/* ---------- v2.4 action rows wired to what the player does ---------- */
+{ const ask = CP.Dlg.ask; CP.Dlg.ask = function (c, intent) { const r = ask.apply(this, arguments); if (/docs|papers|greet/.test(String(intent))) CP.Actors.seq('officer', ['request', 'idle'], 1.1, 0); return r; }; }
+{ const sz = CP.Insp.searchZone; CP.Insp.searchZone = function (c, zone) { const r = sz.apply(this, arguments); if (r !== null) CP.Actors.seq('officer', [zone === 'body' || zone === 'under' ? 'crouch' : 'reach', 'idle'], 1.6, 0); return r; }; }
+CP.bus.on('caseClosed', c => { if (c.res && c.res.decision === 'citation') CP.Actors.seq('officer', ['citation', 'idle'], 2.2, 0); });
+{ const sb = CP.T.sendToBay; CP.T.sendToBay = function (v) { const e = sb.apply(this, arguments); if (!e) setTimeout(() => CP.Actors.seq('officer', ['point', 'idle'], 1.3, 0), 0); return e; }; }
+CP.bus.on('shiftStart', () => setTimeout(() => { if (CP.G.shift && !CP.G.shift.officer.moving) CP.Actors.seq('officer', ['salute', 'idle'], 1.4, 0); }, 900));
+{ const st = CP.Events.start; CP.Events.start = function (t) { const r = st.apply(this, arguments); if (r && t === 'inspect') CP.Actors.seq('officer', ['salute', 'idle'], 1.4, 0); return r; }; }
+CP.bus.on('stepEnd', () => { const s = CP.G && CP.G.shift; if (!s) return; const o = s.officer; if (o.moving || o.seq) return; const v = s.vehicles.find(x => x.row === 0 && !x.cleared && x.v > 8 && x.x > CP.W.marker - 14 && x.x < CP.W.marker - 5 && !x._slowed); if (v) { v._slowed = true; CP.Actors.seq('officer', ['slow', 'idle'], 0.9, 0); } });
+;(window.CP_FILES = window.CP_FILES || {})['23_staff'] = '2.4.0';

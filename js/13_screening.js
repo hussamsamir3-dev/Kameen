@@ -108,4 +108,4 @@ CP.Tasks.on('scr_conf', t => {
   if (S.evId) { const ev = CP.G.shift.evidence.find(e => e.id === S.evId); if (ev) { ev.status = ok ? 'confirmed' : 'lawful'; ev.hist.push({ t: CP.G.shift.t, st: ev.status }); } }
   CP.Audio.radioClick(true); CP.UI && CP.UI.radioFlash(ok ? 'confirmed' : 'notConfirmed'); CP.autosave();
 });
-;(window.CP_FILES = window.CP_FILES || {})['13_screening'] = '2.3.6';
+;(window.CP_FILES = window.CP_FILES || {})['13_screening'] = '2.4.0';

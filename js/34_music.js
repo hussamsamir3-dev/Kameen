@@ -9,12 +9,19 @@
 CP.Music = { L: {}, started: false, want: { day: 1, night: 0, tension: 0 }, stingT: 0 };
 const MU = CP.Music;
 MU.FILES = { day: 'assets/music/bed_day.mp3', night: 'assets/music/bed_night.mp3', tension: 'assets/music/tension.mp3', sting: 'assets/music/sting.mp3' };
-MU.mk = (k, loop) => { const a = new Audio(); a.preload = 'auto'; a.src = MU.FILES[k]; a.loop = loop; a.volume = 0; return a; };
+MU.mk = (k, loop) => { const a = new Audio(); a.preload = 'auto'; a.src = MU.FILES[k]; a.loop = loop; a.volume = 1; a.crossOrigin = 'anonymous'; return a; };
 MU.master = () => { const S = CP.S; return S.mute ? 0 : CP.clamp((S.music ?? 0.6) * (S.master ?? 1) * (CP.Audio.ducked ? 0.5 : 1), 0, 1); };
+/* iOS Safari ignores audio.volume, so every layer is routed through a Web Audio gain node; gain is the mixer.
+   As a second safety, a layer whose level is zero is paused outright, so it can never be heard. */
+MU.gainFor = function (k, el) {
+  const A = CP.Audio; if (!A.ctx) return null; if (this.G[k]) return this.G[k];
+  try { const src = A.ctx.createMediaElementSource(el); const g = A.ctx.createGain(); g.gain.value = 0; src.connect(g); g.connect(A.ctx.destination); this.G[k] = g; return g; } catch (e) { return null; }
+};
+MU.G = {}; MU.level = {};
 MU.start = function () {
   if (this.started) return; this.started = true;
-  for (const k of ['day', 'night', 'tension']) { this.L[k] = this.mk(k, true); const p = this.L[k].play(); if (p && p.catch) p.catch(() => { this.started = false; }); }
-  this.sting = this.mk('sting', false);
+  for (const k of ['day', 'night', 'tension']) { this.L[k] = this.mk(k, true); this.level[k] = 0; this.gainFor(k, this.L[k]); if (!this.G[k]) this.L[k].volume = 0; }
+  this.sting = this.mk('sting', false); this.gainFor('sting', this.sting);
   if (!this._tick) this._tick = setInterval(() => MU.tick(), 100);
 };
 MU.stop = function () { for (const k in this.L) { try { this.L[k].pause(); } catch (e) { } } this.started = false; };
@@ -29,17 +36,20 @@ MU.target = function () {
 };
 MU.tick = function () {
   if (!this.started || document.hidden) return; this.target(); const m = this.master();
-  const stingLevel = this.sting && !this.sting.paused && !this.sting.ended ? 0.55 : 1; // beds dip under the sting
-  for (const k in this.L) { const el = this.L[k]; const goal = m * this.want[k] * (k === 'tension' ? 1 : stingLevel); const rate = k === 'tension' ? 0.06 : 0.025; // tension answers faster than the beds cross-fade
-    el.volume = CP.clamp(el.volume + CP.clamp(goal - el.volume, -rate, rate), 0, 1);
-    if (el.paused && goal > 0.005) { const p = el.play(); if (p && p.catch) p.catch(() => {}); } }
+  if (CP.Audio.ctx) { for (const k in this.L) if (!this.G[k]) { this.gainFor(k, this.L[k]); if (this.G[k]) { this.L[k].volume = 1; this.G[k].gain.value = this.level[k] || 0; } } if (this.sting && !this.G.sting) this.gainFor('sting', this.sting); }
+  const stingOn = this.sting && !this.sting.paused && !this.sting.ended; const stingLevel = stingOn ? 0.55 : 1;
+  for (const k in this.L) { const el = this.L[k]; const goal = m * this.want[k] * (k === 'tension' ? 1 : stingLevel); const rate = k === 'tension' ? 0.06 : 0.025;
+    const cur = this.level[k] || 0; const nxt = CP.clamp(cur + CP.clamp(goal - cur, -rate, rate), 0, 1); this.level[k] = nxt;
+    const g = this.G[k]; if (g) g.gain.value = nxt; else el.volume = nxt;
+    if (nxt <= 0.002 && !el.paused) el.pause();
+    else if (nxt > 0.002 && el.paused && goal > 0.002) { const p = el.play(); if (p && p.catch) p.catch(() => {}); } }
 };
-MU.playSting = function () { if (!this.started || !this.sting || CP.S.mute) return; if (performance.now() - this.stingT < 6000) return; this.stingT = performance.now(); try { this.sting.currentTime = 0; this.sting.volume = this.master() * 0.95; const p = this.sting.play(); if (p && p.catch) p.catch(() => {}); } catch (e) { } };
+MU.playSting = function () { if (!this.started || !this.sting || CP.S.mute) return; if (performance.now() - this.stingT < 6000) return; this.stingT = performance.now(); try { this.sting.currentTime = 0; const g = this.G.sting; if (g) g.gain.value = this.master() * 0.95; else this.sting.volume = this.master() * 0.95; const p = this.sting.play(); if (p && p.catch) p.catch(() => {}); } catch (e) { } };
 /* replace the old playlist player: same entry points, same settings */
 CP.Audio.music.start = function () { MU.start(); };
 CP.Audio.music.play = function () {}; CP.Audio.music.next = function () {}; CP.Audio.music.tick = function () {};
-{ const stopAll = CP.Audio.stopAll; CP.Audio.stopAll = function () { const r = stopAll.apply(this, arguments); try { for (const k in MU.L) MU.L[k].volume = Math.min(MU.L[k].volume, 0.001); } catch (e) { } return r; }; }
-document.addEventListener('visibilitychange', () => { try { if (document.hidden) { for (const k in MU.L) MU.L[k].pause(); if (MU.sting) MU.sting.pause(); } else if (MU.started) { for (const k in MU.L) { const p = MU.L[k].play(); if (p && p.catch) p.catch(() => {}); } } } catch (e) { } });
+{ const stopAll = CP.Audio.stopAll; CP.Audio.stopAll = function () { const r = stopAll.apply(this, arguments); try { for (const k in MU.L) { MU.level[k] = 0; if (MU.G[k]) MU.G[k].gain.value = 0; else MU.L[k].volume = 0; MU.L[k].pause(); } } catch (e) { } return r; }; }
+document.addEventListener('visibilitychange', () => { try { if (document.hidden) { for (const k in MU.L) MU.L[k].pause(); if (MU.sting) MU.sting.pause(); } else if (MU.started) { for (const k in MU.L) { if ((MU.level[k] || 0) > 0.002) { const p = MU.L[k].play(); if (p && p.catch) p.catch(() => {}); } } } } catch (e) { } });
 /* stings: serious catch, warrant arrest, shift end, black file closed */
 CP.bus.on('caseClosed', c => { if (c.res && c.res.eval && c.res.eval.sound && CP.FAM[c.fam] && CP.FAM[c.fam].serious && ['hold', 'handover', 'refer_admin'].indexOf(c.res.decision) >= 0) MU.playSting(); });
 { const rep = CP.Screens.report; CP.Screens.report = function () { const r = rep.apply(this, arguments); MU.playSting(); try { if (MU.L.tension) MU.L.tension.currentTime = 0; } catch (e) { } return r; }; }

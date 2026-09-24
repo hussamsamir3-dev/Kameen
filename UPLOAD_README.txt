@@ -1,1 +1,1 @@
-UPLOAD (overwrite): index.html, js/ (all 35; 34_music.js is new), assets/music/bed_day.mp3, bed_night.mp3, tension.mp3, sting.mp3. Footer must read v2.5.0.
+Real edits: js/11_events.js, js/19_main.js, js/35_levelup.js (new), css/game.css, index.html (other js only carry the 2.5.2 stamp). Footer must read v2.5.2.

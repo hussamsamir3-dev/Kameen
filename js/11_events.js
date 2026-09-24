@@ -281,9 +281,8 @@ CP.Career.checkEnd = function () {
   const s = CP.G.shift; if (s.ended) return false;
   if (s.t < s.dur) return false;
   if (!s.endWarned) { s.endWarned = true; Ev.log('end', 'ev_shiftEnding', 'warn'); }
-  const open = s.vehicles.filter(v => v.caseId && !s.cases[v.caseId].res && v.x > -1);
-  if (open.length === 0 || s.t > s.dur + 150) return true;
-  return false;
+  // v2.5.2: the shift ends when the timer ends (3 s grace for the closing banner); open cases hand over to the next shift
+  return s.t > s.dur + 3;
 };
 CP.Career.report = function () {
   const G = CP.G, s = G.shift;
@@ -325,4 +324,4 @@ CP.Career.buy = function (k) {
   const cost = U.cost[u[k]]; if (G.career.credits < cost) return 'up_noCredit';
   G.career.credits -= cost; u[k]++; CP.save('auto'); return null;
 };
-;(window.CP_FILES = window.CP_FILES || {})['11_events'] = '2.5.1';
+;(window.CP_FILES = window.CP_FILES || {})['11_events'] = '2.5.2';

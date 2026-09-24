@@ -47,7 +47,7 @@ M.step = function (dt) {
   for (const v of s.vehicles) { if (!v.caseId || v.x < 0) continue; const c = s.cases[v.caseId]; if (!c.res && c.cues.length) CP.Act.seeCues(v, c); }
   CP.bus.emit('stepEnd');
   M.tutorial();
-  M.saveT += dt; if (M.saveT > 8) { M.saveT = 0; CP.autosave(); }
+  M.saveT += dt; if (M.saveT > 5) { M.saveT = 0; CP.autosave(); }
   M.objT = (M.objT || 0) + dt; if (M.objT > 1) { M.objT = 0; CP.Prog.checkObjectives(); }
 };
 
@@ -133,7 +133,7 @@ M.tutorial = function (force) {
 
 /* ---------------- boot ---------------- */
 /* every script stamps its version; a missing or mismatched stamp means an old or failed file on the server */
-M.EXPECTED = ["00_util", "01_strings", "02_content", "03_assets", "04_state", "05_cases", "06_dialogue", "07_tasks", "08_traffic", "09_actors", "10_actions", "11_events", "12_inspection", "13_screening", "14_render", "15_audio", "16_ui", "17_panels", "18_screens", "19_main", "20_progress", "21_features", "22_brand", "23_staff", "24_pulse", "25_revamp", "26_polish", "27_depth", "28_features", "29_world", "30_economy", "31_guard", "32_polish2", "33_device", "34_music"];
+M.EXPECTED = ["00_util", "01_strings", "02_content", "03_assets", "04_state", "05_cases", "06_dialogue", "07_tasks", "08_traffic", "09_actors", "10_actions", "11_events", "12_inspection", "13_screening", "14_render", "15_audio", "16_ui", "17_panels", "18_screens", "19_main", "20_progress", "21_features", "22_brand", "23_staff", "24_pulse", "25_revamp", "26_polish", "27_depth", "28_features", "29_world", "30_economy", "31_guard", "32_polish2", "33_device", "34_music", "35_levelup"];
 M.checkFiles = function (silent) {
   const F = window.CP_FILES || {}; const bad = M.EXPECTED.filter(n => F[n] !== CP.VERSION);
   if (!bad.length) return true;
@@ -171,4 +171,4 @@ M.bootLoad = function () {
 window.addEventListener('DOMContentLoaded', M.boot);
 
 CP.bus.on('caseClosed', () => { const s = CP.G && CP.G.shift; if (s) s.officer.returnAt = s.t + 1.6; });
-;(window.CP_FILES = window.CP_FILES || {})['19_main'] = '2.5.1';
+;(window.CP_FILES = window.CP_FILES || {})['19_main'] = '2.5.2';

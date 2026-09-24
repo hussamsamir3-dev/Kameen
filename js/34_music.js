@@ -43,4 +43,4 @@ document.addEventListener('visibilitychange', () => { try { if (document.hidden)
 CP.bus.on('caseClosed', c => { if (c.res && c.res.eval && c.res.eval.sound && CP.FAM[c.fam] && CP.FAM[c.fam].serious && ['hold', 'handover', 'refer_admin'].indexOf(c.res.decision) >= 0) MU.playSting(); });
 { const rep = CP.Screens.report; CP.Screens.report = function () { const r = rep.apply(this, arguments); MU.playSting(); try { if (MU.L.tension) MU.L.tension.currentTime = 0; } catch (e) { } return r; }; }
 { const st = CP.R.stamp; CP.R.stamp = function (text) { if (/WANTED|مطلوب|BET WON|كسبت|الملف|File/i.test(String(text))) MU.playSting(); return st.apply(this, arguments); }; }
-;(window.CP_FILES = window.CP_FILES || {})['34_music'] = '2.5.1';
+;(window.CP_FILES = window.CP_FILES || {})['34_music'] = '2.5.2';

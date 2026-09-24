@@ -78,9 +78,9 @@ CP.Staff.ents = function (R, s, ents, alpha) {
       const x = CP.lerp(m.px ?? m.x, m.x, alpha); const cx = R.sx(x), gy = R.sy(m.yup);
       if (cx < -60 || cx > R.W + 60) return;
       const fr = CP.Actors.frameFor(m.char, m.pose, m.moving, m.walkT, R.t + m.animOff, !m.hurry); const sp = A.M.sprites[fr]; if (!sp) return;
-      const k = m.hM * ppm / (sp.hRef || sp.rect[3]);
+      const k = m.hM * R.depthScale(m.yup) * ppm / (sp.hRef || sp.rect[3]);
       R.castShadow(fr, cx, gy, k, m.dir < 0);
-      (R.occluders = R.occluders || []).push({ x0: cx - 0.26 * ppm, x1: cx + 0.26 * ppm, y0: gy - m.hM * ppm, y1: gy, h: m.hM * ppm });
+      { const hh = m.hM * R.depthScale(m.yup) * ppm; (R.occluders = R.occluders || []).push({ x0: cx - 0.26 * ppm, x1: cx + 0.26 * ppm, y0: gy - hh, y1: gy, h: hh }); }
       A.drawGroundedScale(R.ctx, fr, cx, gy, k, m.dir < 0);
       if (m.pose === 'flashlight' && (R.nightLvl || 0) > 0.35) R.glows.push({ x: cx + m.dir * 0.5 * ppm, y: gy - 1.1 * ppm, r: 0.9 * ppm, c: '255,240,200', a: 0.55 });
     } });
@@ -109,4 +109,4 @@ CP.bus.on('caseClosed', c => { if (c.res && c.res.decision === 'citation') CP.Ac
 CP.bus.on('shiftStart', () => setTimeout(() => { if (CP.G.shift && !CP.G.shift.officer.moving) CP.Actors.seq('officer', ['salute', 'idle'], 1.4, 0); }, 900));
 { const st = CP.Events.start; CP.Events.start = function (t) { const r = st.apply(this, arguments); if (r && t === 'inspect') CP.Actors.seq('officer', ['salute', 'idle'], 1.4, 0); return r; }; }
 CP.bus.on('stepEnd', () => { const s = CP.G && CP.G.shift; if (!s) return; const o = s.officer; if (o.moving || o.seq) return; const v = s.vehicles.find(x => x.row === 0 && !x.cleared && x.v > 8 && x.x > CP.W.marker - 14 && x.x < CP.W.marker - 5 && !x._slowed); if (v) { v._slowed = true; CP.Actors.seq('officer', ['slow', 'idle'], 0.9, 0); } });
-;(window.CP_FILES = window.CP_FILES || {})['23_staff'] = '2.5.0';
+;(window.CP_FILES = window.CP_FILES || {})['23_staff'] = '2.5.1';

@@ -88,4 +88,4 @@ PO.burst = el => { const r = el.getBoundingClientRect(); for (let i = 0; i < 18;
 /* ---------- responsive type scale ---------- */
 PO.fit = () => { const w = window.innerWidth, h = window.innerHeight; const base = Math.min(w / 1440, h / 820); const s = CP.clamp(0.86 + base * 0.32, 0.86, 1.32); document.documentElement.style.setProperty('--ui', s.toFixed(3)); document.documentElement.classList.toggle('wide', w / h > 2); document.documentElement.classList.toggle('short', h < 620); };
 window.addEventListener('resize', PO.fit); PO.fit();
-;(window.CP_FILES = window.CP_FILES || {})['26_polish'] = '2.5.0';
+;(window.CP_FILES = window.CP_FILES || {})['26_polish'] = '2.5.1';

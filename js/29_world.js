@@ -66,7 +66,7 @@ CP.Peds.drawAll = function (R, s, alpha) {
   const A = CP.A, ppm = R.ppm;
   for (const p of this.list) { (() => {
     const x = CP.lerp(p.px, p.x, alpha); const cx = R.sx(x), gy = R.sy(p.yup); if (cx < -80 || cx > R.W + 80) return;
-    const fr = CP.Peds.frame(p); const sp = A.M.sprites[fr]; if (!sp) return; const k = p.hM * ppm / (sp.hRef || sp.rect[3]);
+    const fr = CP.Peds.frame(p); const sp = A.M.sprites[fr]; if (!sp) return; const k = p.hM * R.depthScale(p.yup) * ppm / (sp.hRef || sp.rect[3]);
     R.castShadow(fr, cx, gy, k, p.dir < 0, p.hM); A.drawGroundedScale(R.ctx, fr, cx, gy, k, p.dir < 0);
   })(); }
 };
@@ -129,4 +129,4 @@ CP.bus.on('searchDone', ({ c, zone }) => {
 
 /* ---------- zoom-change flicker fix: quantised depth of field ---------- */
 CP.R.dof = function () { if (CP.S.reducedFx || !('filter' in this.ctx)) return 'none'; const z = this.zoom || 1; let px = CP.clamp((z - 0.9) * 2.6, 0.6, 4.2) * (this.ppm / 60); px = Math.round(px * 2) / 2; if (px < 0.75) return 'none'; return `blur(${px.toFixed(1)}px)`; };
-;(window.CP_FILES = window.CP_FILES || {})['29_world'] = '2.5.0';
+;(window.CP_FILES = window.CP_FILES || {})['29_world'] = '2.5.1';

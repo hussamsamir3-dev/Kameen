@@ -1,7 +1,7 @@
 /* CHECKPOINT: NIGHT SHIFT — core utilities (namespace, seeded RNG, i18n, math) */
 'use strict';
 const CP = window.CP = {};
-CP.VERSION = '2.7.0';
+CP.VERSION = '2.8.0';
 /* drawn heights of people, in world metres — officers on the lane row stand a head above a sedan roof */
 CP.HUMAN = { officer: 2.55, partner: 2.48, staffFar: 2.5, staffNear: 2.45, pedFar: 2.4, pedNear: 2.35, menuOfficer: 2.55, menuPartner: 2.48, menuSgt: 1.95 };
 CP.SAVE_VERSION = 1;
@@ -102,4 +102,4 @@ CP.Gender = CP.Gender || {
   driverWord: c => (c && c.driver && c.driver.g === 'f') ? { ar: 'السواقة', en: 'Driver' } : { ar: 'السواق', en: 'Driver' },
   pers: (c, p) => CP.C.persLabel[p]
 };
-;(window.CP_FILES = window.CP_FILES || {})['00_util'] = '2.7.0';
+;(window.CP_FILES = window.CP_FILES || {})['00_util'] = '2.8.0';

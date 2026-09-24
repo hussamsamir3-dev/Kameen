@@ -121,4 +121,4 @@ CP.bus.on('stepEnd', () => { LG.st = (LG.st || 0) + 1; if (LG.st % 15 === 0) LG.
 /* the case card's "Check" becomes the one-tap routine */
 document.addEventListener('pointerdown', e => { const b = e.target.closest && e.target.closest('#dock .act'); if (!b || !LG.flowOn()) return; const lab = (b.textContent || ''); if (/فحص|Check/.test(lab) && !/سريع|Quick/.test(lab)) { const c = CP.Act.curC(); if (c && !c.k.stopped) { setTimeout(() => { if (!LG.flow.caseId) LG.startFlow(); }, 0); } } }, true);
 { const menu = CP.Screens.menu; CP.Screens.menu = function () { const r = menu.apply(this, arguments); const more = document.querySelector('.rv-more .col'); if (more) more.appendChild(CP.h('button', { class: 'btn mb', onclick: () => { CP.S.flow = CP.S.flow === false; CP.saveSettings(); CP.UI.toast(CP.t('fl_flow') + ': ' + (CP.S.flow === false ? 'OFF' : 'ON')); } }, CP.t('fl_flow'))); return r; }; }
-;(window.CP_FILES = window.CP_FILES || {})['36_logic'] = '2.7.0';
+;(window.CP_FILES = window.CP_FILES || {})['36_logic'] = '2.8.0';

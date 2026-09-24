@@ -64,7 +64,7 @@ SK.hit = function (v) { const s = CP.G.shift; v.spiked = s.t; v.limp = true; v.m
   else { CP.UI.banner(CP.t('rn_innocent'), 'emergency'); CP.Econ && CP.Econ.addMoney(-400); CP.G.career.trust = CP.clamp(CP.G.career.trust - 4, 0, 100); (s.events.mail = s.events.mail || { cmp: [], cmd: [] }).cmp.push(CP.t('rn_innocent')); }
 };
 /* draw the strip after the barrier (world-anchored), with the deploy frames */
-{ const st = CP.R.structures; CP.R.structures = function (s) { const r = st.apply(this, arguments); const A = CP.A; const fr = 'spikes_' + String(Math.min(15, Math.round(SK.up * 15))).padStart(2, '0'); const sp = A.M.sprites[fr]; if (!sp) return r; const ppm = this.ppm; const cx = this.sx(SK.x), gy = this.sy(this.Y.mainNear + 0.35); const k = 1.15 * ppm / sp.rect[2]; A.drawGroundedScale(this.ctx, fr, cx, gy, k, false, 0.5); return r; }; }
+{ const st = CP.R.structures; CP.R.structures = function (s) { const r = st.apply(this, arguments); const A = CP.A; const fr = 'spikes_' + String(Math.min(15, Math.round(SK.up * 15))).padStart(2, '0'); const sp = A.M.sprites[fr]; if (!sp) return r; const ppm = this.ppm; const cx = this.sx(SK.x), gy = this.sy(this.Y.mainNear + 0.12); const k = 1.15 * ppm / sp.rect[2]; A.drawGroundedScale(this.ctx, fr, cx, gy, k, false, 0.5); return r; }; }
 
 /* ---------- runner scenario ---------- */
 CP.Events.MINOR.push('runner'); CP.Events.tierOf.runner = 3;
@@ -81,4 +81,4 @@ CP.bus.on('stepEnd', () => { const s = CP.G && CP.G.shift; let b = document.getE
   if (!show) { if (b) b.remove(); return; } if (b) { b.classList.toggle('up', SK.deployed); return; }
   b = CP.h('button', { id: 'spikeBtn', onclick: e => { e.stopPropagation(); SK.deploy(); } }, CP.t('rn_deploy')); document.getElementById('stage').appendChild(b); });
 document.addEventListener('keydown', e => { if (e.code === 'Space' && document.getElementById('spikeBtn') && !document.getElementById('fixbar')) { e.preventDefault(); SK.deploy(); } });
-;(window.CP_FILES = window.CP_FILES || {})['37_tow'] = '2.7.0';
+;(window.CP_FILES = window.CP_FILES || {})['37_tow'] = '2.8.0';

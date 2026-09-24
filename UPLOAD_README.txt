@@ -1,1 +1,1 @@
-Real edits: js/11_events.js, js/19_main.js, js/35_levelup.js (new), css/game.css, index.html (other js only carry the 2.5.2 stamp). Footer must read v2.5.2.
+Real edits: js/39_cinema.js (new), js/37_tow.js, css/game.css, index.html (other js only carry the 2.8.0 stamp). HUD chip must read v2.8.0.

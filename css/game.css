@@ -870,3 +870,8 @@ html.mob.land #panel .pw { max-height: calc(var(--vvh) - 40px); }
 .set-sec h3 { margin: 0 0 8px; font-size: 1em; color: #ffe4a3; }
 .set.sectioned { display: block; }
 .btn.danger { border-color: rgba(255,90,80,.7); background: rgba(255,90,80,.15); color: #ffb3ad; }
+
+/* ===== v2.8: rank name, dev grid, instant panel swap ===== */
+.rankchip .rk-name { margin-inline-start: 6px; font-weight: 800; font-size: .95em; color: #ffe4a3; white-space: nowrap; }
+.dev-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+html.pswap #panel, html.pswap #panel .pw, html.pswap #panel * { transition: none !important; animation: none !important; }

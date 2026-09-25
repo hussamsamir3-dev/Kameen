@@ -935,3 +935,18 @@ html[dir="ltr"] .rv-hero-shade { background: linear-gradient(to right, rgba(6,9,
 #actions.simple .act { min-width: 150px; flex: 0 1 220px; }
 @media (max-height: 520px) { #flowCard .btn.qc { min-height: 26px; padding: 2px 8px; font-size: .78em; } }
 @media (max-height: 520px) and (min-aspect-ratio: 3/2) { .rv-hero-img { object-position: 16% 50%; } }
+
+/* ===== v3.5: search report + reason picker ===== */
+.choicecard.srch, .choicecard.reason { max-width: min(520px, 94vw); border: 1px solid rgba(255,214,110,.3); box-shadow: 0 24px 70px rgba(0,0,0,.65); animation: cardIn .18s ease-out; }
+.sr-head { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; margin-bottom: 8px; }
+.sr-rows { display: flex; flex-direction: column; gap: 6px; }
+.sr-row { display: grid; grid-template-columns: 110px 1fr; gap: 10px; padding: 8px 10px; border-radius: 10px; background: rgba(255,255,255,.04); border-inline-start: 4px solid rgba(143,227,168,.7); }
+.sr-row.mid { border-inline-start-color: rgba(240,184,64,.8); } .sr-row.bad { border-inline-start-color: rgba(255,90,80,.9); background: rgba(255,90,80,.08); }
+.sr-z { font-weight: 800; color: #ffe4a3; } .sr-r { opacity: .92; }
+.sr-rec { margin: 10px 0; padding: 8px 12px; border-radius: 10px; font-weight: 800; } .sr-rec.ok { background: rgba(60,160,110,.18); color: #9fe8bb; } .sr-rec.bad { background: rgba(255,90,80,.16); color: #ffb3ad; }
+.rs-list { display: flex; flex-direction: column; gap: 6px; margin: 8px 0; max-height: 44vh; overflow: auto; }
+.rs-o { display: flex; justify-content: space-between; align-items: center; text-align: start; min-height: 42px; opacity: .7; }
+.rs-o.on { opacity: 1; border-color: rgba(255,214,110,.8); background: rgba(255,214,110,.12); } .rs-o.on::before { content: '✓ '; color: #ffd35a; font-weight: 900; }
+.rs-w { color: #ffd35a; letter-spacing: 2px; }
+.rs-meter { height: 8px; border-radius: 999px; background: rgba(255,255,255,.08); overflow: hidden; margin: 6px 0 2px; } .rs-meter i { display: block; height: 100%; width: 0; transition: width .2s; background: #ff8a5a; }
+.rs-meter.ok i { background: #ffd35a; } .rs-meter.strong i { background: #8fe3a8; } .rs-v { display: block; margin-bottom: 8px; opacity: .85; }

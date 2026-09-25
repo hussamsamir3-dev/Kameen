@@ -901,7 +901,7 @@ html.pswap #panel, html.pswap #panel .pw, html.pswap #panel * { transition: none
 
 /* ===== v3.2: menu key art (scales to any screen; focal point on the officer and the car) ===== */
 .rv-hero { position: absolute; inset: 0; overflow: hidden; background: #0b1020; }
-.rv-hero-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 66% 58%; opacity: 0; animation: heroIn 1.2s ease forwards; filter: saturate(1.05) contrast(1.03); }
+.rv-hero-img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 30% 50%; opacity: 0; animation: heroIn 1.2s ease forwards; filter: saturate(1.05) contrast(1.03); }
 @keyframes heroIn { to { opacity: 1; } }
 /* never mirrored: the art is fitted beside the panel instead */
 .rv-hero-shade { position: absolute; inset: 0; pointer-events: none; background:
@@ -909,8 +909,8 @@ html.pswap #panel, html.pswap #panel .pw, html.pswap #panel * { transition: none
   linear-gradient(to top, rgba(6,9,18,.55), rgba(6,9,18,0) 30%),
   radial-gradient(120% 90% at 40% 45%, rgba(0,0,0,0) 55%, rgba(0,0,0,.45) 100%); }
 html[dir="ltr"] .rv-hero-shade { background: linear-gradient(to right, rgba(6,9,18,.92) 0%, rgba(6,9,18,.55) 26%, rgba(6,9,18,0) 48%), linear-gradient(to top, rgba(6,9,18,.55), rgba(6,9,18,0) 30%), radial-gradient(120% 90% at 60% 45%, rgba(0,0,0,0) 55%, rgba(0,0,0,.45) 100%); }
-@media (max-aspect-ratio: 1/1) { .rv-hero-img { object-position: 70% 55%; } .rv-hero-shade { background: linear-gradient(to top, rgba(6,9,18,.95) 0%, rgba(6,9,18,.6) 45%, rgba(6,9,18,.1) 75%); } }
-@media (max-height: 520px) and (min-aspect-ratio: 3/2) { .rv-hero-img { object-position: 60% 62%; } }
+@media (max-aspect-ratio: 1/1) { .rv-hero-img { object-position: 30% 50%; } .rv-hero-shade { background: linear-gradient(to top, rgba(6,9,18,.95) 0%, rgba(6,9,18,.6) 45%, rgba(6,9,18,.1) 75%); } }
+
 .rv-menu { backdrop-filter: blur(14px) saturate(1.2); background: linear-gradient(160deg, rgba(18,22,34,.72), rgba(10,12,20,.82)); border: 1px solid rgba(255,214,110,.16); box-shadow: 0 30px 80px rgba(0,0,0,.55), inset 0 1px 0 rgba(255,255,255,.06); }
 
 /* ===== v3.2: decision cards ===== */
@@ -924,3 +924,14 @@ html[dir="ltr"] .rv-hero-shade { background: linear-gradient(to right, rgba(6,9,
 .pow .pow-o { display: flex; flex-direction: column; align-items: flex-start; gap: 2px; min-height: 58px; text-align: start; }
 .pow .pow-o.wait { opacity: .7; }
 #hPowers { border-color: rgba(255,214,110,.55); color: #ffe4a3; }
+
+.rv-fx { position: absolute; inset: 0; width: 100%; height: 100%; pointer-events: none; }
+
+/* ===== v3.4: quick checks + slim dock ===== */
+#flowCard .fc-quick { display: flex; flex-wrap: wrap; gap: 6px; }
+#flowCard .fc-quick:empty { display: none; }
+#flowCard .btn.qc { min-height: 34px; padding: 4px 10px; border-radius: 999px; background: rgba(255,255,255,.05); border-color: rgba(255,214,110,.35); font-weight: 700; }
+#actions.simple { display: flex; gap: 10px; align-items: stretch; }
+#actions.simple .act { min-width: 150px; flex: 0 1 220px; }
+@media (max-height: 520px) { #flowCard .btn.qc { min-height: 26px; padding: 2px 8px; font-size: .78em; } }
+@media (max-height: 520px) and (min-aspect-ratio: 3/2) { .rv-hero-img { object-position: 16% 50%; } }
